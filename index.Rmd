@@ -8,6 +8,8 @@ documentclass: article
 bibliography: [bibliography.bib, packages.bib]
 biblio-style: apalike
 link-citations: yes
+abstract: |
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum laoreet orci non elit fermentum mollis vel sit amet dolor. Proin ullamcorper, diam ac consectetur molestie, urna urna aliquet augue, sit amet vulputate felis massa ut libero. Integer mattis eget lorem vel viverra. Maecenas consequat feugiat mauris vitae porta. Mauris nec vulputate libero. Sed a turpis eget nisl tempus ultricies. Sed accumsan at augue a bibendum. Integer blandit, sem non imperdiet pharetra, tellus augue lobortis est, eget vestibulum massa ex eget purus. Suspendisse eleifend ullamcorper elit vitae pulvinar. Praesent vel tristique diam, vitae tempus leo. Nam placerat, massa a sodales porttitor, mauris felis ullamcorper eros, ut mattis lectus nisi vitae leo. Proin justo ante, fringilla quis consectetur at, euismod eget augue. In in nisi quis nunc fermentum semper ut a velit. Quisque suscipit dui in auctor tempor. Integer eu dui dictum, laoreet urna nec, tristique risus. Ut non tellus in metus.
 ---
 
 # Prerequisites
@@ -22,9 +24,11 @@ install.packages("bookdown")
 # devtools::install_github("rstudio/bookdown")
 ```
 
-Remember each Rmd file contains one and only one chapter, and a chapter is defined by the first-level heading `#`.
+Remember each Rmd file contains one and only one chapter/section, and a chapter is defined by the first-level heading `#`.
 
 To compile this example to PDF, you need XeLaTeX. You are recommended to install TinyTeX (which includes XeLaTeX): <https://yihui.name/tinytex/>.
+
+This is an example of a reference without braces @xie2015 and a reference with braces [@xie2015]
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

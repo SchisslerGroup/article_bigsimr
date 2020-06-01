@@ -4,5 +4,6 @@ before_chapter_script: [_common.R]
 after_chapter_script: [_outgoing.R]
 rmd_files: [
   "index.Rmd",
+  "references.Rmd"
 ]
 output_dir: "docs"

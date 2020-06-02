@@ -12,29 +12,178 @@ abstract: |
   In this era of Big Data, it is critical to realistically simulate data to conduct informative Monte Carlo studies. This is problematic when data are inherently multivariate while at the same time are (ultra-) high dimensional. This situation appears frequently in observational data found on online and in high-throughput biomedical experiments (e.g., RNA-sequencing). Due to the difficulty in simulating realistic correlated data points, researchers often resort to simulation designs that posit independence --- greatly diminishing the insight into the empirical operating characteristics of any proposed methodology.  Major challenges lie in the computational complexity involved in simulating these massive random vectors. We propose a fairly general, scalable procedure to simulate high-dimensional multivariate distributions with pre-specified marginal characteristics and dependency characteristics. As a motivating example, we use our methodology to study large-scale statistical inferential procedures applied to cancer-related RNA-sequencing data sets. The proposed algorithm is implemented as the `bigsimr` R package.
 ---
 
-# Prerequisites
-
-This is a _sample_ book written in **Markdown**. You can use anything that Pandoc's Markdown supports, e.g., a math equation $a^2 + b^2 = c^2$.
-
-The **bookdown** package can be installed from CRAN or Github:
-
-```{r eval=FALSE, echo=FALSE}
-install.packages("bookdown")
-# or the development version
-# devtools::install_github("rstudio/bookdown")
-```
-
-```{r include=FALSE}
-## use the pandoc bundled with R Studio
-## rmarkdown::find_pandoc()
-# automatically create a bib database for R packages
-knitr::write_bib(c(
-  .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'packages.bib')
+```{r LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(dplyr)
 ```
 
 ```{bash copyBib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 cp /Users/alfred/Dropbox/bib/bigsimr.bib ./.
 ```
 
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```
+
+# Introduction
+
 Kendall's tau is great [@K38].
+
+Intergene correlation [@Schissler2019].
+
+# Multivariate correlation bounds
+
+# Simulation methodology
+
+# The `bigsimr` R package
+
+Short description and key features.
+
+```{r setup, eval=TRUE}
+## Using conda
+reticulate::use_condaenv("py37")
+library(bigsimr)
+```
+
+## Basic use
+
+short description
+
+----
+### Specifying marginals
+
+As stated earlier, to generate multivariate data, we need a list of marginals (and their parameters), and a correlation structure (matrix). The marginal distributions can be built up as a list of lists, where each sublist contains the information for the target distribution.
+
+```{r}
+margins = list(
+  list("norm", mean = 3.14, sd = 0.1),
+  list("beta", shape1 = 1, shape2 = 4),
+  list("nbinom", size = 10, prob = 0.75)
+)
+```
+
+The things to point out here are that in each sublist (marginal), the first item is an unnamed character string with the R name of the distribution *without a letter prefix*. E.g. instead of `rnorm`, we pass in just `"norm"`. The second thing to note is that the remaining items are *named* arguments that go along with the distribution. A full list of built-in distributions is found in the appendix.
+
+----
+### Specify correlation
+
+The next step is to define a correlation structure for the multivariate distribution. This correlation matrix can either come from observed data, or we can set it ourselves, or we can generate a random correlation matrix via `bigsimr::rcor`. Let's create a simple correlation matrix where all off-diagonal elements are 0.5. Since we have 3 marginals, we need a $3\times 3$ matrix.
+
+```{r}
+rho <- matrix(0.5, nrow = 3, ncol = 3)
+diag(rho) <- 1.0
+rho
+```
+
+Finally we can generate a random vector with our specified marginals and correlation structure. The last argument, `type`, is looking to know what kind of correlation matrix it is receiving. Right now it can handle Pearson, Spearman, or Kendal.
+
+----
+### Small sample
+
+```{r}
+x = rvec(10, rho = rho, params = margins, type = "pearson")
+```
+
+On my machine, there is no dedicated GPU, so I would see the following warning message once per session.
+
+```{r, echo=FALSE}
+warning("warning.warn('No GPU/TPU found, falling back to CPU.')")
+```
+
+Taking a look at our random vector, we see that it hs 10 rows and 3 columns, one column for each marginal.
+
+```{r}
+x
+```
+
+We can simulate many more samples and then check the histogram of each margin, as well as the estimated correlation between the columns.
+
+
+----
+### Scaling up N
+
+```{r, fig.width=7}
+x = rvec(10000, rho = rho, params = margins, type = "pearson")
+
+par(mfrow=c(1,3))
+hist(x[,1], breaks = 30, xlab = "", main = "Normal")
+hist(x[,2], breaks = 30, xlab = "", main = "Beta")
+hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
+```
+
+----
+### Evaluation
+
+```{r}
+cor(x)
+```
+
+We can see that even wih 10,000 samples, the estimated correlation of the simulated data is not exactly the same as the target correlation. This can be explained by the fact that some correlations are simply not possible due to the discrete nature of certain distributions. Another possibility is that the copula algorith is biased and needs correction. 
+
+----
+### List of supported distributions
+
+```{r, eval=FALSE}
+all_dists <- list(
+  list(dist = "beta", shape1, shape2),
+  list(dist = "binom", size, prob),
+  list(dist = "cauchy", location, scale),
+  list(dist = "chisq", df),
+  list(dist = "exp", rate),
+  list(dist = "f", df1, df2),
+  list(dist = "gamma", shape, rate),
+  list(dist = "geom", prob),
+  list(dist = "hyper", m, n, k),
+  list(dist = "logis", location, scale),
+  list(dist = "lnorm", meanlog, sdlog),
+  list(dist = "nbinom", size, prob),
+  list(dist = "norm", mean, sd),
+  list(dist = "pois", lambda),
+  list(dist = "t", df),
+  list(dist = "unif", min, max),
+  list(dist = "weibull", shape, scale),
+  list(dist = "wilcox", m, n),
+  list(dist = "signrank", n)
+)
+```
+
+----
+## Comparsions to other software
+
+----
+### Speed 
+
+- `copula`
+- `Genord`
+- `Multiord`
+- other?
+- CPU benchmarking
+- GPU benchmarking
+
+----
+### Accuracy
+
+blah
+
+----
+### Other comparisons
+
+blah
+
+
+# Some applications
+
+## Simulation-based correlation checking
+
+## Simulating RNA-seq data
+
+## Simulation-based correlation testing
+
+## Simulation-based probability estimation
+
+# Conclusions 

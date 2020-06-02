@@ -3,7 +3,7 @@ docs
 libs
 index.tex
 index.pdf
-prerequisites.html
+*.html
 texput.log
 
 # History files

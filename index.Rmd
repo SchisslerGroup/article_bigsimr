@@ -62,9 +62,17 @@ Intergene correlation [@Schissler2019].
 
 # Simulation methodology
 
+## General algorithm
+
+## Rank-based dependence measures
+
+## Pearson correlation
+
+Difficulties
+
 # The `bigsimr` R package
 
-Short description and key features.
+Short description and key features, including GPU acceleration.
 
 ```{r setup, eval=TRUE}
 ## Using conda
@@ -190,7 +198,52 @@ blah
 
 ## Simulation-based correlation checking
 
+A multivariate approach?
+
+Or all the pairs?
+
+Generate, sort, and correlate algorithm @Demirtas2011 
+
+```{r, computeFrechetBounds, echo = TRUE, eval=TRUE}
+
+## simulation based
+## devtools::install_github("adknudson/bigsimr", ref="develop")
+library(bigsimr)
+## ?rvec
+
+d <- 5
+rho <- rcor(d)
+margins <- list(
+    list("nbinom", size = 5, prob = 0.3),
+    list("exp", rate = 4),
+    list("binom", size = 5, prob = 0.7),
+    list("norm", mean = 10, sd = 3),
+    list("pois", lambda = 10)
+)
+
+margins2 <- list(
+    list("nbinom", 5, 0.3),
+    list("exp", 4),
+    list("binom", 5, 0.7),
+    list("norm", 10, 3),
+    list("pois", 10)
+)
+ 
+params = margins
+rho = rho
+## cores = parallel::detectCores() - 1
+cores = 2
+reps = 1e3
+type = "spearman"
+
+## help(package="bigsimr")
+rho_bounds <- computeCorBounds(params = margins, cores = cores, type = "spearman", reps = reps)
+rho_bounds
+```
+
 ## Simulating RNA-seq data
+
+We apply our methodology to simulate RNA-sequencing data sets based on samples derived from breast cancer patients' tumors (the BRCA data set in TCGA). The data are freely available as part of the BRCA data set within the The Cancer Genome Atlas data warehouse and were downloaded on BLAH using the Harvard's Broad Institute's Firehouse interface. For each of the 1093 patients, the gene expression (abundance of messenger-RNA) from 20501 genes were counted using RNA-sequencing. The resultant data set can be represented as a matrix of size 1093 x 20501 with discrete values aligned to HUGO gene symbols for each patient. In this illustrative case study, we model the genewise marginal distributions as hetereogeneous negative binomial with pmf given by Equation \@ref(eq:nb) with two parameters, $p$ and $r$ (OR SWITCH TO mu and delta). Modeling RNA-seq counts as negative binomially distributed random variables is commonplace (e.g., @Zhao2018) since overdispersion is often observed for most expressed genes. We begin by estimating the marginal negative binomial parameters for each group using a simple method of moments approach by matching the negative binomial parameters with the sample mean and variance. Table/Figure XXX summarizes the estimated means, variances, and NB parameters as described in Equation \@ref(eq:nb). Notably some genes show underdisperation compared to a Poisson random varible. For simplicity we exclude these cases, but nothing in the later described simulation method prevents using a different marginal distribution in those cases (such as a Maxwell distribution REF Sellers).
 
 \begin{equation} 
   g(n) = \mathbb P(Y=n) = \frac{\Gamma(n+r)}{\Gamma(r)n!} p^r(1-p)^n, \,\,\, n\in
@@ -198,10 +251,47 @@ blah
   (\#eq:nb)
 \end{equation} 
 
-See Equation \@ref(eq:nb).
-
 ## Simulation-based correlation testing
 
-## Simulation-based probability estimation
+## Simulation-based probability calculations
+
+# Conclusion/Discussion
+
+- Although we recommend to use the rank-based measures
+- discuss the omission (or inclusion) of high dimensional covariance estimators?
+- We've shown that the multivariate NB simulations outperform the Independent sims. But the agreement is still poor. This could motivate other more appropriate models for high-expressing RNA-seq data than the negative binomial distribution. This algorithm lends itself to exploration of flexible probability models to inspire model selection in the developemnt novel RNA-seq analytic methodology.
+
+We've introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a high-performance implementation called `bigsimr` (github url). The parallelized (multi-core) algorithm is simple and easy to understand as an application of Gaussian copulas. This method is largely inspired by @MB13, but with contributions with regard to scaleability, implementation, and application in high-throughput biomedical data (RNA-sequencing). We advocate the use of Kendall's $\tau$ as it better captures correlation among components of non-normal, as well as non-linear patterns of association. Moreover, the matching Kendall's $\tau$ is nearly trival due to the invariant of monotone transformations, after an adjustment to the input correlation matrix. Interestingly, our simulation studies show the use of Kendall's $\tau$ to works as well as using Pearson correlation coefficient when simulating from multivariate normal distributions.
+
+We also show utility in our methodology through an application to differential gene expression analysis from RNA-sequencing data. The application results show that correlations indeed matter in the large-scale hypothesis testing, as many others have noted (for example, see @BE07, @Wu2012b). We also hope that the application provides an example workflow --- and other strategy to use in simulation design. Even the best-performing simulations we provide show a gap from the empirical distribution. To keep the demonstration straightforward, we did not attempt to match the empirical distribution of test statistics as precisely as possible. Yet our methodology could be more creatively applied to meet that goal. One could consider marginal distributions from different families, such as Poisson for a subset of genes. One could imagine finding a best fitting probability distribution among a class of distributions for each gene and this could perhaps a better fit. One could imagine additonal structures/features in the data that an analyset could model to improve the correspondence with the emprical values, for example row correlations and high-dimensional covariance estimators (see @Won2013g).
+
+There are of course limitations to the methodology and implementation. The algorithm requires invertible marginal cdfs. This leaves some restriction to the available marginal probability distributions (DOES IT? FOR EXAMPLE?) An additional source of error is after converting dependencies (step i; ${\bf R_{Kendall}})$) the resultant matrix may not be positive definite (PD). Then the nearest PD matrix is used. From a practical computing standpoint, the user's computing resource provides the ultimate limit on how large a dimension can be simulated using the `bigsimr` R package. A user must consider carefully the available memory and cores when conducting a Monte Carlo experiment. The algorithm does amends itself well to parallelization and graphical processing unit acceleration [@Li2019gpu] and advanced users may take advantage of those techniques.
+
+Future work includes developing scalable algorithms to match the Pearson correlation matrix exactly. Further, more sophicated approaches could involve simulation algorithms that are "estimation awarene" and so could explore the role of covariance estimation within the simulation. Lastly, these may reveal new approaches to estimating and evaluating high dimensional regression and Bayesian models. On the implementation side, employing graphical process unit acceleration could produce substaintial speedups over our multi-core approach.
 
 # Conclusions 
+
+# Supplementary Materials
+
+We provide an open-source implementation of our methology as the `bigsimr` R package, hosted on github. 
+
+# Acknowledgement(s)
+
+The authors gratefully acknowledge the helpful discussions with Professor Walter W. Piegorsch and Professor Edward J. Bedrick during this project's conception.
+
+# Disclosure statement
+
+The authors report no conflict of interest. DO WE?
+
+# Funding
+
+FUNDING FROM EVERYONE HERE. CP3 grant.
+
+# Nomenclature/Notation
+
+# Notes
+
+Mention Python?
+
+
+

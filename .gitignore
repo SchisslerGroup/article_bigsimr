@@ -1,5 +1,10 @@
 # Bookdown generated files
 docs
+libs
+index.tex
+index.pdf
+prerequisites.html
+texput.log
 
 # History files
 .Rhistory

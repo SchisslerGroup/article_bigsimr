@@ -76,7 +76,6 @@ library(bigsimr)
 
 short description
 
-----
 ### Specifying marginals
 
 As stated earlier, to generate multivariate data, we need a list of marginals (and their parameters), and a correlation structure (matrix). The marginal distributions can be built up as a list of lists, where each sublist contains the information for the target distribution.
@@ -91,7 +90,6 @@ margins = list(
 
 The things to point out here are that in each sublist (marginal), the first item is an unnamed character string with the R name of the distribution *without a letter prefix*. E.g. instead of `rnorm`, we pass in just `"norm"`. The second thing to note is that the remaining items are *named* arguments that go along with the distribution. A full list of built-in distributions is found in the appendix.
 
-----
 ### Specify correlation
 
 The next step is to define a correlation structure for the multivariate distribution. This correlation matrix can either come from observed data, or we can set it ourselves, or we can generate a random correlation matrix via `bigsimr::rcor`. Let's create a simple correlation matrix where all off-diagonal elements are 0.5. Since we have 3 marginals, we need a $3\times 3$ matrix.
@@ -104,7 +102,6 @@ rho
 
 Finally we can generate a random vector with our specified marginals and correlation structure. The last argument, `type`, is looking to know what kind of correlation matrix it is receiving. Right now it can handle Pearson, Spearman, or Kendal.
 
-----
 ### Small sample
 
 ```{r}
@@ -125,8 +122,6 @@ x
 
 We can simulate many more samples and then check the histogram of each margin, as well as the estimated correlation between the columns.
 
-
-----
 ### Scaling up N
 
 ```{r, fig.width=7}
@@ -138,7 +133,6 @@ hist(x[,2], breaks = 30, xlab = "", main = "Beta")
 hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
 ```
 
-----
 ### Evaluation
 
 ```{r}
@@ -147,7 +141,6 @@ cor(x)
 
 We can see that even wih 10,000 samples, the estimated correlation of the simulated data is not exactly the same as the target correlation. This can be explained by the fact that some correlations are simply not possible due to the discrete nature of certain distributions. Another possibility is that the copula algorith is biased and needs correction. 
 
-----
 ### List of supported distributions
 
 ```{r, eval=FALSE}
@@ -174,10 +167,8 @@ all_dists <- list(
 )
 ```
 
-----
 ## Comparsions to other software
 
-----
 ### Speed 
 
 - `copula`
@@ -187,16 +178,13 @@ all_dists <- list(
 - CPU benchmarking
 - GPU benchmarking
 
-----
 ### Accuracy
 
 blah
 
-----
 ### Other comparisons
 
 blah
-
 
 # Some applications
 

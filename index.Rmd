@@ -192,6 +192,14 @@ blah
 
 ## Simulating RNA-seq data
 
+\begin{equation} 
+  g(n) = \mathbb P(Y=n) = \frac{\Gamma(n+r)}{\Gamma(r)n!} p^r(1-p)^n, \,\,\, n\in
+\mathbb N_0.
+  (\#eq:nb)
+\end{equation} 
+
+See Equation \@ref(eq:nb).
+
 ## Simulation-based correlation testing
 
 ## Simulation-based probability estimation

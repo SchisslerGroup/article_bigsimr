@@ -17,6 +17,7 @@ library(ggplot2)
 library(tidyverse)
 library(knitr)
 library(dplyr)
+set.seed(06082020)
 ```
 
 ```{bash copyBib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
@@ -32,7 +33,28 @@ knitr::write_bib(c(
 
 # Introduction
 
-Kendall's tau is great [@K38].
+Massive high-dimensional data sets are commonplace in many areas of scientific inquiry. As new methods are developed for these data, a fundamental challenge lies in designing and conducting simulation studies to assess operating characteristics of proposed methodology, such as false positive rates, statistical power, and robustness --- often in comparison to existing methods. Another application lies in the discovering the sampling distribution of test statistic under hypothesized null models in complex scenarios. Such Monte Carlo studies in the high-dimensional setting often become difficult to conduct with existing algorithms and tools, or require expertise in computing on clusters. This is particularly true when simulating massive multivariate, non-normal distributions. 
+
+Along those lines, simulating high-dimension dependent negative binomial data motivates this work --- in pursuit of modeling RNA-sequencing data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. This labroratory procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. Often researchers posit a negative binomial model (refs) as counts are often over (or under) expressed that a Poisson model would suggest. Yet due to inherent biological processes, gene expression data exhibits correlation (coexpression) across genes [@BE07; @Schissler2018]. RNA-sequencing analysis has garnered much interest in the statistical literature (refs). Often researchers simulate independently or from their proposed model in order condunct Monte Carlo studies (refs). An alternavitive strategy is to think *generatively* about the data collection process and scientific domain knowledge and design simulations with probabilitistic models that reflect those processes. In our motivating example, we'll study the consequences correlation in the simulation study replicating test statistics from an illustrative, classical large-scale hypothesis testing study [see @Efron2004].
+
+With our application in mind and seeking a general-purpose algorithm with broad applications, our purposed methodology should possess the following properities (adapted from criteria from @Nik13a):
+
+* P1: Wide range of dependence, allowing both positive and negative dependence
+* P2: Flexible dependence, meaning that the number of bivariate marginals is (approximately) equal to the number of dependence parameters.
+* P3: Flexible marginal modeling, generating hetereogenous data --- possibly from differing probability families.
+* P4: Computationally feasible cumulative distribution function (cdf) for likelihood estimation.
+
+Moreover, in simulation method must scale to high dimensions:
+
+* S1: Procedure must scale to high dimensions, computable in a reasonable amount time.
+* S2: Procedure must scale to high dimensions while maintaining accuracy.
+
+As others @MB13 have noted, however, simulating dependent data can be challenging. A central issue lies characterizing dependency between components in the high-dimensional random vector. The choice of correlation in typical practice usually relates to the eventual analytic goal and distributional assumptions of the data (e.g. non-normal, discrete, finite support, etc). Here we propose a scheme that ignores the analytic goal --- and, instead, aims to match the empirically-derived estimated correlation data and marginal characteristics. For normal data, the Pearson product-moment correlation describes the dependency completely. As we will see, however, simulating abrirtary random vectors with a given Pearson correlation matrix is computationally intense [@Chen2001, @Xia17], violating property **S1**. On the other hand, an analyst may consider the use of non-parametric correlation measures, such as Spearman's $\rho$ and Kendall's $\tau$, particularly when modeling non-normal data as in our application. Adding to the complexity is the well-known, marginal-dependent constraints on the possible bivariate correlation (a consequence of the bounds of bivariate distribution functions --- the *Frechet-Hoeffding bounds* [@Nelsen2007]). Denote the pointwise upper bound as $M(y_i, y_{i^\prime})$ These bounds give strict restraints on the possible bounds and cannot be overcome through algorithm design. Yet not all multivariate simulation approaches obtain these bounds [for example REF]. Computationally, algorithms that rely on serial computation scale poorly to high dimensions (refs - hierarchy) and fail to make use of modern high-performance computing including parallelization and graphical processing unit acceleration [@Li2019gpu].
+
+To meet the desired properties in the face of the challenging setting, we present a general-purpose, scalable multivariate simulation algorithm. The crux of the method lies in the construction of a Gaussian copula [refs]. The idea that many multivariate and marginally heterogenous distribution can be constructed in such a manner is well known [refs]. This article's contriubition lies in it's application to high-dimenisonal data through a high-performance implementation (`bigsimr`) and speed-focused algorithm design. The algorithm design relies on useful properties of non-standard correlation measures, namely Kendall's $\tau$ and Spearman's $\rho$. We'll show that quality of simulation does not require the use of the standard Pearson correlation matrix, even for normally distributed data. The purpose of our method is to generate random vectors that match exactly specified any possible Kendall's $\tau$ or Spearman's $\rho$, and approximately Pearson product-moment correlation.
+
+The study proceeds with more details on our motivating example in RNA-sequencing breast cancer data. Then we describe and justify our simulation methodology, followed by extensive Monte Carlo studies under various distributional assumputions --- emphasizing normal and non-normal scenarios. In these studies, we evaluate the accuracy and speed of our approach in comparison to other readily availble software. After evaluating *in silico*, we revisit our motivating
+example by employing our method and compare our simulations to empirically-derived statistics. Finally, we'll make concluding remarks regarding the method's utility and future directions.
 
 Intergene correlation [@Schissler2019].
 

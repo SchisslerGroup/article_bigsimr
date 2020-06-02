@@ -3,7 +3,9 @@ title: "Simulating Ultra High-Dimensional Multivariate Data Using the bigsimr R 
 author: [A.G. Schissler, A. Knudson]
 date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
 site: bookdown::bookdown_site
-output: bookdown::gitbook
+output: 
+  bookdown::gitbook:
+    base_format: rticles::tf_article
 documentclass: article
 bibliography: [bigsimr.bib, packages.bib]
 biblio-style: apalike

@@ -1,0 +1,195 @@
+---
+title: Bivariate Gamma Correlation Bounds Comparison
+author: |-
+    A. Grant Schissler\
+    Department of Mathematics & Statistics\
+    The University of Nevada, Reno. \
+    aschissler@unr.edu
+date: '`r Sys.Date()`'
+output:
+    html_document:
+      toc: yes
+      toc_depth: 2
+bibliography: /Users/alfred/Dropbox/bib/library.bib
+abstract:
+    Quick study checking the `bigsimr` Pearson matching scheme while checking whether the methods obtain pairwise Frechet bounds.
+---
+
+```{r LoadLib, echo = TRUE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(dplyr)
+knitr::opts_chunk$set(cache=TRUE, autodep=TRUE, cache.comments=TRUE)
+set.seed(06032020)
+library(bigsimr)
+CORES <- parallel::detectCores() - 1
+## CORES <- 1
+## devtools::install_github( "superdesolator/NORTARA" )
+library(nortaRA)
+```
+
+# Configure global parameters
+
+```{r, globalParams}
+## bivariate gamma
+d <- 2
+shape1 <- 5
+shape2 <- 5
+margins <- list(
+    list("gamma", shape = shape1),
+    list("gamma", shape = shape2)
+)
+
+## for evaluation of obtaining the bounds
+gridSteps <- 1e2
+N <- 1e5
+
+## storing the results
+boundsDat <- NULL
+simRes <- NULL
+```
+
+# Compute bounds under each type of dependency
+
+## Pearson correlation bounds
+
+```{r, boundsPearson}
+type <- 'pearson'
+## Using GSC method of Demirtas2011
+(tmpBounds <- computeCorBounds( params = margins, cores = CORES, type = type, reps = N ))
+tmpBoundsDat <- data.frame( shape1 = shape1, shape2 = shape2, type = type, upper = tmpBounds$upper[ 1, 2 ], lower = tmpBounds$lower[ 1, 2 ] )
+boundsDat <- rbind( boundsDat, tmpBoundsDat )
+```
+
+## Spearman correlation bounds
+
+```{r, boundsSpearman}
+type <- 'spearman'
+## Using GSC method of Demirtas2011
+(tmpBounds <- computeCorBounds( params = margins, cores = CORES, type = type, reps = N ))
+tmpBoundsDat <- data.frame( shape1 = shape1, shape2 = shape2, type = type, upper = tmpBounds$upper[ 1, 2 ], lower = tmpBounds$lower[ 1, 2 ] )
+boundsDat <- rbind( boundsDat, tmpBoundsDat )
+```
+
+## Kendall correlation bounds
+
+```{r, boundsKendall, eval=FALSE}
+type <- 'kendall'
+## Using GSC method of Demirtas2011
+(tmpBounds <- computeCorBounds( params = margins, cores = CORES, type = type, reps = N ))
+tmpBoundsDat <- data.frame( shape1 = shape1, shape2 = shape2, type = type, upper = tmpBounds$upper[ 1, 2 ], lower = tmpBounds$lower[ 1, 2 ] )
+boundsDat <- rbind( boundsDat, tmpBoundsDat )
+```
+
+# Simulating and checking the empirical bounds obtainment
+
+## `bigsimr` simulations
+
+### Pearson
+
+```{r bigsimrPearson, eval = TRUE, results = 'hide'}
+type <- 'pearson'
+## now show that our simulation methods works
+tmpLower <- boundsDat$lower[ boundsDat$type == type ]
+tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
+rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)  ## loose approximation for now
+
+## loop for simplicity see if fast enough
+for (r in rVec) {
+    print( paste0( 'Working on true rho of ', r ) )
+    rho <- matrix(r, nrow = d, ncol = d)
+    diag(rho) <- 1.0
+    simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = type, cores = CORES, adjustForDiscrete = FALSE) )
+    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'bigsimr' , type = type)
+    simRes <- rbind( simRes, tmpSimData )
+}
+```
+
+### Spearman
+
+```{r bigsimrSpearman, eval = TRUE, results = 'hide'}
+type <- 'spearman'
+## now show that our simulation methods works
+tmpLower <- boundsDat$lower[ boundsDat$type == type ]
+tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
+rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)  ## loose approximation for now
+
+## loop for simplicity see if fast enough
+for (r in rVec) {
+    print( paste0( 'Working on true rho of ', r ) )
+    rho <- matrix(r, nrow = d, ncol = d)
+    diag(rho) <- 1.0
+    simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = type, cores = CORES, adjustForDiscrete = FALSE) )
+    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'bigsimr' , type = type)
+    simRes <- rbind( simRes, tmpSimData )
+}
+```
+
+### Kendall
+
+```{r bigsimrKendall, eval = FALSE}
+type <- 'kendall'
+## now show that our simulation methods works
+tmpLower <- boundsDat$lower[ boundsDat$type == type ]
+tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
+rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps ) 
+
+## loop for simplicity see if fast enough
+for (r in rVec) {
+    print( paste0( 'Working on true rho of ', r ) )
+    rho <- matrix(r, nrow = d, ncol = d)
+    diag(rho) <- 1.0
+    simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = type, cores = CORES, adjustForDiscrete = FALSE) )
+    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'bigsimr' , type = type)
+    simRes <- rbind( simRes, tmpSimData )
+}
+```
+
+## `NORTARA` simulations
+
+```{r nortaraSetup}
+## slightly different input format than bigsimr
+invcdfnames <- c("qgamma","qgamma")
+paramslists <- list(
+    m1 = list(shape = shape1 ),
+    m2 = list(shape = shape2 )
+)
+```
+
+### Pearson
+
+```{r nortaraPearson, eval = TRUE, warning=FALSE, results='hide'}
+type <- 'pearson'
+## now show that our simulation methods works
+tmpLower <- boundsDat$lower[ boundsDat$type == type ]
+tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
+esp <- 1e-3
+rVec <- seq( tmpLower+esp, tmpUpper-esp, length.out = gridSteps ) 
+## drop N for this one
+tmpN <- 1e4
+## loop for simplicity see if fast enough
+for (r in rVec) {
+    print( paste0( 'Working on true rho of ', r ) )
+    rho <- matrix(r, nrow = d, ncol = d)
+    diag(rho) <- 1.0
+    simData  <- nortaRA::gennortaRA(n = tmpN, cor_matrix = rho, invcdfnames, paramslists)
+    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'nortara' , type = type)
+    simRes <- rbind( simRes, tmpSimData )
+}
+```
+
+# Check the performance around the bounds
+
+```{r obtainment}
+## numerically compare to the bounds
+
+```
+
+# Visualize the results
+
+```{r empVspecPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', out.width= '75%', fig.align='center', fig.ext='pdf', fig.cap = 'Plot of the specified (true) versus empirical (computed) correlations for bivariate lognormal data with $p_1 = p_2 = 0.2$ generated by the standard approach, bigsimr, and T-Poisson. Empirical correlations are the estimated correlations from the simulated samples.'}
+p0 <- ggplot(data = simRes, aes(x = trueRho, y = estRho, color = factor(method)) )
+p0 + geom_point() + facet_grid(. ~ type ) + geom_abline(slope = 1, intercept = 0 )
+```
+

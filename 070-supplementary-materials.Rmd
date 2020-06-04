@@ -1,0 +1,51 @@
+# Supplementary Materials
+
+We provide an open-source implementation of our methology as the `bigsimr` R package, hosted on github. 
+
+# Acknowledgement(s)
+
+The authors gratefully acknowledge the helpful discussions with Professor Walter W. Piegorsch and Professor Edward J. Bedrick during this project's conception.
+
+# Disclosure statement
+
+The authors report no conflict of interest. DO WE?
+
+
+# Funding
+
+FUNDING FROM EVERYONE HERE. CP3 grant.
+
+
+# Nomenclature/Notation
+
+
+# Notes
+
+### List of supported distributions
+
+```{r, eval=FALSE}
+all_dists <- list(
+  list(dist = "beta", shape1, shape2),
+  list(dist = "binom", size, prob),
+  list(dist = "cauchy", location, scale),
+  list(dist = "chisq", df),
+  list(dist = "exp", rate),
+  list(dist = "f", df1, df2),
+  list(dist = "gamma", shape, rate),
+  list(dist = "geom", prob),
+  list(dist = "hyper", m, n, k),
+  list(dist = "logis", location, scale),
+  list(dist = "lnorm", meanlog, sdlog),
+  list(dist = "nbinom", size, prob),
+  list(dist = "norm", mean, sd),
+  list(dist = "pois", lambda),
+  list(dist = "t", df),
+  list(dist = "unif", min, max),
+  list(dist = "weibull", shape, scale),
+  list(dist = "wilcox", m, n),
+  list(dist = "signrank", n)
+)
+```
+
+Mention Python?
+

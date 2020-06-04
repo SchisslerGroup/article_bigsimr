@@ -1,0 +1,85 @@
+# The `bigsimr` R package
+
+Short description and key features, including GPU acceleration.
+
+The most computationally extensive lies in the second step of our algorithm. We
+use a optimized and parallelized multivariate normal simulator within the `R`
+package `mvnfast`. The rest of the code is also parallelized, but these steps
+run rapidly in serial computation except for extremely large dimension.
+
+```{r setup, eval=TRUE}
+## Using conda
+reticulate::use_condaenv("py37")
+library(bigsimr)
+## help(package = 'bigsimr')
+```
+
+## Basic use
+
+short description
+
+### Specifying marginals
+
+As stated earlier, to generate multivariate data, we need a list of marginals (and their parameters), and a correlation structure (matrix). The marginal distributions can be built up as a list of lists, where each sublist contains the information for the target distribution.
+
+```{r}
+margins = list(
+  list("norm", mean = 3.14, sd = 0.1),
+  list("beta", shape1 = 1, shape2 = 4),
+  list("nbinom", size = 10, prob = 0.75)
+)
+```
+
+The things to point out here are that in each sublist (marginal), the first item is an unnamed character string with the R name of the distribution *without a letter prefix*. E.g. instead of `rnorm`, we pass in just `"norm"`. The second thing to note is that the remaining items are *named* arguments that go along with the distribution. A full list of built-in distributions is found in the appendix.
+
+### Specify correlation
+
+The next step is to define a correlation structure for the multivariate distribution. This correlation matrix can either come from observed data, or we can set it ourselves, or we can generate a random correlation matrix via `bigsimr::rcor`. Let's create a simple correlation matrix where all off-diagonal elements are 0.5. Since we have 3 marginals, we need a $3\times 3$ matrix.
+
+```{r}
+rho <- matrix(0.5, nrow = 3, ncol = 3)
+diag(rho) <- 1.0
+rho
+```
+
+Finally we can generate a random vector with our specified marginals and correlation structure. The last argument, `type`, is looking to know what kind of correlation matrix it is receiving. Right now it can handle Pearson, Spearman, or Kendall.
+
+### Small sample
+
+```{r}
+x = rvec(10, rho = rho, params = margins, type = "pearson")
+```
+
+On my machine, there is no dedicated GPU, so I would see the following warning message once per session.
+
+```{r, echo=FALSE}
+warning("warning.warn('No GPU/TPU found, falling back to CPU.')")
+```
+
+Taking a look at our random vector, we see that it is 10 rows and 3 columns, one column for each marginal.
+
+```{r}
+x
+```
+
+We can simulate many more samples and then check the histogram of each margin, as well as the estimated correlation between the columns.
+
+### Scaling up N
+
+```{r, fig.width=7}
+x = rvec(10000, rho = rho, params = margins, type = "pearson")
+
+par(mfrow=c(1,3))
+hist(x[,1], breaks = 30, xlab = "", main = "Normal")
+hist(x[,2], breaks = 30, xlab = "", main = "Beta")
+hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
+```
+
+### Evaluation
+
+```{r}
+cor(x)
+```
+
+We can see that even with 10,000 samples, the estimated correlation of the simulated data is not exactly the same as the target correlation. This can be explained by the fact that some correlations are simply not possible due to the discrete nature of certain distributions. Another possibility is that the copula algorithm is biased and needs correction. 
+

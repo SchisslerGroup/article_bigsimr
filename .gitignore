@@ -6,6 +6,9 @@ index.pdf
 *.html
 texput.log
 
+# Mac Finder
+.DS_Store
+
 # History files
 .Rhistory
 .Rapp.history

@@ -22,16 +22,18 @@ library(knitr)
 library(dplyr)
 knitr::opts_chunk$set(cache=TRUE, autodep=TRUE, cache.comments=TRUE)
 set.seed(06032020)
+## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
 library(bigsimr)
-CORES <- parallel::detectCores() - 1
-## CORES <- 1
 ## devtools::install_github( "superdesolator/NORTARA" )
 library(nortaRA)
+## to parallize
+library(parallel)
+CORES <- parallel::detectCores() - 1
 ```
 
 # Configure global parameters
 
-```{r, globalParams}
+```{r, globalParams, results = "hide"}
 ## bivariate gamma
 d <- 2
 shape1 <- 5
@@ -48,6 +50,28 @@ N <- 1e5
 ## storing the results
 boundsDat <- NULL
 simRes <- NULL
+
+## parallelize outside of bigsimr
+cl <- makeCluster(CORES)
+clusterEvalQ(cl, library("bigsimr"))
+```
+
+```{r runSim}
+runSim <- function( r, N, margins, cores, simMethod, corType, invcdfnames = NULL) {
+    d <- length(margins)
+    print( paste0( 'Working on true rho of ', r ) )
+    rho <- matrix(r, nrow = d, ncol = d)
+    diag(rho) <- 1.0
+    if (simMethod == 'bigsimr') {
+        simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = corType, cores = cores) )
+    }
+    if (simMethod == 'nortaRA') {
+        simData <- nortaRA::gennortaRA(n = N, cor_matrix = rho, invcdfnames, margins)
+    } 
+    tmpSimData <- data.frame( shape1 = margins[[1]]$shape, shape2 = margins[[2]]$shape, trueRho = r, estRho = fastCor(simData, method = type)[ 1, 2], method = simMethod , type = corType)
+    return(tmpSimData)
+}
+## runSim( r = 0.5, N = 1e2, margins = margins, cores = 1, simMethod = 'bigsimr', corType = 'pearson')
 ```
 
 # Compute bounds under each type of dependency
@@ -74,7 +98,7 @@ boundsDat <- rbind( boundsDat, tmpBoundsDat )
 
 ## Kendall correlation bounds
 
-```{r, boundsKendall, eval=FALSE}
+```{r, boundsKendall, eval=TRUE}
 type <- 'kendall'
 ## Using GSC method of Demirtas2011
 (tmpBounds <- computeCorBounds( params = margins, cores = CORES, type = type, reps = N ))
@@ -89,66 +113,68 @@ boundsDat <- rbind( boundsDat, tmpBoundsDat )
 ### Pearson
 
 ```{r bigsimrPearson, eval = TRUE, results = 'hide'}
+simMethod <- 'bigsimr'
 type <- 'pearson'
+
 ## now show that our simulation methods works
 tmpLower <- boundsDat$lower[ boundsDat$type == type ]
 tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
-rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)  ## loose approximation for now
+## rVec <- c(-0.4, 0.1, 0.5)
+## rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)
+## loose on the boundary for now
+epsilon <- 1e-2
+rVec <- seq( tmpLower+epsilon, tmpUpper-epsilon, length.out = gridSteps ) 
 
-## loop for simplicity see if fast enough
-for (r in rVec) {
-    print( paste0( 'Working on true rho of ', r ) )
-    rho <- matrix(r, nrow = d, ncol = d)
-    diag(rho) <- 1.0
-    simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = type, cores = CORES, adjustForDiscrete = FALSE) )
-    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'bigsimr' , type = type)
-    simRes <- rbind( simRes, tmpSimData )
-}
+clusterExport(cl, varlist = c( 'simMethod', 'type') )
+tmpSimRes <- as.data.frame( do.call( "rbind", parSapply( cl = cl, rVec, FUN = runSim, N = N, margins = margins, cores = 1, simMethod = simMethod, corType = type, simplify = FALSE) ) )
+simRes <- rbind( simRes, tmpSimRes )
+
 ```
 
 ### Spearman
 
 ```{r bigsimrSpearman, eval = TRUE, results = 'hide'}
 type <- 'spearman'
+simMethod <- 'bigsimr'
+
 ## now show that our simulation methods works
 tmpLower <- boundsDat$lower[ boundsDat$type == type ]
 tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
-rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)  ## loose approximation for now
+## rVec <- c(-0.4, 0.1, 0.5)
+## rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)
+## loose on the boundary for now
+epsilon <- 1e-2
+rVec <- seq( tmpLower+epsilon, tmpUpper-epsilon, length.out = gridSteps ) 
 
-## loop for simplicity see if fast enough
-for (r in rVec) {
-    print( paste0( 'Working on true rho of ', r ) )
-    rho <- matrix(r, nrow = d, ncol = d)
-    diag(rho) <- 1.0
-    simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = type, cores = CORES, adjustForDiscrete = FALSE) )
-    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'bigsimr' , type = type)
-    simRes <- rbind( simRes, tmpSimData )
-}
+clusterExport(cl, varlist = c( 'simMethod', 'type') )
+tmpSimRes <- as.data.frame( do.call( "rbind", parSapply( cl = cl, rVec, FUN = runSim, N = N, margins = margins, cores = 1, simMethod = simMethod, corType = type, simplify = FALSE) ) )
+simRes <- rbind( simRes, tmpSimRes )
+
 ```
 
 ### Kendall
 
-```{r bigsimrKendall, eval = FALSE}
-type <- 'kendall'
+```{r bigsimrKendall, eval = TRUE}
+type <-'kendall'
+simMethod <- 'bigsimr'
+
 ## now show that our simulation methods works
 tmpLower <- boundsDat$lower[ boundsDat$type == type ]
 tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
-rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps ) 
+## rVec <- c(-0.4, 0.1, 0.5)
+## rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)
+## loose on the boundary for now
+epsilon <- 1e-2
+rVec <- seq( tmpLower+epsilon, tmpUpper-epsilon, length.out = gridSteps ) 
 
-## loop for simplicity see if fast enough
-for (r in rVec) {
-    print( paste0( 'Working on true rho of ', r ) )
-    rho <- matrix(r, nrow = d, ncol = d)
-    diag(rho) <- 1.0
-    simData  <- as.data.frame( rvec(n = N, rho = rho, params = margins, type = type, cores = CORES, adjustForDiscrete = FALSE) )
-    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'bigsimr' , type = type)
-    simRes <- rbind( simRes, tmpSimData )
-}
+clusterExport(cl, varlist = c( 'simMethod', 'type') )
+tmpSimRes <- as.data.frame( do.call( "rbind", parSapply( cl = cl, rVec, FUN = runSim, N = N, margins = margins, cores = 1, simMethod = simMethod, corType = type, simplify = FALSE) ) )
+simRes <- rbind( simRes, tmpSimRes )
 ```
 
-## `NORTARA` simulations
+## `nortaRA` simulations
 
-```{r nortaraSetup}
+```{r nortaRAsetup, eval = TRUE}
 ## slightly different input format than bigsimr
 invcdfnames <- c("qgamma","qgamma")
 paramslists <- list(
@@ -159,24 +185,26 @@ paramslists <- list(
 
 ### Pearson
 
-```{r nortaraPearson, eval = TRUE, warning=FALSE, results='hide'}
+```{r nortaRApearson, eval = TRUE, warning=FALSE, results='hide'}
 type <- 'pearson'
+simMethod <- 'nortaRA'
+
 ## now show that our simulation methods works
 tmpLower <- boundsDat$lower[ boundsDat$type == type ]
 tmpUpper <- boundsDat$upper[ boundsDat$type == type ]
-esp <- 1e-3
-rVec <- seq( tmpLower+esp, tmpUpper-esp, length.out = gridSteps ) 
+## rVec <- c(-0.4, 0.1, 0.5)
+## rVec <- seq( tmpLower, tmpUpper, length.out = gridSteps)
+## loose on the boundary for now
+epsilon <- 1e-2
+rVec <- seq( tmpLower+epsilon, tmpUpper-epsilon, length.out = gridSteps ) 
+
 ## drop N for this one
 tmpN <- 1e4
-## loop for simplicity see if fast enough
-for (r in rVec) {
-    print( paste0( 'Working on true rho of ', r ) )
-    rho <- matrix(r, nrow = d, ncol = d)
-    diag(rho) <- 1.0
-    simData  <- nortaRA::gennortaRA(n = tmpN, cor_matrix = rho, invcdfnames, paramslists)
-    tmpSimData <- data.frame( shape1 = shape1, shape2 = shape2, trueRho = r, estRho = cor(simData, method = type)[ 1, 2], method = 'nortara' , type = type)
-    simRes <- rbind( simRes, tmpSimData )
-}
+
+## runSim( r = 0.4, N = tmpN, margins = paramslists, cores = 1, simMethod = simMethod, corType = type, invcdfnames = invcdfnames)
+clusterExport(cl, varlist = c( 'simMethod', 'type') )
+tmpSimRes <- as.data.frame( do.call( "rbind", parSapply( cl = cl, rVec, FUN = runSim, N = N, margins = paramslists, cores = 1, simMethod = simMethod, corType = type, invcdfnames = invcdfnames, simplify = FALSE) ) )
+simRes <- rbind( simRes, tmpSimRes )
 ```
 
 # Check the performance around the bounds
@@ -188,8 +216,12 @@ for (r in rVec) {
 
 # Visualize the results
 
-```{r empVspecPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', out.width= '75%', fig.align='center', fig.ext='pdf', fig.cap = 'Plot of the specified (true) versus empirical (computed) correlations for bivariate lognormal data with $p_1 = p_2 = 0.2$ generated by the standard approach, bigsimr, and T-Poisson. Empirical correlations are the estimated correlations from the simulated samples.'}
+```{r empVspecPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', out.width= '75%', fig.align='center', fig.ext='pdf', fig.cap = 'Plot of the specified versus empirical correlations for standard bivariate gamma data with shape1 = shape2 = 5 generated by various approaches. Empirical correlations are the estimated correlations from the simulated samples.'}
 p0 <- ggplot(data = simRes, aes(x = trueRho, y = estRho, color = factor(method)) )
 p0 + geom_point() + facet_grid(. ~ type ) + geom_abline(slope = 1, intercept = 0 )
 ```
 
+```{r cleanUP, echo = FALSE}
+## When you're done, clean up the cluster
+## stopCluster(cl)
+```

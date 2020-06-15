@@ -39,23 +39,68 @@ In contrast the rank-based correlations, matching specified Pearson correlation 
 
 Putting the together the facts provided in the equations above, we come the following proposed simulation algorithm to produce a random vector ${\bf Y}$ with specified Spearman's correlation and marginal distributions. Note that all computational steps can be parallelized as each operation can be done or either the $d$ marginals or the $\binom{d}{2}$ pairs for the correlation values. Even the generation of multivariate normal random vectors is parallelized through optimized matrix multiplication/decomposition routines. 
 
-### Inputs
-(1) Marginal characteristics including the same of distributional family and parameter values, denotes as $F_i$ for marginal component random variable $Y_i$ for $i=1,\ldots,d$.
-(2) A target (specified) Spearman's correlation matrix ${\bf R_{Spearman}}$ with
-each $\rho_{Spearman}$ within the Frechet limits. Alternatively, the rescaled
-Spearman's correlation (see Equation \@ref(eq:convertKendallDiscrete) ) can be provided.
-(3) An error tolerance $\epsilon$ for finding the nearest positive definite matrix a transformed correlation matrix (see step iii below). Alternatively, a maximum number of iterations can be supplied.
+### Algorithm 1: Matching Pearson approximately
 
-### Algorithm
-(i) Compute Spearman's $\rho_{rs}$ (see Equation
-\@ref(eq:convertKendallDiscrete)) from the specified $\rho_{spearman}$ for each
-pair of marginal random variables $(Y_i,Y_{i^\prime})$ with $i \neq i^\prime$
-when either marginal is discrete. In such large scale computations, it may be
-that numerically $\rho_{rs}$ is be larger/smaller than the Frechet bounds (or
-even $\pm 1$). To guard against this, set $\rho_{rs} = min( \rho_{rs}, M)$,
-where $M$ is the upper Frechet bound (see [Section Introduction]) and similarly set $\rho_{rs} = max( \rho_{rs}, W)$, where $W$ is the lower Frechet bound for this pair of distributions. Gather these $\rho_{rs} \lq s$ into a new input correlation matrix ${\bf R_{rs}}$.  
-(ii) Convert ${\bf R_{Spearman}}$ into ${\bf R_{Pearson}}$ via $\rho_{Pearson} = 2 \times sin \left( \rho_{rs} \times \frac{\pi}{6} \right)$.   
-(iii) Finally, ensure that ${\bf R_{Pearson}}$ is positive definite, by finding the nearest positive definite correlation matrix ${\bf R}$ --- using the `R` routine `nearPD` in the `Matrix` package --- within an error tolerance of $\epsilon$.  
-(iv) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$;  
-(v) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
-(vi) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+We aim to simulate multivariate data with a Pearson correlation
+matrix ${\bf R}$.
+
+(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$;  
+(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+(iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+* Where $F_i^{-1}$ is the inverse CDF for the $i^{th}$ gene's marginal
+distribution.  
+* And ${\bf R}$ is the target Pearson correlation matrix.  
+* Pearson's correlation is **not** invariant under the montonically increasing
+  transformations in steps 3, 4.  
+* So the resulting simulated random vectors will have the **exact** margins but **approximate** ${\bf R}$.  
+
+### Algorithm 2: Matching Spearman's exactly
+
+(i) Convert ${\bf R}_{Spearman}$ into ${\bf R}_{Pearson}$ via $\rho_{Pearson} =
+  2 \times sin \left( \rho_{Spearman} \times \frac{\pi}{6} \right)$;  
+(ii) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf} R_{Pearson})$;  
+(iii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+(iv) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+- Spearman's $\rho$ relates to the difference in the ranks of pairs of values.
+- We take advantage of a closed form correspondence between Pearson and Spearman
+  for *normal random variables* in step 1 [@BF17].
+- Since Spearman's $\rho$ is invariant under the monotonically increasing
+  transformations in steps 3 and 4, the resulting simulated random vectors will
+  have the **exact** margins and **exact** Spearman correlation (up to Monte Carlo/numeric error).
+
+### Algorithm 3: Matching Kendall's exactly
+
+(i) Convert ${\bf R}_{Kendall}$ into ${\bf R}_{Pearson}$ via $\rho_{Pearson} = sin \left( \tau \times \frac{\pi}{2} \right)$;  
+(ii) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R}_{Pearson})$;  
+(iii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+(iv) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+- Kendall's $\tau$ is the difference in the probabilities of concordant and discordant pairs.
+- We use the 1-1 relationship between Pearson and Kendall's $\tau$ for *normal
+  rvs* in step 1.
+- Since Kendall's $\rho$ is invariant under the montonically increasing
+  transformations in steps 3 and 4,  
+ the resulting simulated random vectors will have the **exact** margins and
+ **exact** Kendall's $\tau$  (up to Monte Carlo/numeric error).
+
+## Algorithm notes
+
+- Discrete margins pose some difficulties and matching *unadjusted* correlation
+  measures is not exact (empirically approximate).
+- Exact Pearson solutions are possible but require computing $d \choose 2$
+   double integrals $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)),
+   F_j^{-1}(\Phi(z_j))dy_idy_j$. We have yet to accelerate this process.
+- We GPU accelerate whenever possible during our proposed High-Performance NORTA
+  algorithm.
+- One thorny problem when dealing with high-dimensional correlation matrices is
+they can become non-positive definite through either during estimation or
+bivariate transformations.
+- When converting nonparametric correlations to Pearson (first step above) the
+  resultant correlation may not be positive definite (PD).
+- In that case, we replace ${\bf R}_{Pearson}$ with a "close" PD matrix ${\bf \tilde{R}}_{Pearson}$.
+- In practice, this loss in accuracy typically has little impact on performance,
+  but the algorithm needs acceleration (`Matrix::nearPD()` violates property S1).
+
+test workflow again

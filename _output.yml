@@ -1,36 +1,26 @@
 bookdown::gitbook:
   config:
     toc:
-      toc_depth: 2
-      collapse: section
+      collapse: subsection
       scroll_highlight: yes
       before: null
       after: null
     toolbar:
       position: fixed
     edit : null
-    download: [pdf]
+    download: null
     search: yes
     fontsettings:
       theme: white
       family: sans
       size: 2
     sharing:
-      facebook: no
+      facebook: yes
       github: no
-      twitter: no
+      twitter: yes
       linkedin: no
       weibo: no
       instapaper: no
       vk: no
       all: ['facebook', 'twitter', 'linkedin', 'weibo', 'instapaper']
     info: yes
-bookdown::pdf_book:
-  includes:
-    in_header: latex/preamble.tex
-  keep_tex: yes
-  toc_depth: 3
-  toc_unnumbered: no
-  toc_appendix: yes
-  quote_footer: ["\\VA{", "}{}"]
-  citation_package: natbib

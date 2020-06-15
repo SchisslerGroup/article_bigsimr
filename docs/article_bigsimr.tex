@@ -41,6 +41,7 @@
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 \urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -90,7 +91,7 @@
 % Allow footnotes in longtable head/foot
 \IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
 \makesavenoteenv{longtable}
-\usepackage{graphicx,grffile}
+\usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
 \def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
@@ -120,7 +121,7 @@
 
 \title{Simulating Ultra High-Dimensional Multivariate Data Using the bigsimr R Package}
 \author{A.G. Schissler \and A. Knudson}
-\date{Thursday, June 04, 2020}
+\date{Monday, June 15, 2020}
 
 \begin{document}
 \maketitle
@@ -377,17 +378,107 @@ On my machine, there is no dedicated GPU, so I would see the following warning m
 Taking a look at our random vector, we see that it is 10 rows and 3 columns, one column for each marginal.
 
 \begin{verbatim}
-       [,1]     [,2] [,3]
- [1,] 3.046 0.003646    2
- [2,] 3.180 0.091149    5
- [3,] 3.070 0.014344    2
- [4,] 3.157 0.164819    2
- [5,] 3.222 0.529193    5
- [6,] 3.118 0.341439    5
- [7,] 3.056 0.028928    2
- [8,] 3.187 0.119534    4
- [9,] 3.118 0.413526    3
-[10,] 3.225 0.431735    3
+        [,1]     [,2] [,3]
+  [1,] 3.044 0.095446    3
+  [2,] 3.266 0.149347    4
+  [3,] 3.210 0.368758    7
+  [4,] 3.096 0.273881    1
+  [5,] 3.262 0.167132    8
+  [6,] 3.186 0.297752    4
+  [7,] 3.244 0.378209    2
+  [8,] 3.092 0.061396    2
+  [9,] 3.153 0.388307    5
+ [10,] 3.191 0.017892    2
+ [11,] 3.021 0.143984    1
+ [12,] 2.977 0.306241    2
+ [13,] 3.327 0.311243    6
+ [14,] 3.087 0.166009    3
+ [15,] 3.146 0.462549    2
+ [16,] 3.130 0.045254    3
+ [17,] 3.215 0.341481    3
+ [18,] 3.153 0.481414    9
+ [19,] 3.311 0.536290    6
+ [20,] 3.054 0.183528    4
+ [21,] 3.017 0.011316    1
+ [22,] 3.195 0.293363    1
+ [23,] 3.017 0.077518    1
+ [24,] 3.024 0.041316    1
+ [25,] 3.272 0.330607    6
+ [26,] 3.218 0.206071    5
+ [27,] 2.984 0.001637    2
+ [28,] 3.156 0.114774    3
+ [29,] 3.269 0.089939    3
+ [30,] 3.103 0.177539    3
+ [31,] 3.147 0.138347    6
+ [32,] 3.157 0.093564    4
+ [33,] 3.318 0.356667    2
+ [34,] 3.111 0.231386    4
+ [35,] 3.174 0.659264    2
+ [36,] 3.218 0.293820    4
+ [37,] 3.264 0.240420    6
+ [38,] 3.072 0.255088    3
+ [39,] 3.131 0.168695    0
+ [40,] 3.280 0.491158    6
+ [41,] 3.189 0.238835    5
+ [42,] 3.017 0.011214    1
+ [43,] 3.145 0.022872    1
+ [44,] 3.111 0.144358    1
+ [45,] 3.236 0.085572    3
+ [46,] 3.221 0.309900    7
+ [47,] 2.955 0.014524    3
+ [48,] 3.069 0.011569    2
+ [49,] 2.970 0.075424    2
+ [50,] 3.265 0.233258    5
+ [51,] 3.125 0.223936    2
+ [52,] 3.118 0.100138    3
+ [53,] 3.042 0.113373    2
+ [54,] 2.993 0.335292    3
+ [55,] 3.073 0.020944    1
+ [56,] 3.178 0.256723    4
+ [57,] 3.242 0.679650    7
+ [58,] 3.204 0.228560    5
+ [59,] 3.325 0.254273    9
+ [60,] 2.918 0.109870    2
+ [61,] 3.106 0.134519    5
+ [62,] 3.035 0.022232    1
+ [63,] 3.238 0.029679    3
+ [64,] 3.163 0.159671    3
+ [65,] 3.250 0.265043    5
+ [66,] 3.139 0.109471    6
+ [67,] 2.952 0.069780    3
+ [68,] 3.092 0.103947    6
+ [69,] 3.163 0.196133    6
+ [70,] 2.993 0.079026    1
+ [71,] 2.990 0.043229    2
+ [72,] 3.057 0.018904    2
+ [73,] 2.985 0.009260    1
+ [74,] 3.224 0.778705    6
+ [75,] 3.231 0.238377    4
+ [76,] 3.083 0.014756    2
+ [77,] 3.175 0.262330    1
+ [78,] 3.141 0.106700    3
+ [79,] 3.047 0.007255    2
+ [80,] 3.182 0.334552    2
+ [81,] 3.184 0.303953    5
+ [82,] 3.033 0.182557    2
+ [83,] 3.114 0.227299    4
+ [84,] 3.066 0.057184    5
+ [85,] 3.077 0.069102    4
+ [86,] 2.866 0.004398    1
+ [87,] 2.920 0.100838    2
+ [88,] 3.219 0.175613    6
+ [89,] 3.080 0.094636    1
+ [90,] 3.145 0.076677    4
+ [91,] 3.176 0.243460    4
+ [92,] 3.005 0.230508    2
+ [93,] 3.056 0.315420    5
+ [94,] 3.162 0.524840    5
+ [95,] 3.332 0.685218    7
+ [96,] 3.120 0.209939    0
+ [97,] 3.184 0.174008    2
+ [98,] 3.037 0.037463    2
+ [99,] 3.064 0.013679    1
+[100,] 3.098 0.101754    3
 \end{verbatim}
 
 We can simulate many more samples and then check the histogram of each margin, as well as the estimated correlation between the columns.
@@ -402,12 +493,12 @@ We can simulate many more samples and then check the histogram of each margin, a
 
 \begin{verbatim}
        [,1]   [,2]   [,3]
-[1,] 1.0000 0.4886 0.4945
-[2,] 0.4886 1.0000 0.4882
-[3,] 0.4945 0.4882 1.0000
+[1,] 1.0000 0.4989 0.4963
+[2,] 0.4989 1.0000 0.4929
+[3,] 0.4963 0.4929 1.0000
 \end{verbatim}
 
-We can see that even with 10,000 samples, the estimated correlation of the simulated data is not exactly the same as the target correlation. This can be explained by the fact that some correlations are simply not possible due to the discrete nature of certain distributions. Another possibility is that the copula algorithm is biased and needs correction.
+We can see that even with 100,000 samples, the estimated correlation of the simulated data is not exactly the same as the target correlation. This can be explained by the fact that some correlations are simply not possible due to the discrete nature of certain distributions. Another possibility is that the copula algorithm is biased and needs correction.
 
 \hypertarget{monte-carlo-evaluation-and-comparsions-to-other-software}{%
 \section{Monte Carlo evaluation and Comparsions to other software}\label{monte-carlo-evaluation-and-comparsions-to-other-software}}
@@ -454,7 +545,7 @@ Compare speed and accuracy.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{## computation times normal}
+\CommentTok{\#\# computation times normal}
 \end{Highlighting}
 \end{Shaded}
 
@@ -507,11 +598,56 @@ Intergene correlation \citep{Schissler2019}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{## full workflow simulating RNA-seq data}
+\CommentTok{\#\# full workflow simulating RNA{-}seq data}
+\NormalTok{allDat \textless{}{-}}\StringTok{ }\KeywordTok{readRDS}\NormalTok{( }\DataTypeTok{file =} \StringTok{"\textasciitilde{}/Downloads/complete\_processed\_tcga2stat\_RNASeq2\_with\_clinical.rds"}\NormalTok{ )}
+\NormalTok{lastClinical \textless{}{-}}\StringTok{ }\KeywordTok{which}\NormalTok{( }\KeywordTok{names}\NormalTok{(allDat) }\OperatorTok{==}\StringTok{ \textquotesingle{}tumorsize\textquotesingle{}}\NormalTok{ )}
+\NormalTok{brca \textless{}{-}}\StringTok{ }\NormalTok{allDat[ allDat}\OperatorTok{$}\NormalTok{disease }\OperatorTok{==}\StringTok{ "BRCA"}\NormalTok{, (lastClinical}\OperatorTok{+}\DecValTok{1}\NormalTok{)}\OperatorTok{:}\KeywordTok{ncol}\NormalTok{(allDat) ]}
+\CommentTok{\#\# remove naively the RSEM adjustment}
+\NormalTok{brca \textless{}{-}}\StringTok{ }\KeywordTok{round}\NormalTok{(brca, }\DecValTok{0}\NormalTok{)}
+\KeywordTok{ncol}\NormalTok{(brca) }\CommentTok{\#\# num of genes 20501}
+\NormalTok{[}\DecValTok{1}\NormalTok{] }\DecValTok{20501}
+\CommentTok{\#\# compute the median expression! avoid the 0s}
+\NormalTok{brcaMedian \textless{}{-}}\StringTok{ }\KeywordTok{apply}\NormalTok{(brca, }\DecValTok{2}\NormalTok{, median)}
+\CommentTok{\#\# retain top (1{-}probs)*100\% highest expressing genes for illustration}
+\NormalTok{myProb \textless{}{-}}\StringTok{ }\FloatTok{0.95} 
+\NormalTok{cutPoint \textless{}{-}}\StringTok{ }\KeywordTok{quantile}\NormalTok{( }\DataTypeTok{x =}\NormalTok{ brcaMedian, }\DataTypeTok{probs =}\NormalTok{ myProb )}
+\CommentTok{\#\# genesToKeep \textless{}{-} names( brcaMedian ) [ which(brcaMedian \textgreater{}= cutPoint) ]}
+\NormalTok{genesToKeep \textless{}{-}}\StringTok{ }\KeywordTok{names}\NormalTok{( brcaMedian ) [ }\KeywordTok{which}\NormalTok{(brcaMedian }\OperatorTok{\textgreater{}=}\StringTok{ }\NormalTok{cutPoint) ]}
+\NormalTok{brca \textless{}{-}}\StringTok{ }\NormalTok{brca[ , genesToKeep ]}
+\CommentTok{\#\# ncol(brca) / 20501}
+\NormalTok{(d \textless{}{-}}\StringTok{ }\KeywordTok{length}\NormalTok{(genesToKeep))}
+\NormalTok{[}\DecValTok{1}\NormalTok{] }\DecValTok{1026}
 \end{Highlighting}
 \end{Shaded}
 
 The data are overdispersed:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\NormalTok{logVarOverMean \textless{}{-}}\StringTok{ }\ControlFlowTok{function}\NormalTok{( x ) \{}
+    \KeywordTok{log}\NormalTok{ ( }\KeywordTok{var}\NormalTok{(x) }\OperatorTok{/}\StringTok{ }\KeywordTok{mean}\NormalTok{ (x) )}
+\NormalTok{\}}
+\CommentTok{\#\# check whether NB makes sense}
+
+\NormalTok{summaryBRCA \textless{}{-}}\StringTok{ }\NormalTok{brca }\OperatorTok{\%\textgreater{}\%}\StringTok{ }
+\StringTok{    }\KeywordTok{summarize\_all}\NormalTok{(  }\KeywordTok{list}\NormalTok{(}\OperatorTok{\textasciitilde{}}\StringTok{ }\KeywordTok{logVarOverMean}\NormalTok{( . ) ) )}
+\NormalTok{summaryBRCA \textless{}{-}}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{( }\KeywordTok{t}\NormalTok{(}\KeywordTok{as.data.frame}\NormalTok{( summaryBRCA )) )}
+\KeywordTok{names}\NormalTok{(summaryBRCA) \textless{}{-}}\StringTok{ "logVarOverMean"}
+\CommentTok{\#\# sum(summaryBRCA$logVarOverMean \textless{} 0)  \#\# no underdispersed genes}
+\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ summaryBRCA, }\DataTypeTok{mapping =} \KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ logVarOverMean)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom\_histogram}\NormalTok{(}\DataTypeTok{color =} \StringTok{"white"}\NormalTok{, }\DataTypeTok{bins =} \DecValTok{20}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+{\centering \includegraphics[width=0.75\linewidth]{article_bigsimr_files/figure-latex/figNBratio-1} 
+
+}
+
+\caption{The genes display extreme overdispersion. Using group-specific sample means and variances for each of the d=`r d` genes, we display the distributions oflog of variance to mean ratio.}\label{fig:figNBratio}
+\end{figure}
 
 We see that the all genes studies display overdispersion (variance greater than mean) compared to a Poisson model for the gene counts. The genes are highly heterogeneous even when dealing with highly expressed genes after filtering. The facts taken together motivate the negative binomial model for the marginal distributions. The genes are slightly more variable within the deceased group (expected with smaller sample size and potentially due to biomedical considerations).
 
@@ -531,20 +667,86 @@ Model genes as marginally negative binomial with heterogeneous gene-wise paramet
 
 We rescaled the target Spearman correlation to account for the probability of ties via Equation \eqref{eq:convertSpearmanDiscrete}. The serial computation took approximately 10 minutes on XXX. Notably, the difference between target and adjusted matrices was very small (mean relative difference: 0.708) in this particular configuration of negative binomial parameters. For problems with smaller counts and higher probabilities of ties, the adjustment can be substantial (as observed in the simulation studies above in Section BLAH).
 
-\begin{itemize}
-\tightlist
-\item
-  Kendall's \(\tau\) was estimated efficiently using the \texttt{pcaPP::cor.fk} function in \texttt{R}.
-\end{itemize}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#\# full workflow simulating RNA{-}seq data}
 
-\hypertarget{ultra-high-dimensional-simulation-based-correlation-hypothesis-testing}{%
-\subsection{Ultra High-Dimensional simulation-based correlation hypothesis testing}\label{ultra-high-dimensional-simulation-based-correlation-hypothesis-testing}}
+\CommentTok{\#\# 1. Estimate Spearman\textquotesingle{}s correlation on the count data}
+\NormalTok{corType \textless{}{-}}\StringTok{ \textquotesingle{}spearman\textquotesingle{}}
+\KeywordTok{system.time}\NormalTok{( rho \textless{}{-}}\StringTok{ }\NormalTok{bigsimr}\OperatorTok{::}\KeywordTok{fastCor}\NormalTok{( brca, }\DataTypeTok{method =}\NormalTok{ corType ) )}
+\NormalTok{   user  system elapsed }
+  \FloatTok{0.654}   \FloatTok{0.013}   \FloatTok{0.673} 
+\CommentTok{\#\# Describe the correlations}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{## full workflow simulating RNA-seq data}
+\CommentTok{\#\# 2. Estimate NegBin parameters using Method of Moments}
+\NormalTok{estimateNegBinMoM \textless{}{-}}\StringTok{ }\ControlFlowTok{function}\NormalTok{(tmpGene, }\DataTypeTok{minP =} \FloatTok{1e{-}5}\NormalTok{) \{}
+\NormalTok{    tmpMean \textless{}{-}}\StringTok{ }\KeywordTok{mean}\NormalTok{(tmpGene)}
+\NormalTok{    tmpVar \textless{}{-}}\StringTok{ }\KeywordTok{var}\NormalTok{(tmpGene)}
+    \CommentTok{\#\# relate to nbinom parameters}
+    \CommentTok{\#\# See ?rbinom for details.}
+\NormalTok{    p \textless{}{-}}\StringTok{ }\NormalTok{tmpMean }\OperatorTok{/}\StringTok{ }\NormalTok{tmpVar}
+    \ControlFlowTok{if}\NormalTok{ (p }\OperatorTok{\textless{}}\StringTok{ }\NormalTok{minP) \{p \textless{}{-}}\StringTok{ }\NormalTok{minP \} }\CommentTok{\#\# maybe add noise here}
+\NormalTok{    n \textless{}{-}}\StringTok{ }\NormalTok{( tmpMean }\OperatorTok{*}\StringTok{ }\NormalTok{p) }\OperatorTok{/}\StringTok{ }\NormalTok{( }\DecValTok{1}  \OperatorTok{{-}}\StringTok{ }\NormalTok{p )  }
+    \CommentTok{\#\# format for bigsimr margins}
+    \KeywordTok{return}\NormalTok{( }\KeywordTok{list}\NormalTok{(}\StringTok{"nbinom"}\NormalTok{, }\DataTypeTok{size =}\NormalTok{ n, }\DataTypeTok{prob =}\NormalTok{ p) )}
+\NormalTok{\}}
+\NormalTok{brcaMargins \textless{}{-}}\StringTok{ }\KeywordTok{apply}\NormalTok{( }\KeywordTok{unname}\NormalTok{(}\KeywordTok{as.matrix}\NormalTok{(brca)), }\DecValTok{2}\NormalTok{, estimateNegBinMoM )}
+\CommentTok{\#\# describe the margins}
+\CommentTok{\#\# check for too small prob}
+\CommentTok{\#\# head( sort( unlist( lapply( brcaMargins, function(x) \{x$prob\} ) ) ) )}
+\CommentTok{\#\# head( sort( unlist( lapply( brcaMargins, function(x) \{x$size\} ) ) ) )}
 \end{Highlighting}
 \end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#\# 3. Generate the simulated samples}
+\CommentTok{\#\# N \textless{}{-} 10}
+\CommentTok{\#\# system.time( simBRCA \textless{}{-} rvec(N, rho = rho[1:2, 1:2], params = brcaMargins[1:2], type = corType, adjustForDiscrete = FALSE) )}
+\NormalTok{N \textless{}{-}}\StringTok{ }\KeywordTok{nrow}\NormalTok{(brca)}
+\KeywordTok{system.time}\NormalTok{( simBRCA \textless{}{-}}\StringTok{ }\KeywordTok{rvec}\NormalTok{(N, }\DataTypeTok{rho =}\NormalTok{ rho, }\DataTypeTok{params =}\NormalTok{ brcaMargins, }\DataTypeTok{cores =}\NormalTok{ CORES, }\DataTypeTok{type =}\NormalTok{ corType, }\DataTypeTok{adjustForDiscrete =} \OtherTok{FALSE}\NormalTok{) )}
+\NormalTok{simBRCA[}\DecValTok{1}\OperatorTok{:}\DecValTok{2}\NormalTok{, }\DecValTok{1}\OperatorTok{:}\DecValTok{2}\NormalTok{ ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\#\# Describe and plot real data}
+\NormalTok{GGally}\OperatorTok{::}\KeywordTok{ggpairs}\NormalTok{(}\DataTypeTok{data =} \KeywordTok{as.data.frame}\NormalTok{(brca[ ,}\DecValTok{1}\OperatorTok{:}\DecValTok{3}\NormalTok{] ) )}
+
+\CommentTok{\#\# Describe and plot simulations}
+\NormalTok{GGally}\OperatorTok{::}\KeywordTok{ggpairs}\NormalTok{(}\DataTypeTok{data =} \KeywordTok{as.data.frame}\NormalTok{(simBRCA[ ,}\DecValTok{1}\OperatorTok{:}\DecValTok{3}\NormalTok{] ) )}
+
+\CommentTok{\#\# check 1st moments}
+\NormalTok{trueMu \textless{}{-}}\StringTok{ }\KeywordTok{colMeans}\NormalTok{(brca)}
+\NormalTok{simMu \textless{}{-}}\StringTok{ }\KeywordTok{colMeans}\NormalTok{(simBRCA)}
+\KeywordTok{qplot}\NormalTok{( }\DataTypeTok{x =}\NormalTok{ trueMu, }\DataTypeTok{y =}\NormalTok{ simMu ) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom\_abline}\NormalTok{(}\DataTypeTok{slope =} \DecValTok{1}\NormalTok{, }\DataTypeTok{intercept =} \DecValTok{0}\NormalTok{)}
+
+\CommentTok{\#\# check 2nd moment}
+\NormalTok{trueVar \textless{}{-}}\StringTok{ }\KeywordTok{apply}\NormalTok{( brca, }\DecValTok{2}\NormalTok{, var)}
+\NormalTok{simVar \textless{}{-}}\StringTok{ }\KeywordTok{apply}\NormalTok{( simBRCA, }\DecValTok{2}\NormalTok{, var)}
+\KeywordTok{qplot}\NormalTok{( }\DataTypeTok{x =}\NormalTok{ trueVar, }\DataTypeTok{y =}\NormalTok{ simVar ) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom\_abline}\NormalTok{(}\DataTypeTok{slope =} \DecValTok{1}\NormalTok{, }\DataTypeTok{intercept =} \DecValTok{0}\NormalTok{)}
+
+\CommentTok{\#\# check correlation}
+\KeywordTok{system.time}\NormalTok{( simRho \textless{}{-}}\StringTok{ }\NormalTok{bigsimr}\OperatorTok{::}\KeywordTok{fastCor}\NormalTok{( simBRCA, }\DataTypeTok{method =}\NormalTok{ corType ) )}
+\NormalTok{rho[}\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{, }\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{]}
+\NormalTok{simRho[}\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{, }\DecValTok{1}\OperatorTok{:}\DecValTok{5}\NormalTok{]}
+\NormalTok{trueRho \textless{}{-}}\StringTok{ }\NormalTok{rho[}\KeywordTok{lower.tri}\NormalTok{(rho)]}
+\NormalTok{simRho \textless{}{-}}\StringTok{ }\NormalTok{simRho[}\KeywordTok{lower.tri}\NormalTok{(simRho)]}
+\KeywordTok{qplot}\NormalTok{( }\DataTypeTok{x =}\NormalTok{ trueRho, }\DataTypeTok{y =}\NormalTok{ simRho ) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom\_abline}\NormalTok{(}\DataTypeTok{slope =} \DecValTok{1}\NormalTok{, }\DataTypeTok{intercept =} \DecValTok{0}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ultra-high-dimensional-simulation-based-correlation-hypothesis-testing-under}{%
+\subsection{Ultra High-Dimensional simulation-based correlation hypothesis testing under}\label{ultra-high-dimensional-simulation-based-correlation-hypothesis-testing-under}}
+
+Since many of the correlations are near zero, one could ask whether it is
+possible that
 
 \hypertarget{simulation-based-computation-of-correlation-bounds}{%
 \subsection{Simulation-based computation of correlation bounds}\label{simulation-based-computation-of-correlation-bounds}}
@@ -554,14 +756,14 @@ Using the Generate, sort, and correlate algorithm \citet{Demirtas2011}
 \begin{Shaded}
 \begin{Highlighting}[]
 
-\CommentTok{## simulation based}
-\CommentTok{## devtools::install_github("adknudson/bigsimr", ref="develop")}
+\CommentTok{\#\# simulation based}
+\CommentTok{\#\# devtools::install\_github("adknudson/bigsimr", ref="develop")}
 \KeywordTok{library}\NormalTok{(bigsimr)}
-\CommentTok{## ?rvec}
+\CommentTok{\#\# ?rvec}
 
-\NormalTok{d <-}\StringTok{ }\DecValTok{5}
-\NormalTok{rho <-}\StringTok{ }\KeywordTok{rcor}\NormalTok{(d)}
-\NormalTok{margins <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}
+\NormalTok{d \textless{}{-}}\StringTok{ }\DecValTok{5}
+\NormalTok{rho \textless{}{-}}\StringTok{ }\KeywordTok{rcor}\NormalTok{(d)}
+\NormalTok{margins \textless{}{-}}\StringTok{ }\KeywordTok{list}\NormalTok{(}
     \KeywordTok{list}\NormalTok{(}\StringTok{"nbinom"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{5}\NormalTok{, }\DataTypeTok{prob =} \FloatTok{0.3}\NormalTok{),}
     \KeywordTok{list}\NormalTok{(}\StringTok{"exp"}\NormalTok{, }\DataTypeTok{rate =} \DecValTok{4}\NormalTok{),}
     \KeywordTok{list}\NormalTok{(}\StringTok{"binom"}\NormalTok{, }\DataTypeTok{size =} \DecValTok{5}\NormalTok{, }\DataTypeTok{prob =} \FloatTok{0.7}\NormalTok{),}
@@ -571,14 +773,14 @@ Using the Generate, sort, and correlate algorithm \citet{Demirtas2011}
  
 \NormalTok{params =}\StringTok{ }\NormalTok{margins}
 \NormalTok{rho =}\StringTok{ }\NormalTok{rho}
-\CommentTok{## cores = parallel::detectCores() - 1}
+\CommentTok{\#\# cores = parallel::detectCores() {-} 1}
 \NormalTok{cores =}\StringTok{ }\DecValTok{2}
 \NormalTok{reps =}\StringTok{ }\FloatTok{1e3}
 \NormalTok{type =}\StringTok{ "spearman"}
 
-\CommentTok{## help(package="bigsimr")}
-\NormalTok{rho_bounds <-}\StringTok{ }\KeywordTok{computeCorBounds}\NormalTok{(}\DataTypeTok{params =}\NormalTok{ margins, }\DataTypeTok{cores =}\NormalTok{ cores, }\DataTypeTok{type =}\NormalTok{ type, }\DataTypeTok{reps =}\NormalTok{ reps)}
-\NormalTok{rho_bounds}
+\CommentTok{\#\# help(package="bigsimr")}
+\NormalTok{rho\_bounds \textless{}{-}}\StringTok{ }\KeywordTok{computeCorBounds}\NormalTok{(}\DataTypeTok{params =}\NormalTok{ margins, }\DataTypeTok{cores =}\NormalTok{ cores, }\DataTypeTok{type =}\NormalTok{ type, }\DataTypeTok{reps =}\NormalTok{ reps)}
+\NormalTok{rho\_bounds}
 \end{Highlighting}
 \end{Shaded}
 
@@ -587,7 +789,7 @@ Using the Generate, sort, and correlate algorithm \citet{Demirtas2011}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{## full workflow simulating RNA-seq data}
+\CommentTok{\#\# full workflow simulating RNA{-}seq data}
 \end{Highlighting}
 \end{Shaded}
 
@@ -607,6 +809,8 @@ Using the Generate, sort, and correlate algorithm \citet{Demirtas2011}
 We've introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a high-performance implementation called \texttt{bigsimr} (github url). The parallelized (multi-core) algorithm is simple and easy to understand as an application of Gaussian copulas. This method is largely inspired by \citet{MB13}, but with contributions with regard to scalability, implementation, and application in high-throughput biomedical data (RNA-sequencing). We advocate the use of Kendall's \(\tau\) as it better captures correlation among components of non-normal, as well as non-linear patterns of association. Moreover, the matching Kendall's \(\tau\) is nearly trivial due to the invariant of monotone transformations, after an adjustment to the input correlation matrix. Interestingly, our simulation studies show the use of Kendall's \(\tau\) to works as well as using Pearson correlation coefficient when simulating from multivariate normal distributions.
 
 We also show utility in our methodology through an application to differential gene expression analysis from RNA-sequencing data. The application results show that correlations indeed matter in the large-scale hypothesis testing, as many others have noted (for example, see \citet{BE07}, \citet{Wu2012b}). We also hope that the application provides an example workflow --- and other strategy to use in simulation design. Even the best-performing simulations we provide show a gap from the empirical distribution. To keep the demonstration straightforward, we did not attempt to match the empirical distribution of test statistics as precisely as possible. Yet our methodology could be more creatively applied to meet that goal. One could consider marginal distributions from different families, such as Poisson for a subset of genes. One could imagine finding a best fitting probability distribution among a class of distributions for each gene and this could perhaps a better fit. One could imagine additional structures/features in the data that an analyst could model to improve the correspondence with the empirical values, for example row correlations and high-dimensional covariance estimators (see \citet{Won2013g}).
+
+Mention \texttt{rslurm}
 
 There are of course limitations to the methodology and implementation. The algorithm requires invertible marginal cdfs. This leaves some restriction to the available marginal probability distributions (DOES IT? FOR EXAMPLE?) An additional source of error is after converting dependencies (step i; \({\bf R_{Kendall}})\)) the resultant matrix may not be positive definite (PD). Then the nearest PD matrix is used. From a practical computing standpoint, the user's computing resource provides the ultimate limit on how large a dimension can be simulated using the \texttt{bigsimr} R package. A user must consider carefully the available memory and cores when conducting a Monte Carlo experiment. The algorithm does amends itself well to parallelization and graphical processing unit acceleration \citep{Li2019gpu} and advanced users may take advantage of those techniques.
 

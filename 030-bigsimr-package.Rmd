@@ -13,11 +13,7 @@ library(bigsimr)
 reticulate::use_condaenv("bigsimr-cpu")
 ```
 
-## Basic use
-
-short description
-
-### Specifying marginals
+## Specifying marginals
 
 As stated earlier, to generate multivariate data, we need a list of marginals (and their parameters), and a correlation structure (matrix). The marginal distributions can be built up as a list of lists, where each sublist contains the information for the target distribution.
 
@@ -31,7 +27,7 @@ margins = alist(
 
 The things to point out here are that in each sublist (marginal), the first item is an unnamed character string with the R name of the distribution *without a letter prefix*. E.g. instead of `rnorm`, we pass in just `"norm"`. The second thing to note is that the remaining items are *named* arguments that go along with the distribution. A full list of built-in distributions is found in the appendix.
 
-### Specify correlation
+## Specify correlation
 
 The next step is to define a correlation structure for the multivariate distribution. This correlation matrix can either come from observed data, or we can set it ourselves, or we can generate a random correlation matrix via `bigsimr::rcor`. Let's create a simple correlation matrix where all off-diagonal elements are 0.5. Since we have 3 marginals, we need a $3\times 3$ matrix.
 
@@ -43,7 +39,7 @@ rho
 
 Finally we can generate a random vector with our specified marginals and correlation structure. The last argument, `type`, is looking to know what kind of correlation matrix it is receiving. Right now it can handle Pearson, Spearman, or Kendall.
 
-### Small sample
+## Small sample
 
 ```{r}
 x <- rvec(10, rho = rho, margins = margins, type = "spearman")
@@ -61,7 +57,7 @@ x
 
 We can simulate many more samples and then check the histogram of each margin, as well as the estimated correlation between the columns.
 
-### Scaling up N
+## Scaling up N
 
 ```{r, fig.width=7}
 x <- rvec(100000, rho = rho, margins = margins, type = "spearman")
@@ -72,7 +68,7 @@ hist(x[,2], breaks = 30, xlab = "", main = "Beta")
 hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
 ```
 
-### Evaluation
+## Evaluation
 
 ```{r}
 cor(x, method = 'spearman')

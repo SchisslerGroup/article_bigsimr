@@ -16,6 +16,7 @@ library(tidyverse)
 library(knitr)
 library(dplyr)
 ## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
+## bookdown::serve_book()
 set.seed(06082020)
 ```
 

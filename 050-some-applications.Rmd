@@ -154,11 +154,12 @@ qplot( x = trueRho, y = simRho ) + geom_abline(slope = 1, intercept = 0)
 ## Ultra High-Dimensional simulation-based correlation hypothesis testing under
 
 Since many of the correlations are near zero, one could ask whether it is
-possible that
+possible that test the hypothesis that $H_0: R = R_0$.
 
-```{r brcaSigmaTesting, echo=TRUE, eval=FALSE}
+```{r corrTest, echo=FALSE, eval=FALSE, include=FALSE}
 
 ```
+
 
 ## Simulation-based computation of correlation bounds
 

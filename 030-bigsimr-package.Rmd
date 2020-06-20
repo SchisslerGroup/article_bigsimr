@@ -9,6 +9,7 @@ run rapidly in serial computation except for extremely large dimension.
 
 ```{r setup, eval = TRUE}
 ## bookdown::preview_chapter('030-bigsimr-package.Rmd')
+## bookdown::render_book('index.html')
 library(bigsimr)
 ```
 
@@ -121,27 +122,11 @@ sjob <- slurm_call(rvec, jobname = 'rvec',
                         margins = margins,
                         type = "spearman"),
                    submit = TRUE)
-
-res <- readRDS(file.path('_rslurm_rvec', list.files('_rslurm_rvec', 'results')))
-head(res, 3)
-cleanup_files(sjob) ## careful this deletes output also
 ```
 
-```{r rvecRslurmApply, echo=TRUE, eval=TRUE}
-library(rslurm)
-## a single call of rvec
-## had to edit rslurm/templates/submit_single_sh.txt
-## source ~/.bashrc
-## conda activate bigsimr
-## conda env config vars list
-sjob <- slurm_call(rvec, jobname = 'rvec',
-                   list(n=1e6,
-                        rho = rho,
-                        margins = margins,
-                        type = "spearman"),
-                   submit = TRUE)
 
+```{r rvecRslurmRes, echo=TRUE, eval=TRUE}
 res <- readRDS(file.path('_rslurm_rvec', list.files('_rslurm_rvec', 'results')))
 head(res, 3)
-cleanup_files(sjob) ## careful this deletes output also
+## cleanup_files(sjob) ## careful this deletes output also
 ```

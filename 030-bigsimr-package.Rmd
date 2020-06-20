@@ -7,13 +7,16 @@ use a optimized and parallelized multivariate normal simulator within the `R`
 package `mvnfast`. The rest of the code is also parallelized, but these steps
 run rapidly in serial computation except for extremely large dimension.
 
+## Basic use
+
 ```{r setup, eval = TRUE}
-## bookdown::preview_chapter('030-bigsimr-package.Rmd')
+## setwd('~/Research/article_bigsimr/'); bookdown::preview_chapter('030-bigsimr-package.Rmd')
 ## bookdown::render_book('index.html')
 library(bigsimr)
+## reticulate::use_condaenv( 'bigsimr-cpu' )
 ```
 
-## Specifying marginals
+### Specifying marginals
 
 As stated earlier, to generate multivariate data, we need a list of marginals (and their parameters), and a correlation structure (matrix). The marginal distributions can be built up as a list of lists, where each sublist contains the information for the target distribution.
 
@@ -27,7 +30,7 @@ margins = alist(
 
 The things to point out here are that in each sublist (marginal), the first item is an unnamed character string with the R name of the distribution *without a letter prefix*. E.g. instead of `rnorm`, we pass in just `"norm"`. The second thing to note is that the remaining items are *named* arguments that go along with the distribution. A full list of built-in distributions is found in the appendix.
 
-## Specify correlation
+### Specify correlation
 
 The next step is to define a correlation structure for the multivariate distribution. This correlation matrix can either come from observed data, or we can set it ourselves, or we can generate a random correlation matrix via `bigsimr::rcor`. Let's create a simple correlation matrix where all off-diagonal elements are 0.5. Since we have 3 marginals, we need a $3\times 3$ matrix.
 
@@ -39,7 +42,7 @@ rho
 
 Finally we can generate a random vector with our specified marginals and correlation structure. The last argument, `type`, is looking to know what kind of correlation matrix it is receiving. Right now it can handle Pearson, Spearman, or Kendall.
 
-## Small sample
+### Generating a few random vectors
 
 ```{r}
 x <- rvec(10, rho = rho, margins = margins, type = "spearman")
@@ -57,7 +60,7 @@ x
 
 We can simulate many more samples and then check the histogram of each margin, as well as the estimated correlation between the columns.
 
-## Scaling up N
+### Scaling up N to 1,000,000
 
 ```{r, fig.width=7}
 x <- rvec(1e6, rho = rho, margins = margins, type = "spearman")
@@ -68,19 +71,37 @@ hist(x[,2], breaks = 30, xlab = "", main = "Beta")
 hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
 ```
 
-## Evaluation
+### Check the performance with fast correlation estimation
 
 ```{r}
-cor(x, method = 'spearman')
+bigsimr::fastCor(x, method = 'spearman')
 ```
 
 We can see that even with 100,000 samples, the estimated correlation of the simulated data is not exactly the same as the target correlation. This can be explained by the fact that some correlations are simply not possible due to the discrete nature of certain distributions. Another possibility is that the copula algorithm is biased and needs correction. 
 
+## Advanced use
 
-## Easy cluster implementation through `rslurm`
+### Using multicore
 
-Though `bigsimr` runs quickly, at large $d$ users may want to run jobs on a shared computing server. The R package `rslurm` makes it esay to run embarrasingly large parallel `rvec` calls. This example assumes that `bigsimr` is installed on a system
-with a slurm scheduler installed.
+Using multicore is easy simply specify the number of cores.
+
+### Simulation-based computation of correlation bounds
+
+Using the Generate, sort, and correlate algorithm @Demirtas2011  and TAS issue
+
+- use a large number of reps
+
+```{r, computeBounds, echo = TRUE, eval=FALSE}
+## Possibly bug? or configuration
+## Error: segfault from C stack overflow on my Okapi bigsimr env 
+rho_bounds <- bigsimr::computeCorBounds(margins = margins, type = 'spearman', cores = 1, reps = 1e5)
+rho_bounds
+```
+
+### Using `bigsimr` on a computing cluster via `rslurm`
+
+Though `bigsimr` runs quickly, at large $d$ users may want to run jobs on a shared computing server. The R package `rslurm` makes it esay to run embarrasingly large parallel `rvec` calls. This example assumes that `bigsimr` is installed on a system with a slurm scheduler installed. 
+
 
 ```{r exampleRslurm, echo=FALSE, eval=FALSE, include=FALSE}
 ## run this code once and use the generated rds later.
@@ -129,4 +150,70 @@ sjob <- slurm_call(rvec, jobname = 'rvec',
 res <- readRDS(file.path('_rslurm_rvec', list.files('_rslurm_rvec', 'results')))
 head(res, 3)
 ## cleanup_files(sjob) ## careful this deletes output also
+```
+
+Now, let's show off the real power of combining `bigsimr` and `rslurm` by simulating many correlation structures for these three marginals. The `rslurm::slumr_map` syntax mirrors the familiar `base::lapply` and `purrr::map` functions. 
+
+```{r rvecRslurmMap, echo=TRUE, eval=FALSE}
+library(rslurm)
+## a single call of rvec
+## had to edit rslurm/templates/submit_sh.txt
+## source ~/.bashrc
+## conda activate bigsimr
+## conda env config vars list
+set.seed(06202020)
+simReps <- 100
+rhoList <- replicate( n = simReps, bigsimr::rcor(d = length(margins), constant_rho = TRUE), simplify=FALSE )
+sjob <- slurm_map(x = rhoList,
+                  f = rvec,
+                  jobname = 'rvecMap',
+                  n=1e6,
+                  margins = margins,
+                  type = "spearman",
+                  nodes = 4,
+                  cpus_per_node = 4,
+                  submit = TRUE)
+
+```
+
+On a cluster carrying 24 nodes with 48 threads, these 100 jobs completed in about a minute. Let's evaluate the quality of simulation performance.
+
+
+```{r rvecRslurmMapRes, echo=TRUE, eval=FALSE}
+list.files('_rslurm_rvecMap', 'results')
+res <- rslurm::get_slurm_out(sjob, outtype = 'raw')
+rhoHats <- lapply( res, bigsimr::fastCor, method = 'spearman' )
+
+resData <- NULL
+simreps <- length(rhoHats)
+for (i in 1:simreps){
+    tmpRhoHat <- rhoHats[[i]]
+    ## average together
+    margins
+    avgRhoHat <- tmpRhoHat[lower.tri(tmpRhoHat)]
+    tmpPair <- paste0( "pair", apply( combn(x = length(margins), 2), 2, paste, collapse = "_" ) )
+    tmpResData <- data.frame( simNum=i, rho=rhoList[[i]][1,2], rhoHat=tmpRhoHat[lower.tri(tmpRhoHat)], pair=tmpPair )
+    resData <- rbind(resData, tmpResData)
+}
+
+## "wrangle" into a tibble
+library(tidyverse)
+res <- as_tibble(resData)
+## save for viz
+saveRDS( res, file = 'data/rvecRslurmMapRes.rds' )
+
+## cleanup careful this deletes output also
+## cleanup_files(sjob) 
+```
+
+```{r rvecRslurmMapFig, echo = TRUE, eval=TRUE, message=FALSE, warning=FALSE, out.width= '75%', fig.align='center', fig.cap='The continous marginal pairs exact reproduce the specified correlation whereas the discrete pairs (green nad blue) show a downward bias. Future work with employ a discrete adjusted procedures using *rescaling* on the traditional correlation coefficient.'}
+library(tidyverse)
+
+res <- readRDS( 'data/rvecRslurmMapRes.rds' )
+res
+
+res %>%
+    ggplot( aes( x = rho, y = rhoHat, color = pair ) )  +
+    geom_point() +
+    geom_abline( slope = 1, intercept = 0 )
 ```

@@ -160,40 +160,6 @@ possible that test the hypothesis that $H_0: R = R_0$.
 
 ```
 
-
-## Simulation-based computation of correlation bounds
-
-Using the Generate, sort, and correlate algorithm @Demirtas2011 
-
-```{r, computeBounds, echo = TRUE, eval=FALSE}
-
-## simulation based
-## devtools::install_github("adknudson/bigsimr", ref="develop")
-library(bigsimr)
-## ?rvec
-
-d <- 5
-rho <- rcor(d)
-margins <- list(
-    list("nbinom", size = 5, prob = 0.3),
-    list("exp", rate = 4),
-    list("binom", size = 5, prob = 0.7),
-    list("norm", mean = 10, sd = 3),
-    list("pois", lambda = 10)
-)
- 
-params = margins
-rho = rho
-## cores = parallel::detectCores() - 1
-cores = 2
-reps = 1e3
-type = "spearman"
-
-## help(package="bigsimr")
-rho_bounds <- computeCorBounds(params = margins, cores = cores, type = type, reps = reps)
-rho_bounds
-```
-
 ## Simulation-based joint probability calculations
 
 ```{r densityEvaluation, echo=TRUE, eval=FALSE}

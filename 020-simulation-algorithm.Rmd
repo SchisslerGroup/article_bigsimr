@@ -87,12 +87,13 @@ distribution.
 
 ## Algorithm notes
 
+- discuss the consequences of the transformations to obtain the corresponding Pearson matrix and describe the quadratic algorithm implemented to address this (Alex).
 - Discrete margins pose some difficulties and matching *unadjusted* correlation
   measures is not exact (empirically approximate).
 - Exact Pearson solutions are possible but require computing $d \choose 2$
    double integrals $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)),
    F_j^{-1}(\Phi(z_j))dy_idy_j$. We have yet to accelerate this process.
-- We GPU accelerate whenever possible during our proposed High-Performance NORTA
+- We GPU accelerate certain steps (Alex which steps?) possible during our proposed High-Performance NORTA
   algorithm.
 - One thorny problem when dealing with high-dimensional correlation matrices is
 they can become non-positive definite through either during estimation or

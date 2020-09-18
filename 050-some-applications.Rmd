@@ -7,7 +7,7 @@ library(knitr)
 library(dplyr)
 ## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
 library(bigsimr)
-reticulate::use_condaenv("py37")
+reticulate::use_condaenv("bigsimr")
 CORES <- parallel::detectCores() - 1
 set.seed(06082020)
 ## devtools::install_github("ggobi/GGally")

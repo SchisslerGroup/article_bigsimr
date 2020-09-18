@@ -9,18 +9,19 @@ run rapidly in serial computation except for extremely large dimension.
 
 ## Basic use
 
-```{r setup, eval = TRUE}
+```{r setup3, eval = TRUE}
 ## setwd('~/Research/article_bigsimr/'); bookdown::preview_chapter('030-bigsimr-package.Rmd')
 ## bookdown::render_book('index.html')
 library(bigsimr)
-## reticulate::use_condaenv( 'bigsimr-cpu' )
+library(reticulate)
+reticulate::use_condaenv("bigsimr-cpu")
 ```
 
 ### Specifying marginals
 
 As stated earlier, to generate multivariate data, we need a list of marginals (and their parameters), and a correlation structure (matrix). The marginal distributions can be built up as a list of lists, where each sublist contains the information for the target distribution.
 
-```{r}
+```{r setMargins}
 margins = alist(
   qnorm(mean = 3.14, sd = 0.1),
   qbeta(shape1 = 1, shape2 = 4),
@@ -34,7 +35,7 @@ The things to point out here are that in each sublist (marginal), the first item
 
 The next step is to define a correlation structure for the multivariate distribution. This correlation matrix can either come from observed data, or we can set it ourselves, or we can generate a random correlation matrix via `bigsimr::rcor`. Let's create a simple correlation matrix where all off-diagonal elements are 0.5. Since we have 3 marginals, we need a $3\times 3$ matrix.
 
-```{r}
+```{r setCor}
 rho <- matrix(0.5, nrow = 3, ncol = 3)
 diag(rho) <- 1.0
 rho
@@ -44,17 +45,17 @@ Finally we can generate a random vector with our specified marginals and correla
 
 ### Generating a few random vectors
 
-```{r}
-x <- rvec(10, rho = rho, margins = margins, type = "spearman")
+```{r rvec10}
+x <- bigsimr::rvec(10, rho = rho, margins = margins, type = "spearman")
 ```
 
-```{r, echo=FALSE}
+```{r gpuWarn, echo=FALSE}
 warning("warning.warn('No GPU/TPU found, falling back to CPU.')")
 ```
 
 Taking a look at our random vector, we see that it is 10 rows and 3 columns, one column for each marginal.
 
-```{r}
+```{r printX}
 x
 ```
 
@@ -62,7 +63,7 @@ We can simulate many more samples and then check the histogram of each margin, a
 
 ### Scaling up N to 1,000,000
 
-```{r, fig.width=7}
+```{r rvec1e6, fig.width=7}
 x <- rvec(1e6, rho = rho, margins = margins, type = "spearman")
 
 par(mfrow=c(1,3))
@@ -73,7 +74,7 @@ hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
 
 ### Check the performance with fast correlation estimation
 
-```{r}
+```{r fastCor}
 bigsimr::fastCor(x, method = 'spearman')
 ```
 
@@ -91,7 +92,7 @@ Using the Generate, sort, and correlate algorithm @Demirtas2011  and TAS issue
 
 - use a large number of reps
 
-```{r, computeBounds, echo = TRUE, eval=FALSE}
+```{r computeBounds, echo = TRUE, eval=FALSE}
 ## Possibly bug? or configuration
 ## Error: segfault from C stack overflow on my Okapi bigsimr env 
 rho_bounds <- bigsimr::computeCorBounds(margins = margins, type = 'spearman', cores = 1, reps = 1e5)
@@ -101,34 +102,6 @@ rho_bounds
 ### Using `bigsimr` on a computing cluster via `rslurm`
 
 Though `bigsimr` runs quickly, at large $d$ users may want to run jobs on a shared computing server. The R package `rslurm` makes it esay to run embarrasingly large parallel `rvec` calls. This example assumes that `bigsimr` is installed on a system with a slurm scheduler installed. 
-
-
-```{r exampleRslurm, echo=FALSE, eval=FALSE, include=FALSE}
-## run this code once and use the generated rds later.
-## cyberhelp.sesync.org/rslurm/articles/rslurm.html
-test_func <- function(par_mu, par_sd) {
-    samp <- rnorm(10^6, par_mu, par_sd)
-    c(s_mu = mean(samp), s_sd = sd(samp))
-}
-pars <- data.frame(par_mu = 1:10,
-                   par_sd = seq(0.1, 1, length.out = 10))
-library(rslurm)
-sjob <- slurm_apply(test_func, pars, jobname = 'test_apply',
-                    nodes = 2, cpus_per_node = 2, submit = TRUE)
-list.files('_rslurm_test_apply', 'results')
-res <- get_slurm_out(sjob, outtype = 'table')
-head(res, 3)
-cleanup_files(sjob) ## careful this deletes output also
-
-## single function evaluation
-sjob <- slurm_call(test_func, jobname = 'test_call',
-                   list(par_mu = 5, par_sd = 1), submit = FALSE)
-
-
-## try rvec
-sjob <- slurm_call(rvec, jobname = 'rvec',
-                   list(par_mu = 5, par_sd = 1), submit = FALSE)
-```
 
 ```{r rvecRslurm, echo=TRUE, eval=FALSE}
 library(rslurm)
@@ -146,7 +119,7 @@ sjob <- slurm_call(rvec, jobname = 'rvec',
 ```
 
 
-```{r rvecRslurmRes, echo=TRUE, eval=TRUE}
+```{r rvecRslurmRes, echo=TRUE, eval=FALSE}
 res <- readRDS(file.path('_rslurm_rvec', list.files('_rslurm_rvec', 'results')))
 head(res, 3)
 ## cleanup_files(sjob) ## careful this deletes output also

@@ -1,3 +1,5 @@
+bookdown::pdf_book:
+  base_format: rticles::elsevier_article
 bookdown::gitbook:
   config:
     toc:

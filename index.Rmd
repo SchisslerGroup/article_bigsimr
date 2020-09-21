@@ -1,21 +1,52 @@
 --- 
-title: "Simulating Ultra High-Dimensional Multivariate Data Using the bigsimr R Package"
-author: [A.G. Schissler, R.D.L. Foote, A.D. Knudson, T.J. Kozubowski, A.K. Panorska]
+title: Simulating Ultra High-Dimensional Multivariate Data Using the bigsimr R Package
+author:
+  - name: Alice Anonymous
+    email: alice@example.com
+    affiliation: Some Institute of Technology
+    footnote: 1
+  - name: Bob Security
+    email: bob@example.com
+    affiliation: Another University
+  - name: Cat Memes
+    email: cat@example.com
+    affiliation: Another University
+    footnote: 2
+  - name: Derek Zoolander
+    email: derek@example.com
+    affiliation: Some Institute of Technology
+    footnote: 2
+address:
+  - code: Some Institute of Technology
+    address: Department, Street, City, State, Zip
+  - code: Another University
+    address: Department, Street, City, State, Zip
+footnote:
+  - code: 1
+    text: "Corresponding Author"
+  - code: 2
+    text: "Equal contribution"
 date: "`r format(Sys.Date(), '%A, %B %d, %Y')`"
+bibliography:
+  - bigsimr.bib
+  - packages.bib
 site: bookdown::bookdown_site
-bibliography: [bigsimr.bib, packages.bib]
-biblio-style: apalike
-link-citations: yes
+journal: "Journal of Computational And Applied Mathematics (JCAM)"
+#linenumbers: true
+#numbersections: true
 abstract: |
   In this era of Big Data, it is critical to realistically simulate data to conduct informative Monte Carlo studies. This is problematic when data are inherently multivariate while at the same time are (ultra-) high dimensional. This situation appears frequently in observational data found on online and in high-throughput biomedical experiments (e.g., RNA-sequencing). Due to the difficulty in simulating realistic correlated data points, researchers often resort to simulation designs that posit independence --- greatly diminishing the insight into the empirical operating characteristics of any proposed methodology.  Major challenges lie in the computational complexity involved in simulating these massive random vectors. We propose a fairly general, scalable procedure to simulate high-dimensional multivariate distributions with pre-specified marginal characteristics and dependency characteristics. As a motivating example, we use our methodology to study large-scale statistical inferential procedures applied to cancer-related RNA-sequencing data sets. The proposed algorithm is implemented as the `bigsimr` R package.
 ---
 
 ```{r indexSetup, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
-library(ggplot2)
 library(tidyverse)
 library(knitr)
-library(dplyr)
-set.seed(06082020)
+library(rmarkdown)
+library(bookdown)
+## setwd('~/article_bigsimr')
+## bookdown::render_book("index.Rmd", "bookdown::pdf_book")
+## bookdown::serve_book()
+set.seed(09212020)
 ```
 
 ```{r copyBib, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
@@ -48,7 +79,7 @@ sum(counts)
 
 # Introduction
 
-Massive high-dimensional data sets are commonplace in many areas of scientific inquiry. As new methods are developed for these data, a fundamental challenge lies in designing and conducting simulation studies to assess operating characteristics of proposed methodology, such as false positive rates, statistical power, and robustness --- often in comparison to existing methods. Another application lies in the discovering the sampling distribution of test statistic under hypothesized null models in complex scenarios. Such Monte Carlo studies in the high-dimensional setting often become difficult to conduct with existing algorithms and tools, or require expertise in computing on clusters. This is particularly true when simulating massive multivariate, non-normal distributions. 
+Massive high-dimensional data sets are now commonplace in many areas of scientific inquiry. As new methods are developed for these data, a fundamental challenge lies in designing and conducting simulation studies to assess operating characteristics of proposed methodology, such as false positive rates, statistical power, and robustness --- often in comparison to existing methods. Another application lies in the discovering the sampling distribution of test statistic under hypothesized null models in complex scenarios. Such Monte Carlo studies in the high-dimensional setting often become difficult to conduct with existing algorithms and tools, or require expertise in computing on clusters. This is particularly true when simulating massive multivariate, non-normal distributions. 
 
 Along those lines, simulating high-dimensional non-normal data motivates this work --- in pursuit of modeling RNA-sequencing data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. This laboratory procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. Often researchers posit a negative binomial model (refs) as counts are often over (or under) expressed that a Poisson model would suggest. Yet due to inherent biological processes, gene expression data exhibits correlation (coexpression) across genes [@BE07; @Schissler2018]. RNA-sequencing analysis has garnered much interest in the statistical literature (refs). Often researchers simulate independently or from their proposed model in order to conduct Monte Carlo studies (refs). An alternative strategy is to think *generatively* about the data collection process and scientific domain knowledge and design simulations with probabilistic models that reflect those processes. In our motivating example, we'll study the consequences correlation in the simulation study replicating test statistics from an illustrative, classical large-scale hypothesis testing study [see @Efron2004].
 

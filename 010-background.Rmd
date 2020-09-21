@@ -2,7 +2,9 @@
 
 ## Gaussian copulas
 
-We present an general-purpose, scalable multivariate simulation algorithm. The crux of the method is construction of a Gaussian copula. This idea is well known [refs]. A copula is a distribution function on $[0,1]^d$ describing a random vector with standard uniform marginals. Moreover, for any random vector ${\bf X}=(X_1, \ldots, X_d)$ with cumulative distribution function (CDF) $F$ and marginal CDFs $F_i$ there is a copula function 
+We present an general-purpose, scalable multivariate simulation algorithm. The crux of the method is construction of a Gaussian copula. This idea is well known [refs]. We chose a Gaussian copula among the many available copula functions primarily for two reasons: 1) the computationally convient closed expression to convert among the most common dependency measures when the margins are Gaussian and 2) the availability of high-performance multivariate normal simulators in R ('mvnfast' ref).  
+
+A copula is a distribution function on $[0,1]^d$ describing a random vector with standard uniform marginals. Moreover, for any random vector ${\bf X}=(X_1, \ldots, X_d)$ with cumulative distribution function (CDF) $F$ and marginal CDFs $F_i$ there is a copula function 
 $C(u_1, \ldots, u_d)$ so that 
 
 \[

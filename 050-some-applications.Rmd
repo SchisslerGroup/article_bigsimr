@@ -1,6 +1,6 @@
 # Some applications
 
-```{r LoadLib050, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+```{r LoadLib050, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
 library(ggplot2)
 library(tidyverse)
 library(knitr)
@@ -29,7 +29,7 @@ Intergene correlation [@Schissler2019].
   (\#eq:nb)
 \end{equation} 
 
-```{r processBRCA, echo=TRUE, eval=TRUE, cache=TRUE}
+```{r processBRCA, echo=FALSE, eval=FALSE, cache=TRUE}
 ## full workflow simulating RNA-seq data
 allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
 lastClinical <- which( names(allDat) == 'tumorsize' )
@@ -51,7 +51,7 @@ brca <- brca[ , genesToKeep ]
 
 The data are overdispersed:
 
-```{r figNBratio, echo = TRUE, eval=TRUE, message=FALSE, warning=FALSE, out.width= '75%', fig.align='center', fig.cap='The genes display extreme overdispersion. Using group-specific sample means and variances for each of the d=`r d` genes, we display the distributions oflog of variance to mean ratio.'}
+```{r figNBratio, echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, out.width= '75%', fig.align='center', fig.cap='The genes display extreme overdispersion. Using group-specific sample means and variances for each of the d=`r d` genes, we display the distributions oflog of variance to mean ratio.'}
 
 logVarOverMean <- function( x ) {
     log ( var(x) / mean (x) )
@@ -85,7 +85,7 @@ Model genes as marginally negative binomial with heterogeneous gene-wise paramet
 
 We rescaled the target Spearman correlation to account for the probability of ties via Equation \@ref(eq:convertSpearmanDiscrete). The serial computation took approximately 10 minutes on XXX. Notably, the difference between target and adjusted matrices was very small (mean relative difference: 0.708) in this particular configuration of negative binomial parameters. For problems with smaller counts and higher probabilities of ties, the adjustment can be substantial (as observed in the simulation studies above in Section BLAH).
 
-```{r estRhoBRCA, echo=TRUE, eval=TRUE}
+```{r estRhoBRCA, echo=FALSE, eval=FALSE}
 ## full workflow simulating RNA-seq data
 
 ## 1. Estimate Spearman's correlation on the count data
@@ -94,7 +94,7 @@ system.time( rho <- bigsimr::fastCor( brca, method = corType ) )
 ## Describe the correlations
 ```
 
-```{r estMargins, echo = TRUE, eval = TRUE, cache=TRUE}
+```{r estMargins, echo=FALSE, eval=FALSE, cache=TRUE}
 ## 2. Estimate NegBin parameters using Method of Moments
 estimateNegBinMoM <- function(tmpGene) {
     tmpMean <- mean(tmpGene)
@@ -115,7 +115,7 @@ brcaMargins <- apply( unname(as.matrix(brca)), 2, estimateNegBinMoM )
 ## head( sort( unlist( lapply( brcaMargins, function(x) {x$size} ) ) ) )
 ```
 
-```{r simBRCA, echo=TRUE, eval = TRUE, cache=TRUE}
+```{r simBRCA, echo=FALSE, eval=FALSE, cache=TRUE}
 ## 3. Generate the simulated samples
 N <- nrow(brca)
 system.time( simBRCA <- rvec(n = N, rho = rho, margins = brcaMargins, cores = CORES, type = corType) )
@@ -123,7 +123,7 @@ simBRCA[1:2, 1:2 ]
 
 ```
 
-```{r evalBRCA, echo=TRUE, eval = FALSE, cache=TRUE}
+```{r evalBRCA, echo=FALSE, eval=FALSE, cache=TRUE}
 
 ## Describe and plot real data
 GGally::ggpairs(data = as.data.frame(brca[ ,1:3] ) )
@@ -162,7 +162,7 @@ possible that test the hypothesis that $H_0: R = R_0$.
 
 ## Simulation-based joint probability calculations
 
-```{r densityEvaluation, echo=TRUE, eval=FALSE}
+```{r densityEvaluation, echo=FALSE, eval=FALSE}
 ## full workflow simulating RNA-seq data
 
 ```

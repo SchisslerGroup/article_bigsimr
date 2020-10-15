@@ -1,155 +1,165 @@
 # Some applications
 
-```{r LoadLib050, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
-library(ggplot2)
-library(tidyverse)
-library(knitr)
-library(dplyr)
+```{r LoadLib050, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
-library(bigsimr)
+## knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 reticulate::use_condaenv("bigsimr")
-CORES <- parallel::detectCores() - 1
-set.seed(06082020)
-## devtools::install_github("ggobi/GGally")
-## devtools::install_github( "adknudson/bigsimr")
-## A conda environment is also activitied (see README)
 library(bigsimr)
-library(GGally)
+library(tidyverse)
+CORES <- as.integer( parallel::detectCores() - 1 )
+set.seed(10142020)
 ```
 
-## Simulating Ultra High Dimensional RNA-seq data
+## Simulating High-Dimensional RNA-seq data
 
-We apply our methodology to simulate RNA-sequencing data sets based on samples derived from breast cancer patients' tumors (the BRCA data set in TCGA). The data are freely available as part of the BRCA data set within the The Cancer Genome Atlas data warehouse and were downloaded on BLAH using the Harvard's Broad Institute's Firehouse interface. For each of the 1093 patients, the gene expression (abundance of messenger-RNA) from 20501 genes were counted using RNA-sequencing. The resultant data set can be represented as a matrix of size 1093 x 20501 with discrete values aligned to HUGO gene symbols for each patient. In this illustrative case study, we model the gene-wise marginal distributions as heterogeneous negative binomial with pmf given by Equation \@ref(eq:nb) with two parameters, $p$ and $r$ (OR SWITCH TO mu and delta). Modeling RNA-seq counts as negative binomially distributed random variables is commonplace (e.g., @Zhao2018) since overdispersion is often observed for most expressed genes. We begin by estimating the marginal negative binomial parameters for each group using a simple method of moments approach by matching the negative binomial parameters with the sample mean and variance. Table/Figure XXX summarizes the estimated means, variances, and NB parameters as described in Equation \@ref(eq:nb). Notably some genes show underdispersion compared to a Poisson random variable. For simplicity we exclude these cases, but nothing in the later described simulation method prevents using a different marginal distribution in those cases (such as a Maxwell distribution REF Sellers).
+This section demonstrates how to simulate high-dimensional multivariate data using `bigsimr`, aiming to replicate the structure of high dimensional dependent count data.
+In fact, simulating RNA-sequencing (RNA-seq) data is a one of the primary motivating applications of the proposed methodology, seeking scaleable Monte Carlo methods for realistic multivariate simulation (for example, see Schissler, Piegorsch, and Lussier 2018).
 
-Intergene correlation [@Schissler2019].
+The RNA-seq data generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
+Since this is a counting processing with no upper bound, many modeling approaches discrete random variables with infinite support.
+Often the counts exhibit over-dispersion and so the negative binomial arises as a sensible model for the expression levels (\emph{gene counts}).
+Moreover, the counts are correlated (co-expressed) and cannot be assumed to behave independently.
+RNA-seq platforms quantify the entire transcriptome in one experimental run, resulting in high dimensional data.
+In humans, this results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted.
+	This suggests simulating high-dimensional multivariate NB with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics.
 
-\begin{equation} 
-  g(n) = \mathbb P(Y=n) = \frac{\Gamma(n+r)}{\Gamma(r)n!} p^r(1-p)^n, \,\,\, n\in
-\mathbb N_0.
-  (\#eq:nb)
-\end{equation} 
+In an illustration of our proposed methodology applied to real data, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions with estimated parameters.
+Our goal is to replicate the structure of a breast cancer data set (BRCA data set from The Cancer Genome Atlas).
+For simplicity of illustration, we begin by filtering to retain the top 5\% highest expressing genes of the 20,501 gene measurements from $N=1212$ patients' tumor samples, resulting in $d=1026$ genes.
 
-```{r processBRCA, echo=FALSE, eval=FALSE, cache=TRUE}
+<!--
+All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments).
+Notably, the $\hat{p}_i's$ are small --- ranging in $[3.934 \times 10^{-6} , 1.217 \times 10^{-2}]$.
+To complete the simulation algorithm inputs, we estimate the Pearson correlation matrix $\bf{R_Y}$ and set that as the target correlation.
+ -->
+
+<!--
+With the simulation targets specified, we proceed to simulate $N=10,000$ random vectors $\bf{Y}$ $=( Y_1,\ldots,Y_d)$ with target Pearson correlation $\bf{R_Y}$ and marginal PMFs $g_i(y_i)$ using a $\bf{T}$-Poisson hierarchy of Kind II.
+Specifically, we first employ the \emph{direct Gaussian copula} approach to generate $N$ random vectors following a standard multivariate Gamma distribution $\bf{T}$ with shape parameters $r_i$ equal to the target $n_i$ and Pearson correlation matrix $\bf{R_T}$.
+Care must be taken when setting the specifying $\bf{R}$ (refer to Equation \ref{gay.cop.pdf}) --- we employ Equation \ref{mix.poi.corr} to compute the scaling factors $c_{i,j}$ and adjust the underlying correlations to ultimately match the target $\bf{R_Y}$.
+Notably, of the $525,825$ pairwise correlations from the $1026$ genes, no scale factor was less than $0.9907$, indicating the model can produce essentially the entire range of possible correlations.
+Here we are satisfied with approximate matching of the specified Gamma correlation and set $\bf{R}$ = $\bf{R_T}$ in our Gaussian copula scheme ($\bf{R}$ indicating the specified multivariate Gaussian correlation matrix).
+Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
+-->
+
+```{r processBRCA, echo=FALSE, eval=FALSE, results='none'}
 ## full workflow simulating RNA-seq data
 allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
 lastClinical <- which( names(allDat) == 'tumorsize' )
 brca <- allDat[ allDat$disease == "BRCA", (lastClinical+1):ncol(allDat) ]
-## remove naively the RSEM adjustment
-brca <- round(brca, 0)
-ncol(brca) ## num of genes 20501
+dim(brca) ## num of genes 20501
 ## compute the median expression! avoid the 0s
 brcaMedian <- apply(brca, 2, median)
 ## retain top (1-probs)*100% highest expressing genes for illustration
-myProb <- 0.99
+myProb <- 0.75
 cutPoint <- quantile( x = brcaMedian, probs = myProb )
 ## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
 genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
 brca <- brca[ , genesToKeep ]
 ## ncol(brca) / 20501
-(d <- length(genesToKeep))
+print(d <- length(genesToKeep))
+## save data as rds
+saveRDS(brca, 'data/brca.rds')
 ```
 
-The data are overdispersed:
-
-```{r figNBratio, echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, out.width= '75%', fig.align='center', fig.cap='The genes display extreme overdispersion. Using group-specific sample means and variances for each of the d=`r d` genes, we display the distributions oflog of variance to mean ratio.'}
-
-logVarOverMean <- function( x ) {
-    log ( var(x) / mean (x) )
-}
-## check whether NB makes sense
-
-summaryBRCA <- brca %>% 
-    summarize_all(  list(~ logVarOverMean( . ) ) )
-summaryBRCA <- as.data.frame( t(as.data.frame( summaryBRCA )) )
-names(summaryBRCA) <- "logVarOverMean"
-## sum(summaryBRCA$logVarOverMean < 0)  ## no underdispersed genes
-ggplot(data = summaryBRCA, mapping = aes(x = logVarOverMean)) +
-  geom_histogram(color = "white", bins = 20)
-```
-
-We see that the all genes studies display overdispersion (variance greater than mean) compared to a Poisson model for the gene counts. The genes are highly heterogeneous even when dealing with highly expressed genes after filtering. The facts taken together motivate the negative binomial model for the marginal distributions. The genes are slightly more variable within the deceased group (expected with smaller sample size and potentially due to biomedical considerations).
-
-Next we perform some essential pre-processing of the data. Since our goal is to simulate meaningful multivariate constructions, we must first find a subset of 20501 genes that are expressed. In order words, we'll filter out the low expressing genes to allow greater range of possible $d$-variate correlations (see @NK10 for details OR SHOULD I EXPLAIN THIS MORE CAREFULLY?). Notably, many RNA-seq analytic workflows filter out low expressing genes (see \cite{Conesa2016b}) and this, admittedly, is usually done in an \emph {ad hoc} fashion. In this study, we prefer an inclusion criterion that is theoretically motivated. Based on the results in Section BLAH, we filter genes with a sample mean less than 12. In this way, we remove 4762 (23.2\%) of the genes, retaining 15,739 genes for further analysis. The filtered low-expressing genes will be simulated as independent negative binomial random variables to form a complete simulated transcriptome.
-
-RNA-sequencing data derived from breast cancer patients (n=1093), with 20501 genes measured (from TCGA). We filter to genes with average expression greater than 10000 counts (d = 4777) across both groups. Consider basic differentially expressed genes (DEG) analysis between surviving (n0 = 941) and deceased (n1 = 152) patients. This setting can be described as large-scale simultaneous hypothesis testing, under correlation. We should evaluate existing and new methodology using simulations that reflect dependency among variables. But multivariate simulation tools often scale poorly to high dimension or do not model the full range of dependency. Perform a two-sample $t$ test for each 4777 genes on the observed RNA-seq counts ($empirical$). Call a "Z score" for the $i^{th}$ gene $Z_{i} = \Phi^{-1}(t_{\approx 272}(t_i))$.
-
-Our method requires some measure of that the covariance structure is pre-specified. In practice, however, high-dimensional covariance estimation is not that easy. Indeed there is much recent interest in this area (cite a few recent high visibility articles --- see the GPU-NORTA pub). Here we do not provide a comprehensive review on the topic. Instead we only seek to use covariance estimator that only guarantees positive-semidefiniteness while maintaining adequate estimation properties. To this end we chose to use the condition-number-regularized (\textsc{condreg}) approach of \cite{Won2013g}. This covariance estimation procedure restricts the ratio of the largest eigenvalue to the smallest eigenvalue to improve numerical results. But the method employs a penalized Gaussian likelihood. And so, rather than estimating the covariance on the discrete counts directly, we first perform a $log_{2}(x +1)$ transformation to better suit this modeling assumption. \textsc{condreg} requires a parameter, $\kappa_{max}$, that controls the largest condition number of the resultant estimated covariance matrix. Here we aim to allow a large number of nonzero pairwise correlations and so arbitrary set $\kappa_{max}=10^{4}$. The routine ran without issue on a MacBook Pro carrying BLAH in XXX units of time.
-
-Most pairwise correlations are nearly zero with XXX \% less than |0.1|. Yet there are dense subsets of correlated genes. And even small correlations among many variables can disrupt the operating characteristics of commonly used statistical inferential procedures \cite{Schissler2018}.
-
-In this case study in the large-scale hypothesis testing in pursuit of detecting differentially expressed genes, we aim to simulate RNA-seq counts using a multivariate negative binomial. To evaluate the simulation's utility, we systematically compare the simulated results to the empirical results. In short we computed t-statistics and p-values for each of $d=4777$ genes between two groups of breast cancer patients (1=deceased, 0=alive; $n_0 = 152, n_1=941$). Further details on the empirical results are provided in Section BLAH. We compare two aspects in the simulation design 1) Choice of correlation measure while modeling marginal distributions consistently and 2) how well does the best-performing simulation agree with the empirical results. Informed by the simulation studies in Section BLAH, we anticipate a far amount of variation at such small sample sizes and large $d$ and so replicate the entire study 100 times. 
-
-To recap from the discussion above (Section BLAH), we estimated negative binomial parameters for each of the $d=4777$ genes and also their Pearson, Spearman, and Kendall's correlation coefficients from n=1093 breast cancer patients, within each vital status group (0=deceased, 1=alive). We generated 100 synthetic data sets for each group, with the number of $d$-dimensional random vectors produced equal to the corresponding sample sizes ($n_0 = 152, n_1=941$). These 100 samples are used to understand uncertainty in this setting and we will use the mean simulated values to compare to the empirical (and also explore the worst-case scenarios).
-
-Model genes as marginally negative binomial with heterogeneous gene-wise parameters. Compute sample correlations (using desired dependency measure) for the 11,407,476 genes pairs, for each group. To simulate gene expression counts, our goal is to produce a random vector ${\bf Y}=(Y_1, \ldots, Y_d)$ with **correlated** NB components. To do that, we start with a sequence of **independent** Poisson processes $N_i(t)$, $i=1,\ldots,d$, where the rate of the process $N_i(t)$ is $\lambda_i=(1-p_i)/p_i>0$ (so that $p_i=1/(1+\lambda_i)$). Now, we let ${\bf T} = (T_1, \ldots T_d)$ have a multivariate distribution on $\mathbb R_+^d$ with the PDF $f_{{\bf T}}({\bf t})$. Then, we define 
-
-We rescaled the target Spearman correlation to account for the probability of ties via Equation \@ref(eq:convertSpearmanDiscrete). The serial computation took approximately 10 minutes on XXX. Notably, the difference between target and adjusted matrices was very small (mean relative difference: 0.708) in this particular configuration of negative binomial parameters. For problems with smaller counts and higher probabilities of ties, the adjustment can be substantial (as observed in the simulation studies above in Section BLAH).
-
-```{r estRhoBRCA, echo=FALSE, eval=FALSE}
+```{r readBRCA, echo=TRUE, eval=TRUE}
 ## full workflow simulating RNA-seq data
-
-## 1. Estimate Spearman's correlation on the count data
-corType <- 'spearman'
-system.time( rho <- bigsimr::fastCor( brca, method = corType ) )
-## Describe the correlations
+brca <- readRDS(file = 'data/brca.rds') 
 ```
 
-```{r estMargins, echo=FALSE, eval=FALSE, cache=TRUE}
+Let's walk through a workflow simulating RNA-seq data
+
+```{r estRhoBRCA, echo=TRUE, eval=TRUE}
+## 1. Estimate Spearman's correlation on the count data
+corType <- 'pearson'
+system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
+```
+
+---
+
+```{r estMargins, echo = FALSE, eval = TRUE}
 ## 2. Estimate NegBin parameters using Method of Moments
-estimateNegBinMoM <- function(tmpGene) {
+estimateNegBinMoM <- function(tmpGene, minP = 1e-7) {
     tmpMean <- mean(tmpGene)
     tmpVar <- var(tmpGene)
     ## relate to nbinom parameters
     ## See ?rbinom for details.
     p <- tmpMean / tmpVar
+    if (p < minP) {p <- minP } ## maybe add noise here
     n <- ( tmpMean * p) / ( 1  - p )  
     ## format for bigsimr margins
-    get( 'qnbinom')
-    return( str2lang( paste0( "qnbinom(size = ", n, ", prob = ", p, ")" ) ) )
+    return( list("nbinom", size = n, prob = p) )
 }
 brcaMargins <- apply( unname(as.matrix(brca)), 2, estimateNegBinMoM )
-## brcaMargins <- apply( unname(as.matrix(brca))[ , 1:3], 2, estimateNegBinMoM )
 ## describe the margins
-## check for too small prob
-## head( sort( unlist( lapply( brcaMargins, function(x) {x$prob} ) ) ) )
+probs <- unlist( lapply( brcaMargins, function(x) {x$prob} ) )
+## summary(probs)
+sizes <- unlist( lapply( brcaMargins, function(x) {x$size} ) )
+## summary(sizes)
 ## head( sort( unlist( lapply( brcaMargins, function(x) {x$size} ) ) ) )
 ```
 
-```{r simBRCA, echo=FALSE, eval=FALSE, cache=TRUE}
-## 3. Generate the simulated samples
-N <- nrow(brca)
-system.time( simBRCA <- rvec(n = N, rho = rho, margins = brcaMargins, cores = CORES, type = corType) )
-simBRCA[1:2, 1:2 ]
-
+```{r nbHelpers}
+make_nbinom_alist <- function(sizes, probs) {
+  lapply(1:length(sizes), function(i) {
+    substitute(qnbinom(size = s, prob = p), 
+               list(s = sizes[i], p = probs[i]))
+  })
+}
+## make_nbinom_alist(c(20, 21, 22), c(0.3, 0.4, 0.5))
+nbinom_mom <- function(x) {
+  m <- mean(x)
+  s <- sd(x)
+  s2 <- s^2
+  p <- m/s2
+  r <- m^2 / (s2 - m)
+  c(r, p)
+}
 ```
 
-```{r evalBRCA, echo=FALSE, eval=FALSE, cache=TRUE}
+Now specify the desired multivariate negative binomial distribution.
 
-## Describe and plot real data
-GGally::ggpairs(data = as.data.frame(brca[ ,1:3] ) )
-
-## Describe and plot simulations
-GGally::ggpairs(data = as.data.frame(simBRCA[ ,1:3] ) )
-
-## check 1st moments
-trueMu <- colMeans(brca)
-simMu <- colMeans(simBRCA)
-qplot( x = trueMu, y = simMu ) + geom_abline(slope = 1, intercept = 0)
-
-## check 2nd moment
-trueVar <- apply( brca, 2, var)
-simVar <- apply( simBRCA, 2, var)
-qplot( x = trueVar, y = simVar ) + geom_abline(slope = 1, intercept = 0)
-
-## check correlation
-system.time( simRho <- bigsimr::fastCor( simBRCA, method = corType ) )
-rho[1:5, 1:5]
-simRho[1:5, 1:5]
-trueRho <- rho[lower.tri(rho)]
-simRho <- simRho[lower.tri(simRho)]
-qplot( x = trueRho, y = simRho ) + geom_abline(slope = 1, intercept = 0)
+```{r runBRCA, results='none'}
+n <- 20000
+## d <- 100
+## n <- 100
+## d <- 5
+nb_margins <- make_nbinom_alist(sizes, probs)
+## compute theoretical bounds to make sure input is okay
+## cor_bounds( nb_margins, type = type )
+sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = corType, ensure_PSD = TRUE, cores = CORES)
+## sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = "pearson", ensure_PSD = TRUE, cores = 4L)
+## pairs(sim_nbinom)
+nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
+cat('The quadratic loss from the true correlation matrix is ') 
+norm(nb_Rho - nb_Rho_hat, type = "2")
 ```
 
+Figure X shows the results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).
+The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
+Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in less than 30 seconds.
+
+```{r fig:BRCA, echo=F, eval=T, caption='The T-Poisson strategy produces simulated random vectors from a multivariate negative binomial (NB) that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters (vertical axes; derived from the simulated data) and the specified target parameters (horizontal axes).'}
+par(mfrow=c(1,3))
+plot(nb_Rho[lower.tri(nb_Rho)], nb_Rho_hat[lower.tri(nb_Rho_hat)],
+     xlim = c(-1, 1), ylim = c(-1, 1),
+     pch = 4, cex = 1, col = rgb(0, 0, 1, 0.05),
+     xlab = "Target Correlation", ylab = "Estimated Correlation",
+     main = "bigsimr Simulation")
+abline(a = 0, b = 1, col="red", lty="dashed")
+nbinom_size_prob_hat <- apply(sim_nbinom, 2, nbinom_mom)
+plot(sizes, nbinom_size_prob_hat[1,],
+     pch = 4, cex = 1, col = rgb(0, 0, 1, 1),
+     xlab = "Target Size", ylab = "Estimated Size",
+     main = "Direct NB Simulation")
+abline(a=0, b=1, col="red", lty="dashed")
+plot(log(probs), log(nbinom_size_prob_hat[2,]),
+     pch = 4, cex = 1, col = rgb(0, 0, 1, 1),
+     xlab = "Target Log Probability", ylab = "Estimated Log Probability",
+     main = "Direct NB Simulation")
+abline(a=0, b=1, col="red", lty="dashed")
+par(mfrow=c(1,1))
+```
 
 ## Ultra High-Dimensional simulation-based correlation hypothesis testing under
 

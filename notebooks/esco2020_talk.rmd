@@ -10,7 +10,6 @@ output:
   ioslides_presentation:
     widescreen: true
     smaller: true
-    incremental: true
     logo: ../man/figures/logo.png
 bibliography: /Users/alfred/Dropbox/bib/bigsimr.bib
 abstract: "In this era of Big Data, it is critical to realistically simulate data to conduct informative Monte Carlo studies. This is problematic when data are inherently multivariate while at the same time are (ultra-) high dimensional. This situation appears frequently in observational data found on online and in high-throughput biomedical experiments (e.g., RNA-sequencing). Due to the difficulty in simulating realistic correlated data points, researchers often resort to simulation designs that posit independence --- greatly diminishing the insight into the empirical operating characteristics of any proposed methodology.  Major challenges lie in the computational complexity involved in simulating these massive random vectors. We propose a fairly general, scalable procedure to simulate high-dimensional multivariate distributions with pre-specified marginal characteristics and dependency characteristics. As a motivating example, we use our methodology to study large-scale statistical inferential procedures applied to cancer-related RNA-sequencing data sets. The proposed algorithm is implemented as the bigsimr R package."
@@ -159,7 +158,8 @@ bivariate transformations.
 
 - `bigsimr` is on `Github`: [https://github.com/adknudson/bigsimr](https://github.com/adknudson/bigsimr).
 - Use `devtools` to install.
-- `bigsimr` uses `JAX` python libraries for GPU acceleration.
+- `bigsimr` uses `JAX` python libraries for GPU acceleration and other high
+  performance algorithms.
 
 ```{r setup, eval=TRUE}
 ## devtools::install_github( "adknudson/bigsimr")

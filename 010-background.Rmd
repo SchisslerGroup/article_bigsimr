@@ -47,7 +47,10 @@ As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pea
 \rho_s(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right]
 \end{equation}
 
-\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. For continuous marginals, the measure works well due to zero probability of ties. For discrete marginals, however, one could perform a rescaled version of $\rho_s$ for random variables $X,Y$ with pmfs (or pdfs) $p(x)$ and $q(y)$, respectively. 
+\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. For continuous marginals, the measure works well due to zero probability of ties. 
+
+<!-- 
+For discrete marginals, however, one could perform a rescaled version of $\rho_s$ for random variables $X,Y$ with pmfs (or pdfs) $p(x)$ and $q(y)$, respectively. 
 
 \begin{equation}
 (\#eq:spearmanRescaled)
@@ -61,6 +64,8 @@ As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pea
   \tau(X,Y) = \frac{\rho_s(X,Y)}{ \left[ \left[ 1 - \sum_x p(x)^3 \right] \left[ 1 - \sum_y q(y)^3 \right] \right]^{1/2}}
 \end{equation}
 
+-->
+
 ## Marginal-dependent bivariate correlation bounds
 
 The pairwise correlation between two correlated random variables cannot in general obtain the full range of possible values, $[-1,-1]$. The range, called the Frechet(-Hoeffding) bounds, is a well-known function of the marginal distributions and are given by [@BF17]:
@@ -71,4 +76,13 @@ The pairwise correlation between two correlated random variables cannot in gener
 \end{equation}
 
 \noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse cdf of random variables $X_1$ and $X_2$, respectively. For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
+
+## Other `R` packages for simulating random vectors
+
+There are a few R packages for multivariate simulation.
+
+* `copula` Highly flexible copula specification [@Yan2007]
+* `nortaRA` Implements exact Pearson matching (step 2 in NORTA) [@Chen2001] 
+* `Genord` Simulated correlated discrete variables [@BF17]
+* `mvnfast` High-performance multivariate normal simulator [@Fasiolo2016]
 

@@ -1,11 +1,28 @@
 # Simulation algorithm
 
+```{r previewChapter020, echo = FALSE, eval = FALSE}
+bookdown::preview_chapter('020-simulation-algorithm.Rmd')
+```
+
 ## Algorithm description
 
 This section describes the method for simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$. Each $Y_i$ has a specified marginal
 distribution function $F_i$ and its inverse. To characterize dependency, every pair $(Y_i, Y_j)$ has either a specified Pearson correlation \@ref(eq:pearson), (rescaled) Spearman correlation \@ref(eq:spearmanRescaled) , or Kendall's $\tau$ (Equation \@ref(eq:tau) ). The method only approximately matches the Pearson correlation in general, whereas the rank-based methods are exact.
 
-The method is best understand as a **parallelized Gaussian copula** (see Equation \@ref(eq:gauss). We shall see that constructing continuous joint distributions that match a target Spearman or Kendall's correlations computes easily when employing Gaussian copulas, since this measures are invariant under the monotone transformations involved [refs]. To do this, we take advantage of a closed form relationship [ref?] between Kendall's $\tau$ and Pearson's correlation coefficient for bivariate normal random variables:
+The method is best understand as a **parallelized Gaussian copula** (see Equation \@ref(eq:gauss) to provide a high-performance NORTA (NORmal To Anything) algorithm.
+
+To simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$,
+there is the well-known NORTA algorithm [@Cario1997]. It follows like this:
+
+1. Simulate a random vector $\bf Z$ with $d$ **independent** and **identical** standard normal components.
+2. Determine the input matrix $\Sigma_{\bf Z}$ to corresponds with the
+   specified output $\Sigma_{\bf Y}$ [@Chen2001; @Xia17]
+3. Produce the Cholesky factor $M$ of $\Sigma_{\bf Z}$ so that $M M^{\prime}=\Sigma_{\bf Z}$.
+4. Set $X$ by $X \gets MZ$.
+5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,2,...,d$.
+
+We shall see that constructing continuous joint distributions that match a target Spearman or Kendall's correlations computes easily when employing Gaussian copulas, since this measures are invariant under the monotone transformations involved [refs]. 
+To do this, we take advantage of a closed form relationship [ref?] between Kendall's $\tau$ and Pearson's correlation coefficient for bivariate normal random variables:
 
 \begin{equation}
 (\#eq:convertKendall)
@@ -19,6 +36,7 @@ r_{Pearson} = sin \left( \tau_{Kendall} \times \frac{\pi}{2} \right),
 \rho_{Pearson} = 2 \times sin \left( \rho_{Spearman} \times \frac{\pi}{6} \right).
 \end{equation}
 
+<!-- 
 For discrete marginals, achieving a target Spearman correlation under this scheme is possible by using components from Equation \@ref(eq:spearmanRescaled) to further adjust the input correlation matrix. Let the unscaled Spearman correlation coefficients be $\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)$ for two marginal distributions and divide the target correlation by the product in the denominator of Equation \@ref(eq:spearmanRescaled). Let these adjustment factors be denoted as $a_i = \left[ 1 - \sum_y p_i(y)^3 \right]^{1/2}$ and specifically rescale the target Spearman correlation matrix by
 
 \begin{equation}
@@ -33,7 +51,14 @@ In a similar fashion, we rescale Kendall's $\tau$ to adjust the input correlatio
 \rho_{rs} \left(Y_{i}, Y_{i^\prime}\right) = \frac{\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)}{a_i \times a_{i^\prime}}.
 \end{equation}
 
-In contrast the rank-based correlations, matching specified Pearson correlation coefficients exactly is computational intense in this scheme. In general, there is no closed form correspondence and involving computing or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,2,\ldots,d$. For accurate numeric approximation of these integrals, the functions must be evaluated hundreds of times. Others have used efficient Monte Carlo integration schemes (see @Chen2001), but scale poorly to large dimension in reasonable times (property **S2**). Despite all this, if one does desire to characterize dependency using Pearson correlations, we often see in practice --- and it is theoretically justified under certain conditions (@Song00) --- that simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution.
+your comment -->
+
+In contrast the rank-based correlations, matching specified Pearson correlation coefficients exactly is computational intense in this scheme. In general, there is no closed form correspondence and involving computing or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,2,\ldots,d$ (see Xia17 and MB13). 
+For accurate numeric approximation of these integrals, the functions must be evaluated hundreds of times. 
+Others have used efficient Monte Carlo integration schemes (see @Chen2001), but scale poorly to large dimension in reasonable times (property **S2**). 
+Despite all this, if one does desire to characterize dependency using Pearson correlations, we often see in practice --- and it is theoretically justified under certain conditions (@Song00) --- 
+that simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution.
+We'll study the robustness of our method to this limitation later in the application section (Section BLAH).
 
 ## Simulation Algorithm
 
@@ -85,24 +110,6 @@ distribution.
  the resulting simulated random vectors will have the **exact** margins and
  **exact** Kendall's $\tau$  (up to Monte Carlo/numeric error).
 
-## Algorithm notes
-
-- discuss the consequences of the transformations to obtain the corresponding Pearson matrix and describe the quadratic algorithm implemented to address this (Alex).
-- Discrete margins pose some difficulties and matching *unadjusted* correlation
-  measures is not exact (empirically approximate).
-- Exact Pearson solutions are possible but require computing $d \choose 2$
-   double integrals $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)),
-   F_j^{-1}(\Phi(z_j))dy_idy_j$. We have yet to accelerate this process.
-- We GPU accelerate certain steps (Alex which steps?) possible during our proposed High-Performance NORTA
-  algorithm.
-- One thorny problem when dealing with high-dimensional correlation matrices is
-they can become non-positive definite through either during estimation or
+One thorny problem when dealing with high-dimensional correlation matrices is
+they can become non-positive definite through either during estimation (if done pairwise) or through the algorithm's 
 bivariate transformations.
-- When converting nonparametric correlations to Pearson (first step above) the
-  resultant correlation may not be positive definite (PD).
-- In that case, we replace ${\bf R}_{Pearson}$ with a "close" PD matrix ${\bf \tilde{R}}_{Pearson}$.
-- In practice, this loss in accuracy typically has little impact on performance,
-  but the algorithm needs acceleration (`Matrix::nearPD()` violates property S1).
-
-test workflow again
-test after a long while

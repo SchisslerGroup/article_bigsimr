@@ -1,13 +1,17 @@
-# Some applications
+# Motivating application and examples
 
 ```{r LoadLib050, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
-## knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
 CORES <- as.integer( parallel::detectCores() - 1 )
 set.seed(10142020)
+```
+
+```{r previewChapter050, echo = FALSE, eval = FALSE}
+bookdown::preview_chapter('050-some-applications.Rmd')
 ```
 
 ## Simulating High-Dimensional RNA-seq data
@@ -42,7 +46,7 @@ Here we are satisfied with approximate matching of the specified Gamma correlati
 Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
 -->
 
-```{r processBRCA, echo=FALSE, eval=FALSE, results='none'}
+```{r processBRCA, echo=FALSE, eval=TRUE, results='none'}
 ## full workflow simulating RNA-seq data
 allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
 lastClinical <- which( names(allDat) == 'tumorsize' )
@@ -51,7 +55,7 @@ dim(brca) ## num of genes 20501
 ## compute the median expression! avoid the 0s
 brcaMedian <- apply(brca, 2, median)
 ## retain top (1-probs)*100% highest expressing genes for illustration
-myProb <- 0.75
+myProb <- 0.99
 cutPoint <- quantile( x = brcaMedian, probs = myProb )
 ## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
 genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
@@ -59,23 +63,22 @@ brca <- brca[ , genesToKeep ]
 ## ncol(brca) / 20501
 print(d <- length(genesToKeep))
 ## save data as rds
-saveRDS(brca, 'data/brca.rds')
+## saveRDS(brca, './data/brca99.rds')
 ```
 
-```{r readBRCA, echo=TRUE, eval=TRUE}
+```{r readBRCA, echo=FALSE, eval=FALSE}
 ## full workflow simulating RNA-seq data
-brca <- readRDS(file = 'data/brca.rds') 
+brca <- readRDS(file = './data/brca99.rds') 
 ```
 
 Let's walk through a workflow simulating RNA-seq data
 
 ```{r estRhoBRCA, echo=TRUE, eval=TRUE}
 ## 1. Estimate Spearman's correlation on the count data
-corType <- 'pearson'
+## corType <- 'pearson'
+corType <- 'spearman'
 system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
 ```
-
----
 
 ```{r estMargins, echo = FALSE, eval = TRUE}
 ## 2. Estimate NegBin parameters using Method of Moments
@@ -119,44 +122,41 @@ nbinom_mom <- function(x) {
 
 Now specify the desired multivariate negative binomial distribution.
 
-```{r runBRCA, results='none'}
-n <- 20000
-## d <- 100
-## n <- 100
-## d <- 5
+```{r runBRCA, echo=TRUE, results=TRUE, cache = TRUE}
+## Set the number of random vectors
+n <- 10000
+## construct margins
 nb_margins <- make_nbinom_alist(sizes, probs)
-## compute theoretical bounds to make sure input is okay
-## cor_bounds( nb_margins, type = type )
-sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = corType, ensure_PSD = TRUE, cores = CORES)
-## sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = "pearson", ensure_PSD = TRUE, cores = 4L)
-## pairs(sim_nbinom)
-nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
-cat('The quadratic loss from the true correlation matrix is ') 
-norm(nb_Rho - nb_Rho_hat, type = "2")
+## run sims
+system.time( sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = corType,
+                                ensure_PSD = TRUE, cores = CORES) )
 ```
 
 Figure X shows the results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).
 The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
 Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in less than 30 seconds.
 
-```{r fig:BRCA, echo=F, eval=T, caption='The T-Poisson strategy produces simulated random vectors from a multivariate negative binomial (NB) that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters (vertical axes; derived from the simulated data) and the specified target parameters (horizontal axes).'}
+```{r figBRCA, echo=F, eval=T, fig.cap="bigsimr produces simulated random vectors from a multivariate negative binomial that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters (vertical axes; derived from the simulated data) and the specified target parameters (horizontal axes)."}
 par(mfrow=c(1,3))
+## estimate rho from sims and plot
+nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
 plot(nb_Rho[lower.tri(nb_Rho)], nb_Rho_hat[lower.tri(nb_Rho_hat)],
      xlim = c(-1, 1), ylim = c(-1, 1),
      pch = 4, cex = 1, col = rgb(0, 0, 1, 0.05),
      xlab = "Target Correlation", ylab = "Estimated Correlation",
-     main = "bigsimr Simulation")
+     main = "Correlation Matching")
 abline(a = 0, b = 1, col="red", lty="dashed")
+## estimate prob,size from sims and plot
 nbinom_size_prob_hat <- apply(sim_nbinom, 2, nbinom_mom)
 plot(sizes, nbinom_size_prob_hat[1,],
      pch = 4, cex = 1, col = rgb(0, 0, 1, 1),
      xlab = "Target Size", ylab = "Estimated Size",
-     main = "Direct NB Simulation")
+     main = "Marginal NB Size Matching")
 abline(a=0, b=1, col="red", lty="dashed")
 plot(log(probs), log(nbinom_size_prob_hat[2,]),
      pch = 4, cex = 1, col = rgb(0, 0, 1, 1),
      xlab = "Target Log Probability", ylab = "Estimated Log Probability",
-     main = "Direct NB Simulation")
+     main = "Marginal NB Probability Matching")
 abline(a=0, b=1, col="red", lty="dashed")
 par(mfrow=c(1,1))
 ```

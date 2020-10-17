@@ -7,6 +7,7 @@ knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 library(bigsimr)
 library(tidyverse)
 cores <- as.integer( parallel::detectCores() - 1 )
+## cores <- as.integer( 1 )
 set.seed(10162020)
 ```
 
@@ -44,7 +45,7 @@ margins <- alist(
 )
 
 type <- c("pearson", "spearman", "kendall")
-cores <- as.integer( parallel::detectCores() - 1 )
+## cores <- as.integer( parallel::detectCores() - 1 )
 ## n <- c(1e3, 1e4, 1e5)
 n <- c(1e1, 1e2, 1e3)
 adjustForDiscrete <- c(FALSE)
@@ -127,8 +128,6 @@ res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
 saveRDS(object = res, "./results/norm_sims.rds")
 ```
 
-----
-
 ```{r biNormPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
 dat <- readRDS("./results/norm_sims.rds")
 dat %>%
@@ -151,7 +150,7 @@ dat %>%
 * We vary $\rho$ across the entire possible range of correlations for each
   correlation type.
 
-```{r biGamma, echo = FALSE, eval = FALSE}
+```{r biGamma, echo = FALSE, eval = TRUE}
 mom_gamma <- function(x) {
   m <- mean(x)
   s <- sd(x)
@@ -160,18 +159,20 @@ mom_gamma <- function(x) {
 
 shape <- 10
 rate <- 1
-margins <- list(
-  list("gamma", shape = shape, rate = rate),
-  list("gamma", shape = shape, rate = rate)
+margins <- alist(
+    qgamma(shape = shape, rate = rate),
+    qgamma(shape = shape, rate = rate)
 )
 
 type <- c("pearson", "spearman", "kendall")
-cores <- c(1L)
-n <- c(1e3, 1e4, 1e5)
+## cores <- c(1L)
+## n <- c(1e3, 1e4, 1e5)
+n <- c(1e1, 1e2, 1e3)
 adjustForDiscrete <- c(FALSE)
 
 eps <- 1e-2
-grid_steps <- 100
+## grid_steps <- 100
+grid_steps <- 10
 sim_pars <- expand.grid(type = type, cores = cores, n = n,
                         stringsAsFactors = FALSE,
                         adjustForDiscrete = adjustForDiscrete)
@@ -179,113 +180,90 @@ sim_pars <- expand.grid(type = type, cores = cores, n = n,
 
 res <- data.frame()
 for (i in 1:nrow(sim_pars)) {
+    
+    type <- sim_pars$type[i]
+    cores <- sim_pars$cores[i]
+    n <- sim_pars$n[i]
+    adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
 
-  type <- sim_pars$type[i]
-  cores <- sim_pars$cores[i]
-  n <- sim_pars$n[i]
-  adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+    tmp_bounds <- cor_bounds(margins, type = type)
+    cor_lo <- tmp_bounds$lower[1,2] + eps
+    cor_hi <- tmp_bounds$upper[1,2] - eps
+    cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+    
 
-  tmp_bounds <- computeCorBounds(margins, type = type)
-  cor_lo <- tmp_bounds$lower[1,2] + eps
-  cor_hi <- tmp_bounds$upper[1,2] - eps
-  cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+    ## rho = cor_seq[1]
+    for (rho in cor_seq) {
+        Rho <- matrix(rho, 2, 2)
+        diag(Rho) <- 1.0
 
-  for (rho in cor_seq) {
-    Rho <- matrix(rho, 2, 2)
-    diag(Rho) <- 1.0
+        time_data <- system.time({
+            x <- rvec(n = n,
+                      rho = Rho,
+                      margins = margins,
+                      cores = cores,
+                      type = type,
+                      ensure_PSD = TRUE)
+        })
 
-    time_data <- system.time({
-      x <- rvec(n = n,
-                rho = Rho,
-                params = margins,
-                cores = cores,
-                type = type,
-                adjustForDiscrete = adjustForDiscrete)
-    })
+        ## Save the sims in case
+        id <- paste0(
+            "d", 2,
+            "-N", n,
+            "-c", cores,
+            "-r", rho,
+            "-Cor", type,
+            "-adj", as.character(adjustForDiscrete),
+            "-dev", "CPU",
+            "-lib", "bigsimr"
+        )
+        dir.create("./results/sims_gamma", showWarnings = FALSE)
+        saveRDS(x, file = paste0("./results/sims_gamma/", id, ".rds"))
 
-    # Save the sims in case
-    id <- paste0(
-      "d", 2,
-      "-N", n,
-      "-c", cores,
-      "-r", rho,
-      "-Cor", type,
-      "-adj", as.character(adjustForDiscrete),
-      "-dev", "1CORE",
-      "-lib", "bigsimr"
-    )
-    saveRDS(x, file = paste0("sims_gamma/", id, ".rds"))
+        ## Estimate statistics
+        Rho_hat <- cor_fast(x, method = type)
+        rho_hat <- Rho_hat[1, 2]
+        gamma_args_hat <- mom_gamma(x[,1])
+        shape_hat <- gamma_args_hat$shape
+        rate_hat <- gamma_args_hat$rate
 
-    # Estimate statistics
-    Rho_hat <- fastCor(x, method = type)
-    rho_hat <- Rho_hat[1, 2]
-    gamma_args_hat <- mom_gamma(x[,1])
-    shape_hat <- gamma_args_hat$shape
-    rate_hat <- gamma_args_hat$rate
-
-    # Save the results
-    res <- rbind(res, data.frame(
-      method = "bigsimr",
-      device = "1CORE",
-      type = type,
-      cores = cores,
-      margins = "gamma",
-      adjustForDiscrete = adjustForDiscrete,
-      d = 2,
-      N = n,
-      rho = rho,
-      rho_hat = rho_hat,
-      shape = shape,
-      rate = rate,
-      shape_hat = shape_hat,
-      rate_hat = rate_hat,
-      sim_time = unname(time_data["elapsed"])
-    ))
-  }
+        ## Save the results
+        res <- rbind(res, data.frame(
+                              method = "bigsimr",
+                              device = "CPU",
+                              type = type,
+                              cores = cores,
+                              margins = "gamma",
+                              adjustForDiscrete = adjustForDiscrete,
+                              d = 2,
+                              N = n,
+                              rho = rho,
+                              rho_hat = rho_hat,
+                              shape = shape,
+                              rate = rate,
+                              shape_hat = shape_hat,
+                              rate_hat = rate_hat,
+                              sim_time = unname(time_data["elapsed"])
+                          ))
+    }
 }
 res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
-saveRDS(object = res, "gamma_sims_ags.rds")
+saveRDS(object = res, "./results/sims_gamma.rds")
 ```
 
----
-
-```{r biGammaPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.width= 8, fig.height = 5,fig.align='center', fig.cap = "`bigsimr` recovers correlations for bivariate gamma only approximately for Pearson but exactly for the rank-based correlations."}
-dat <- readRDS("gamma_sims_ags.rds")
+```{r biGammaPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
+dat <- readRDS("./results/sims_gamma.rds")
 dat %>%
-    filter(cores == 1, type == 'pearson') %>%
+    filter(cores == cores) %>%
     ggplot(aes(rho, rho_hat, color = type)) +
+    ## ggplot(aes(rho, rho_hat)) +
     geom_point() +
     geom_abline(slope = 1) +
-    ## facet_wrap(~ type + N)
-    facet_wrap(~ type + N)
+    ## facet_wrap(~ + N) + theme_bw()
+    facet_wrap(~ type + N) + theme_bw()
+    
+## ggsave('fig/plot-biGammaPlot.pdf')
 ```
-
----
-
-```{r biGammaPlot2, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.width= 8, fig.height = 5,fig.align='center', fig.cap = "`bigsimr` recovers the correlations for bivariate gamma only approximately for Pearson but exactly for the rank-based correlations."}
-dat <- readRDS("gamma_sims_ags.rds")
-dat %>%
-    filter(cores == 1, type == 'spearman') %>%
-    ggplot(aes(rho, rho_hat, color = type)) +
-    geom_point() +
-    geom_abline(slope = 1) +
-    ## facet_wrap(~ type + N)
-    facet_wrap(~ type + N)
-```
-
----
-
-```{r biGammaPlot3, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.width= 8, fig.height = 5,fig.align='center', fig.cap = "`bigsimr` recovers the correlations for bivariate gamma only approximately for Pearson but exactly for the rank-based correlations."}
-dat <- readRDS("gamma_sims_ags.rds")
-dat %>%
-    filter(cores == 1, type == 'kendall') %>%
-    ggplot(aes(rho, rho_hat, color = type)) +
-    geom_point() +
-    geom_abline(slope = 1) +
-    ## facet_wrap(~ type + N)
-    facet_wrap(~ type + N)
-```
-
 
 ## Bivariate Negative Binomial
 
@@ -294,27 +272,29 @@ dat %>%
 * We vary $\rho$ across the entire possible range of correlations for each
   correlation type.
 
-```{r biNegBin, echo = FALSE, eval = FALSE}
+```{r biNegBin, echo = FALSE, eval = TRUE}
 mom_nbinom <- function(x) {
   m <- mean(x)
   s <- sd(x)
   list(size = m^2 / (s^2 - m), prob = m / s^2)
 }
 
-size <- 4
-prob <- 0.5
-margins <- list(
-  list("nbinom", size = size, prob = prob),
-  list("nbinom", size = size, prob = prob)
+size <- 10
+prob <- 0.1
+margins <- alist(
+    qnbinom(size = size, prob = prob),
+    qnbinom(size = size, prob = prob)
 )
 
 type <- c("pearson", "spearman", "kendall")
-cores <- c(1)
-n <- c(1e3, 1e4, 1e5)
+## cores <- cores
+## n <- c(1e3, 1e4, 1e5)
+n <- c(1e1, 1e2, 1e3)
 adjustForDiscrete <- c(FALSE)
 
 eps <- 1e-2
-grid_steps <- 100
+## grid_steps <- 100
+grid_steps <- 10
 sim_pars <- expand.grid(type = type, cores = cores, n = n,
                         stringsAsFactors = FALSE,
                         adjustForDiscrete = adjustForDiscrete)
@@ -322,109 +302,93 @@ sim_pars <- expand.grid(type = type, cores = cores, n = n,
 
 res <- data.frame()
 for (i in 1:nrow(sim_pars)) {
+    type <- sim_pars$type[i]
+    cores <- sim_pars$cores[i]
+    n <- sim_pars$n[i]
+    adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+    ## AGS. 17 Oct 2020. cor_bounds failed.
+    ## I'll create a minimal working example and open an issue
+    ## tmp_bounds <- cor_bounds(margins, type = type)
+    ## cor_lo <- tmp_bounds$lower[1,2] + eps
+    ## cor_hi <- tmp_bounds$upper[1,2] - eps
+    cor_lo <- -0.75
+    cor_hi <- 0.95
+    cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
 
-  type <- sim_pars$type[i]
-  cores <- sim_pars$cores[i]
-  n <- sim_pars$n[i]
-  adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+    for (rho in cor_seq) {
+        Rho <- matrix(rho, 2, 2)
+        diag(Rho) <- 1.0
 
-  tmp_bounds <- computeCorBounds(margins, type = type)
-  cor_lo <- tmp_bounds$lower[1,2] + eps
-  cor_hi <- tmp_bounds$upper[1,2] - eps
-  cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+        time_data <- system.time({
+            x <- rvec(n = n,
+                      rho = Rho,
+                      margins = margins,
+                      cores = cores,
+                      type = type,
+                      ensure_PSD = TRUE)
+        })
 
-  for (rho in cor_seq) {
-    Rho <- matrix(rho, 2, 2)
-    diag(Rho) <- 1.0
+        ## Save the sims in case
+        id <- paste0(
+            "d", 2,
+            "-N", n,
+            "-c", cores,
+            "-r", rho,
+            "-Cor", type,
+            "-adj", as.character(adjustForDiscrete),
+            "-dev", "CPU",
+            "-lib", "bigsimr"
+        )
+        dir.create("./results/nbinom_sims", showWarnings = FALSE)
+        saveRDS(x, file = paste0("./results/nbinom_sims/", id, ".rds"))
 
-    time_data <- system.time({
-      x <- rvec(n = n,
-                rho = Rho,
-                params = margins,
-                cores = cores,
-                type = type,
-                adjustForDiscrete = adjustForDiscrete)
-    })
+        ## Estimate statistics
+        Rho_hat <- cor_fast(x, method = type)
+        rho_hat <- Rho_hat[1, 2]
+        nbinom_args_hat <- mom_nbinom(x[,1])
+        size_hat <- nbinom_args_hat$size
+        prob_hat <- nbinom_args_hat$prob
 
-    # Save the sims in case
-    id <- paste0(
-      "d", 2,
-      "-N", n,
-      "-c", cores,
-      "-r", rho,
-      "-Cor", type,
-      "-adj", as.character(adjustForDiscrete),
-      "-dev", "1CORE",
-      "-lib", "bigsimr"
-    )
-    saveRDS(x, file = paste0("sims_nb/", id, ".rds"))
-
-    # Estimate statistics
-    Rho_hat <- fastCor(x, method = type)
-    rho_hat <- Rho_hat[1, 2]
-    nbinom_args_hat <- mom_nbinom(x[,1])
-    size_hat <- nbinom_args_hat$size
-    prob_hat <- nbinom_args_hat$prob
-
-    # Save the results
-    res <- rbind(res, data.frame(
-      method = "bigsimr",
-      device = "1CORE",
-      type = type,
-      cores = cores,
-      margins = "nbinom",
-      adjustForDiscrete = adjustForDiscrete,
-      d = 2,
-      N = n,
-      rho = rho,
-      rho_hat = rho_hat,
-      size = size,
-      prob = prob,
-      size_hat = size_hat,
-      prob_hat = prob_hat,
-      sim_time = unname(time_data["elapsed"])
-    ))
-  }
+        ## Save the results
+        res <- rbind(res, data.frame(
+                              method = "bigsimr",
+                              device = "CPU",
+                              type = type,
+                              cores = cores,
+                              margins = "nbinom",
+                              adjustForDiscrete = adjustForDiscrete,
+                              d = 2,
+                              N = n,
+                              rho = rho,
+                              rho_hat = rho_hat,
+                              size = size,
+                              prob = prob,
+                              size_hat = size_hat,
+                              prob_hat = prob_hat,
+                              sim_time = unname(time_data["elapsed"])
+                          ))
+    }
 }
 res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
-saveRDS(object = res, "nbinom_sims_ags.rds")
+saveRDS(object = res, "./results/nbinom_sims.rds")
 ```
 
----
-
-```{r  biNegBinPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
-dat <- readRDS("nbinom_sims_ags.rds")
+```{r  biNegBinPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
+dat <- readRDS("./results/nbinom_sims.rds")
 dat %>%
-    filter(cores == 1, type == 'pearson') %>%
+    filter(cores == cores) %>%
     ggplot(aes(rho, rho_hat, color = type)) +
+    ## ggplot(aes(rho, rho_hat)) +
     geom_point() +
     geom_abline(slope = 1) +
-    ## facet_wrap(~ type + N)
-    facet_wrap(~ type + N)
+    ## facet_wrap(~ + N) + theme_bw()
+    facet_wrap(~ type + N) + theme_bw()
+## ggsave('fig/plot-biNegBinPlot.pdf')
 ```
 
----
+## Scale up to Ultra-High Dimensions
 
-```{r  biNegBinPlot2, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
-dat <- readRDS("nbinom_sims_ags.rds")
-dat %>%
-    filter(cores == 1, type == 'spearman') %>%
-    ggplot(aes(rho, rho_hat, color = type)) +
-    geom_point() +
-    geom_abline(slope = 1) +
-    ## facet_wrap(~ type + N)
-    facet_wrap(~ type + N)
-```
+```{r gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
 
----
-
-```{r  biNegBinPlot3, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
-dat <- readRDS("nbinom_sims_ags.rds")
-dat %>%
-    filter(cores == 1, type == 'kendall') %>%
-    ggplot(aes(rho, rho_hat, color = type)) +
-    geom_point() +
-    geom_abline(slope = 1) +
-    ## facet_wrap(~ type + N)
-    facet_wrap(~ type + N)
+knitr::include_graphics("fig/cpu-gpu-times.png")
 ```

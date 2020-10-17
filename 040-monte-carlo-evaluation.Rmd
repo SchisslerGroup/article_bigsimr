@@ -2,11 +2,11 @@
 
 ```{r LoadLib040, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
-## knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 ## reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
-## CORES <- as.integer( parallel::detectCores() - 1 )
+cores <- as.integer( parallel::detectCores() - 1 )
 set.seed(10162020)
 ```
 
@@ -44,12 +44,14 @@ margins <- alist(
 )
 
 type <- c("pearson", "spearman", "kendall")
-Cores <- as.integer( parallel::detectCores() - 1 )
-n <- c(1e3, 1e4, 1e5)
+cores <- as.integer( parallel::detectCores() - 1 )
+## n <- c(1e3, 1e4, 1e5)
+n <- c(1e1, 1e2, 1e3)
 adjustForDiscrete <- c(FALSE)
 
 eps <- 1e-2
-grid_steps <- 100
+## grid_steps <- 100
+grid_steps <- 10
 sim_pars <- expand.grid(type = type, cores = cores, n = n,
                         stringsAsFactors = FALSE,
                         adjustForDiscrete = adjustForDiscrete)
@@ -130,7 +132,7 @@ saveRDS(object = res, "./results/norm_sims.rds")
 ```{r biNormPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
 dat <- readRDS("./results/norm_sims.rds")
 dat %>%
-    filter(cores == 1) %>%
+    filter(cores == cores) %>%
     ggplot(aes(rho, rho_hat, color = type)) +
     ## ggplot(aes(rho, rho_hat)) +
     geom_point() +

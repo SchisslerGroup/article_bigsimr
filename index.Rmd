@@ -44,8 +44,6 @@ library(knitr)
 library(rmarkdown)
 library(bookdown)
 ## setwd('~/article_bigsimr')
-## bookdown::render_book("index.Rmd", "bookdown::pdf_book")
-## bookdown::serve_book()
 set.seed(09212020)
 ```
 
@@ -63,6 +61,7 @@ knitr::write_bib(c(
 ```{r serveHelper, include=FALSE, eval=FALSE}
 ## rmote::start_rmote()
 ## library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
+## bookdown::render_book("index.Rmd", "bookdown::pdf_book")
 bookdown::serve_book()
 ```
 

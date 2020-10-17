@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
-CORES <- as.integer( parallel::detectCores() - 1 )
+cores <- as.integer( parallel::detectCores() - 1 )
 set.seed(10142020)
 ```
 
@@ -46,7 +46,7 @@ Here we are satisfied with approximate matching of the specified Gamma correlati
 Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
 -->
 
-```{r processBRCA, echo=FALSE, eval=TRUE, results='none'}
+```{r processBRCA, echo=FALSE, eval=FALSE, results='none'}
 ## full workflow simulating RNA-seq data
 allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
 lastClinical <- which( names(allDat) == 'tumorsize' )
@@ -63,10 +63,10 @@ brca <- brca[ , genesToKeep ]
 ## ncol(brca) / 20501
 print(d <- length(genesToKeep))
 ## save data as rds
-## saveRDS(brca, './data/brca99.rds')
+saveRDS(brca, './data/brca99.rds')
 ```
 
-```{r readBRCA, echo=FALSE, eval=FALSE}
+```{r readBRCA, echo=FALSE, eval=TRUE}
 ## full workflow simulating RNA-seq data
 brca <- readRDS(file = './data/brca99.rds') 
 ```
@@ -129,7 +129,7 @@ n <- 10000
 nb_margins <- make_nbinom_alist(sizes, probs)
 ## run sims
 system.time( sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = corType,
-                                ensure_PSD = TRUE, cores = CORES) )
+                                ensure_PSD = TRUE, cores = cores) )
 ```
 
 Figure X shows the results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).

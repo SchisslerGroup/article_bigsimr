@@ -5,7 +5,7 @@ bookdown::preview_chapter('020-simulation-algorithm.Rmd')
 ```
 
 This section describes the method for simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$. Each $Y_i$ has a specified marginal
-distribution function $F_i$ and its inverse. To characterize dependency, every pair $(Y_i, Y_j)$ has either a specified Pearson correlation \@ref(eq:pearson), (rescaled) Spearman correlation \@ref(eq:spearmanRescaled) , or Kendall's $\tau$ (Equation \@ref(eq:tau) ). The method only approximately matches the Pearson correlation in general, whereas the rank-based methods are exact.
+distribution function $F_i$ and its inverse. To characterize dependency, every pair $(Y_i, Y_j)$ has either a specified Pearson correlation \@ref(eq:pearson), (rescaled) Spearman correlation \, or Kendall's $\tau$ ). The method only approximately matches the Pearson correlation in general, whereas the rank-based methods are exact.
 
 The method is best understand as a **parallelized Gaussian copula** (see Equation \@ref(eq:gauss) to provide a high-performance NORTA (NORmal To Anything) algorithm.
 

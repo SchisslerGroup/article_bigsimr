@@ -62,6 +62,7 @@ knitr::write_bib(c(
 ## rmote::start_rmote()
 ## library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
 ## bookdown::render_book("index.Rmd", "bookdown::pdf_book")
+## bookdown::preview_chapter("index.Rmd")
 bookdown::serve_book()
 ```
 
@@ -112,4 +113,30 @@ The algorithm must scale to a large number of simulation replicates,$N$ for high
 
 The study proceeds with more details on our motivating example in RNA-sequencing breast cancer data. Then we describe and justify our simulation methodology, followed by extensive Monte Carlo studies under various distributional assumptions --- emphasizing normal and non-normal scenarios. In these studies, we evaluate the accuracy and speed of our approach in comparison to other readily available software. After evaluating *in silico*, we revisit our motivating
 example by employing our method and compare our simulations to empirically-derived statistics. Finally, we'll make concluding remarks regarding the method's utility and future directions.
+
+
+## Motivating example
+
+- RNA-seq
+- Provide a table of values
+- check the talk history
+
+
+```{r realDataTabl, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
+## Describe and plot real data
+brca <- readRDS(file = './data/brca99.rds')
+set.seed(10192020)
+exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
+saveRDS(exampleGenes, file = './data/exampleGenes.rds')
+kable(round(brca[1:4, exampleGenes]))
+## GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
+```
+
+Figure X.
+
+```{r realDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Real data for the 3 selected high-expressing genes'}
+## Describe and plot real data
+GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
+```
+
 

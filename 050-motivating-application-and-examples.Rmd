@@ -1,4 +1,4 @@
-# Motivating application and examples
+# Replicating motivating data and example applications
 
 ```{r LoadLib050, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
@@ -130,6 +130,16 @@ nb_margins <- make_nbinom_alist(sizes, probs)
 ## run sims
 system.time( sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = corType,
                                 ensure_PSD = TRUE, cores = cores) )
+colnames(sim_nbinom) <- names(brca)
+```
+
+Figure X.
+
+```{r simDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 randomly selected high-expressing genes, replicating the real data structure describing in the Introduction.'}
+## retrieve the examples from an earlier chapter
+## there is probably a better way to do this
+exampleGenes <- readRDS(file = './data/exampleGenes.rds') 
+GGally::ggpairs(data = as.data.frame(sim_nbinom[ ,exampleGenes] ))
 ```
 
 Figure X shows the results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).

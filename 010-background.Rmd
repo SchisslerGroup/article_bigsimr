@@ -49,6 +49,8 @@ As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pea
 
 \noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. For continuous marginals, the measure works well due to zero probability of ties. 
 
+## Discrete marginal considerations
+
 <!-- 
 For discrete marginals, however, one could perform a rescaled version of $\rho_s$ for random variables $X,Y$ with pmfs (or pdfs) $p(x)$ and $q(y)$, respectively. 
 

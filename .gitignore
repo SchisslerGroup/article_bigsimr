@@ -51,6 +51,7 @@ vignettes/*.pdf
 *.knit.md
 
 # R Environment Variables
+.Rprofile
 .Renviron
 .Rproj.user
 

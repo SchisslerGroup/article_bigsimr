@@ -21,11 +21,6 @@
   
   
 
-<meta name="author" content="A.G. Schissler" />
-<meta name="author" content="R.D.L. Foote" />
-<meta name="author" content="A.D. Knudson" />
-<meta name="author" content="T.J. Kozubowski" />
-<meta name="author" content="A.K. Panorska" />
 
 
 
@@ -34,7 +29,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="notes.html"/>
+<link rel="prev" href="nomenclaturenotation.html"/>
 
 <style type="text/css">
 p.abstract{
@@ -63,12 +58,13 @@ div.abstract{
 
 
 
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
 
 
 <style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 pre.sourceCode { margin: 0; }
@@ -77,14 +73,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -93,9 +91,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -142,20 +140,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul class="summary">
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
 <li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#ultra-high-dimensional-multivariate-modeling-and-simulation-desired-properties"><i class="fa fa-check"></i><b>1.1</b> Ultra High Dimensional multivariate modeling and simulation desired properties</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#motivating-example"><i class="fa fa-check"></i><b>1.2</b> Motivating example</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="background-and-notation.html"><a href="background-and-notation.html"><i class="fa fa-check"></i><b>2</b> Background and notation</a><ul>
 <li class="chapter" data-level="2.1" data-path="background-and-notation.html"><a href="background-and-notation.html#gaussian-copulas"><i class="fa fa-check"></i><b>2.1</b> Gaussian copulas</a></li>
 <li class="chapter" data-level="2.2" data-path="background-and-notation.html"><a href="background-and-notation.html#measures-of-dependency"><i class="fa fa-check"></i><b>2.2</b> Measures of dependency</a></li>
-<li class="chapter" data-level="2.3" data-path="background-and-notation.html"><a href="background-and-notation.html#marginal-dependent-bivariate-correlation-bounds"><i class="fa fa-check"></i><b>2.3</b> Marginal-dependent bivariate correlation bounds</a></li>
+<li class="chapter" data-level="2.3" data-path="background-and-notation.html"><a href="background-and-notation.html#discrete-marginal-considerations"><i class="fa fa-check"></i><b>2.3</b> Discrete marginal considerations</a></li>
+<li class="chapter" data-level="2.4" data-path="background-and-notation.html"><a href="background-and-notation.html#marginal-dependent-bivariate-correlation-bounds"><i class="fa fa-check"></i><b>2.4</b> Marginal-dependent bivariate correlation bounds</a></li>
+<li class="chapter" data-level="2.5" data-path="background-and-notation.html"><a href="background-and-notation.html#other-r-packages-for-simulating-random-vectors"><i class="fa fa-check"></i><b>2.5</b> Other <code>R</code> packages for simulating random vectors</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html"><i class="fa fa-check"></i><b>3</b> Simulation algorithm</a><ul>
-<li class="chapter" data-level="3.1" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html#algorithm-description"><i class="fa fa-check"></i><b>3.1</b> Algorithm description</a></li>
-<li class="chapter" data-level="3.2" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html#simulation-algorithm-1"><i class="fa fa-check"></i><b>3.2</b> Simulation Algorithm</a><ul>
-<li class="chapter" data-level="3.2.1" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html#algorithm-1-matching-pearson-approximately"><i class="fa fa-check"></i><b>3.2.1</b> Algorithm 1: Matching Pearson approximately</a></li>
-<li class="chapter" data-level="3.2.2" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html#algorithm-2-matching-spearmans-exactly"><i class="fa fa-check"></i><b>3.2.2</b> Algorithm 2: Matching Spearman’s exactly</a></li>
-<li class="chapter" data-level="3.2.3" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html#algorithm-3-matching-kendalls-exactly"><i class="fa fa-check"></i><b>3.2.3</b> Algorithm 3: Matching Kendall’s exactly</a></li>
-</ul></li>
-<li class="chapter" data-level="3.3" data-path="simulation-algorithm.html"><a href="simulation-algorithm.html#algorithm-notes"><i class="fa fa-check"></i><b>3.3</b> Algorithm notes</a></li>
+<li class="chapter" data-level="3" data-path="algorithms.html"><a href="algorithms.html"><i class="fa fa-check"></i><b>3</b> Algorithms</a><ul>
+<li class="chapter" data-level="3.1" data-path="algorithms.html"><a href="algorithms.html#random-vector-generation-bigsimrrvec-algorithm"><i class="fa fa-check"></i><b>3.1</b> Random vector generation <code>bigsimr::rvec</code> algorithm</a></li>
+<li class="chapter" data-level="3.2" data-path="algorithms.html"><a href="algorithms.html#other-high-performance-bigsimr-algorithms"><i class="fa fa-check"></i><b>3.2</b> Other high-performance <code>bigsimr</code> algorithms</a></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="the-bigsimr-r-package.html"><a href="the-bigsimr-r-package.html"><i class="fa fa-check"></i><b>4</b> The <code>bigsimr</code> R package</a><ul>
 <li class="chapter" data-level="4.1" data-path="the-bigsimr-r-package.html"><a href="the-bigsimr-r-package.html#basic-use"><i class="fa fa-check"></i><b>4.1</b> Basic use</a><ul>
@@ -171,25 +167,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.2.3" data-path="the-bigsimr-r-package.html"><a href="the-bigsimr-r-package.html#using-bigsimr-on-a-computing-cluster-via-rslurm"><i class="fa fa-check"></i><b>4.2.3</b> Using <code>bigsimr</code> on a computing cluster via <code>rslurm</code></a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html"><i class="fa fa-check"></i><b>5</b> Monte Carlo evaluation and Comparsions to other software</a><ul>
-<li class="chapter" data-level="5.1" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#other-multivariate-simulation-software"><i class="fa fa-check"></i><b>5.1</b> Other multivariate simulation software</a></li>
-<li class="chapter" data-level="5.2" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#simulation-i-bivariate-simulation-using-rank-based-correlation"><i class="fa fa-check"></i><b>5.2</b> Simulation I: Bivariate simulation using rank-based correlation</a><ul>
-<li class="chapter" data-level="5.2.1" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#continuous-example-bivariate-exponential"><i class="fa fa-check"></i><b>5.2.1</b> Continuous example: Bivariate Exponential</a></li>
-<li class="chapter" data-level="5.2.2" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#discrete-example-bivariate-geometric"><i class="fa fa-check"></i><b>5.2.2</b> Discrete example: Bivariate Geometric</a></li>
+<li class="chapter" data-level="5" data-path="monte-carlo-evaluations.html"><a href="monte-carlo-evaluations.html"><i class="fa fa-check"></i><b>5</b> Monte Carlo evaluations</a><ul>
+<li class="chapter" data-level="5.1" data-path="monte-carlo-evaluations.html"><a href="monte-carlo-evaluations.html#simulation-i-bivariate-simulation-using-rank-based-correlation"><i class="fa fa-check"></i><b>5.1</b> Simulation I: Bivariate simulation using rank-based correlation</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="monte-carlo-evaluations.html"><a href="monte-carlo-evaluations.html#bivariate-normal"><i class="fa fa-check"></i><b>5.1.1</b> Bivariate Normal</a></li>
 </ul></li>
-<li class="chapter" data-level="5.3" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#simulation-ii-ultra-hd-multivariate-simulation-with-identical-margins-and-exchangeable-rank-based-correlation."><i class="fa fa-check"></i><b>5.3</b> Simulation II: Ultra HD multivariate simulation with identical margins and exchangeable rank-based correlation.</a><ul>
-<li class="chapter" data-level="5.3.1" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#uhd-continuous-example-multivariate-gamma"><i class="fa fa-check"></i><b>5.3.1</b> UHD Continuous example: Multivariate Gamma</a></li>
-<li class="chapter" data-level="5.3.2" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#uhd-discrete-example-multivariate-negative-binomial"><i class="fa fa-check"></i><b>5.3.2</b> UHD Discrete example: Multivariate Negative Binomial</a></li>
+<li class="chapter" data-level="5.2" data-path="monte-carlo-evaluations.html"><a href="monte-carlo-evaluations.html#bivariate-gamma"><i class="fa fa-check"></i><b>5.2</b> Bivariate Gamma</a></li>
+<li class="chapter" data-level="5.3" data-path="monte-carlo-evaluations.html"><a href="monte-carlo-evaluations.html#bivariate-negative-binomial"><i class="fa fa-check"></i><b>5.3</b> Bivariate Negative Binomial</a></li>
+<li class="chapter" data-level="5.4" data-path="monte-carlo-evaluations.html"><a href="monte-carlo-evaluations.html#scale-up-to-ultra-high-dimensions"><i class="fa fa-check"></i><b>5.4</b> Scale up to Ultra-High Dimensions</a></li>
 </ul></li>
-<li class="chapter" data-level="5.4" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#simulation-iii-ultra-hd-multivariate-simulatino-with-heterogenous-margins-and-exchangeable-rank-based-correlation."><i class="fa fa-check"></i><b>5.4</b> Simulation III: Ultra HD multivariate simulatino with heterogenous margins and exchangeable rank-based correlation.</a><ul>
-<li class="chapter" data-level="5.4.1" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#uhd-heteregeous-continuous-example-multivariate-gamma"><i class="fa fa-check"></i><b>5.4.1</b> UHD Heteregeous continuous example: Multivariate Gamma</a></li>
-<li class="chapter" data-level="5.4.2" data-path="monte-carlo-evaluation-and-comparsions-to-other-software.html"><a href="monte-carlo-evaluation-and-comparsions-to-other-software.html#uhd-heteregeousdiscrete-example-multivariate-negative-binomial"><i class="fa fa-check"></i><b>5.4.2</b> UHD Heteregeousdiscrete example: Multivariate Negative Binomial</a></li>
-</ul></li>
-</ul></li>
-<li class="chapter" data-level="6" data-path="some-applications.html"><a href="some-applications.html"><i class="fa fa-check"></i><b>6</b> Some applications</a><ul>
-<li class="chapter" data-level="6.1" data-path="some-applications.html"><a href="some-applications.html#simulating-ultra-high-dimensional-rna-seq-data"><i class="fa fa-check"></i><b>6.1</b> Simulating Ultra High Dimensional RNA-seq data</a></li>
-<li class="chapter" data-level="6.2" data-path="some-applications.html"><a href="some-applications.html#ultra-high-dimensional-simulation-based-correlation-hypothesis-testing-under"><i class="fa fa-check"></i><b>6.2</b> Ultra High-Dimensional simulation-based correlation hypothesis testing under</a></li>
-<li class="chapter" data-level="6.3" data-path="some-applications.html"><a href="some-applications.html#simulation-based-joint-probability-calculations"><i class="fa fa-check"></i><b>6.3</b> Simulation-based joint probability calculations</a></li>
+<li class="chapter" data-level="6" data-path="example-applications-for-our-motivating-data.html"><a href="example-applications-for-our-motivating-data.html"><i class="fa fa-check"></i><b>6</b> Example applications for our motivating data</a><ul>
+<li class="chapter" data-level="6.1" data-path="example-applications-for-our-motivating-data.html"><a href="example-applications-for-our-motivating-data.html#simulating-high-dimensional-rna-seq-data"><i class="fa fa-check"></i><b>6.1</b> Simulating High-Dimensional RNA-seq data</a></li>
+<li class="chapter" data-level="6.2" data-path="example-applications-for-our-motivating-data.html"><a href="example-applications-for-our-motivating-data.html#simulation-based-uhd-joint-probability-calculations"><i class="fa fa-check"></i><b>6.2</b> Simulation-based UHD joint probability calculations</a></li>
+<li class="chapter" data-level="6.3" data-path="example-applications-for-our-motivating-data.html"><a href="example-applications-for-our-motivating-data.html#uhd-parameteric-bootstrap"><i class="fa fa-check"></i><b>6.3</b> UHD Parameteric bootstrap</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="conclusiondiscussion.html"><a href="conclusiondiscussion.html"><i class="fa fa-check"></i><b>7</b> Conclusion/Discussion</a></li>
 <li class="chapter" data-level="8" data-path="supplementary-materials.html"><a href="supplementary-materials.html"><i class="fa fa-check"></i><b>8</b> Supplementary Materials</a></li>
@@ -197,9 +186,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="10" data-path="disclosure-statement.html"><a href="disclosure-statement.html"><i class="fa fa-check"></i><b>10</b> Disclosure statement</a></li>
 <li class="chapter" data-level="11" data-path="funding.html"><a href="funding.html"><i class="fa fa-check"></i><b>11</b> Funding</a></li>
 <li class="chapter" data-level="12" data-path="nomenclaturenotation.html"><a href="nomenclaturenotation.html"><i class="fa fa-check"></i><b>12</b> Nomenclature/Notation</a></li>
-<li class="chapter" data-level="13" data-path="notes.html"><a href="notes.html"><i class="fa fa-check"></i><b>13</b> Notes</a><ul>
-<li class="chapter" data-level="13.0.1" data-path="notes.html"><a href="notes.html#list-of-supported-distributions"><i class="fa fa-check"></i><b>13.0.1</b> List of supported distributions</a></li>
-</ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 </ul>
 
@@ -223,31 +209,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div id="refs" class="references">
 <div>
-<p>Barbiero, Alessandro, and Pier Alda Ferrari. 2017. “An R package for the simulation of correlated discrete variables.” <em>Communications in Statistics - Simulation and Computation</em> 46 (7): 5123–40. <a href="https://doi.org/10.1080/03610918.2016.1146758" class="uri">https://doi.org/10.1080/03610918.2016.1146758</a>.</p>
+<p>Barbiero, Alessandro, and Pier Alda Ferrari. 2017. “An R package for the simulation of correlated discrete variables.” <em>Communications in Statistics - Simulation and Computation</em> 46 (7): 5123–40. <a href="https://doi.org/10.1080/03610918.2016.1146758">https://doi.org/10.1080/03610918.2016.1146758</a>.</p>
+</div>
+<div>
+<p>Cario, Marne C., and Barry L. Nelson. 1997. “Modeling and generating random vectors with arbitrary marginal distributions and correlation matrix.” Citeseer. <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.48.281%7B\&amp;%7Drep=rep1%7B\&amp;%7Dtype=pdf">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.48.281{\&amp;}rep=rep1{\&amp;}type=pdf</a>.</p>
 </div>
 <div>
 <p>Chen, Huifen. 2001. “Initialization for NORTA: Generation of Random Vectors with Specified Marginals and Correlations.” <em>INFORMS Journal on Computing</em> 13 (4): 312–31.</p>
 </div>
 <div>
-<p>Conesa, Ana, Pedro Madrigal, Sonia Tarazona, David Gomez-Cabrero, Alejandra Cervera, Andrew McPherson, Michal Wojciech Szcześniak, et al. 2016. “A survey of best practices for RNA-seq data analysis.” <a href="https://doi.org/10.1186/s13059-016-0881-8" class="uri">https://doi.org/10.1186/s13059-016-0881-8</a>.</p>
+<p>Conesa, Ana, Pedro Madrigal, Sonia Tarazona, David Gomez-Cabrero, Alejandra Cervera, Andrew McPherson, Michal Wojciech Szcześniak, et al. 2016. “A survey of best practices for RNA-seq data analysis.” <a href="https://doi.org/10.1186/s13059-016-0881-8">https://doi.org/10.1186/s13059-016-0881-8</a>.</p>
 </div>
 <div>
-<p>Demirtas, Hakan, and Donald Hedeker. 2011. “A practicalway for computing approximate lower and upper correlation bounds.” <em>American Statistician</em> 65 (2): 104–9. <a href="https://doi.org/10.1198/tast.2011.10090" class="uri">https://doi.org/10.1198/tast.2011.10090</a>.</p>
+<p>Demirtas, Hakan, and Donald Hedeker. 2011. “A practicalway for computing approximate lower and upper correlation bounds.” <em>American Statistician</em> 65 (2): 104–9. <a href="https://doi.org/10.1198/tast.2011.10090">https://doi.org/10.1198/tast.2011.10090</a>.</p>
 </div>
 <div>
-<p>Efron, Bradley. 2004. “Large-scale simultaneous hypothesis testing: The choice of a null hypothesis.” <em>Journal of the American Statistical Association</em>. <a href="https://doi.org/10.1198/016214504000000089" class="uri">https://doi.org/10.1198/016214504000000089</a>.</p>
+<p>Efron, Bradley. 2007. “Correlation and large-scale simultaneous significance testing.” <em>Journal of the American Statistical Association</em> 102 (477): 93–103. <a href="https://doi.org/10.1198/016214506000001211">https://doi.org/10.1198/016214506000001211</a>.</p>
 </div>
 <div>
-<p>———. 2007. “Correlation and large-scale simultaneous significance testing.” <em>Journal of the American Statistical Association</em> 102 (477): 93–103. <a href="https://doi.org/10.1198/016214506000001211" class="uri">https://doi.org/10.1198/016214506000001211</a>.</p>
+<p>Fasiolo, Matteo. 2016. <em>An introduction to mvnfast. R package version 0.1.6.</em> <a href="https://cran.r-project.org/package=mvnfast">https://cran.r-project.org/package=mvnfast</a>.</p>
 </div>
 <div>
-<p>Kruskal, William H. 1958. “Ordinal Measures of Association.” <em>Journal of the American Statistical Association</em> 53 (284): 814–61. <a href="https://doi.org/10.1080/01621459.1958.10501481" class="uri">https://doi.org/10.1080/01621459.1958.10501481</a>.</p>
+<p>Kruskal, William H. 1958. “Ordinal Measures of Association.” <em>Journal of the American Statistical Association</em> 53 (284): 814–61. <a href="https://doi.org/10.1080/01621459.1958.10501481">https://doi.org/10.1080/01621459.1958.10501481</a>.</p>
 </div>
 <div>
-<p>Li, Xiang, A. Grant Schissler, Rui Wu, Lee Barford, Jr. Harris, Fredrick C., and Frederick C. Harris. 2019. “A Graphical Processing Unit Accelerated NORmal to Anything Algorithm for High Dimensional Multivariate Simulation.” <em>Advances in Intelligent Systems and Computing</em>, 339–45. <a href="https://doi.org/10.1007/978-3-030-14070-0_46" class="uri">https://doi.org/10.1007/978-3-030-14070-0_46</a>.</p>
+<p>Li, Xiang, A. Grant Schissler, Rui Wu, Lee Barford, Jr. Harris, Fredrick C., and Frederick C. Harris. 2019. “A Graphical Processing Unit Accelerated NORmal to Anything Algorithm for High Dimensional Multivariate Simulation.” <em>Advances in Intelligent Systems and Computing</em>, 339–45. <a href="https://doi.org/10.1007/978-3-030-14070-0_46">https://doi.org/10.1007/978-3-030-14070-0_46</a>.</p>
 </div>
 <div>
-<p>Madsen, L., and D. Birkes. 2013. “Simulating dependent discrete data.” <em>Journal of Statistical Computation and Simulation</em>. <a href="https://doi.org/10.1080/00949655.2011.632774" class="uri">https://doi.org/10.1080/00949655.2011.632774</a>.</p>
+<p>Madsen, L., and D. Birkes. 2013. “Simulating dependent discrete data.” <em>Journal of Statistical Computation and Simulation</em>. <a href="https://doi.org/10.1080/00949655.2011.632774">https://doi.org/10.1080/00949655.2011.632774</a>.</p>
 </div>
 <div>
 <p>Mari, Dominique Drouet, and Samuel Kotz. 2001. <em>Correlation and dependence</em>. World Scientific.</p>
@@ -259,31 +248,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Nikoloulopoulos, Aristidis K. 2013. “Copula-based models for multivariate discrete response data.” In <em>Lecture Notes in Statistics: Copulae in Mathematical and Quantitative Finance</em>, 213th ed., 231–49. Heidelberg: Springer.</p>
 </div>
 <div>
-<p>Nikoloulopoulos, Aristidis K., and Dimitris Karlis. 2010. “Modeling multivariate count data using copulas.” <em>Communications in Statistics: Simulation and Computation</em>. <a href="https://doi.org/10.1080/03610910903391262" class="uri">https://doi.org/10.1080/03610910903391262</a>.</p>
-</div>
-<div>
-<p>Schissler, A Grant, Walter W Piegorsch, and Yves A Lussier. 2018. “Testing for differentially expressed genetic pathways with single-subject N-of-1 data in the presence of inter-gene correlation.” <em>Statistical Methods in Medical Research</em> 27 (12): 3797–3813. <a href="https://doi.org/10.1177/0962280217712271" class="uri">https://doi.org/10.1177/0962280217712271</a>.</p>
-</div>
-<div>
-<p>Schissler, Alfred Grant, Dillon Aberasturi, Colleen Kenost, and Yves A. Lussier. 2019. “A Single-Subject Method to Detect Pathways Enriched With Alternatively Spliced Genes.” <em>Frontiers in Genetics</em> 10 (414). <a href="https://doi.org/10.3389/fgene.2019.00414" class="uri">https://doi.org/10.3389/fgene.2019.00414</a>.</p>
+<p>Schissler, A Grant, Walter W Piegorsch, and Yves A Lussier. 2018. “Testing for differentially expressed genetic pathways with single-subject N-of-1 data in the presence of inter-gene correlation.” <em>Statistical Methods in Medical Research</em> 27 (12): 3797–3813. <a href="https://doi.org/10.1177/0962280217712271">https://doi.org/10.1177/0962280217712271</a>.</p>
 </div>
 <div>
 <p>Song, Peter Xue-kun. 2000. “Multivariate Dispersion Models Generated from Gaussian Copula.” <em>Scandinavian Journal of Statistics</em> 27 (2): 305–20.</p>
 </div>
 <div>
-<p>Wang, Zhong, Mark Gerstein, and Michael Snyder. 2009. “RNA-Seq: A revolutionary tool for transcriptomics.” <a href="https://doi.org/10.1038/nrg2484" class="uri">https://doi.org/10.1038/nrg2484</a>.</p>
+<p>Wang, Zhong, Mark Gerstein, and Michael Snyder. 2009. “RNA-Seq: A revolutionary tool for transcriptomics.” <a href="https://doi.org/10.1038/nrg2484">https://doi.org/10.1038/nrg2484</a>.</p>
 </div>
 <div>
-<p>Won, Joong-Ho, Johan Lim, Seung-Jean Kim, and Bala Rajaratnam. 2013. “Condition-number-regularized covariance estimation.” <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 75 (3). Blackwell Publishing Ltd: 427–50. <a href="https://doi.org/10.1111/j.1467-9868.2012.01049.x" class="uri">https://doi.org/10.1111/j.1467-9868.2012.01049.x</a>.</p>
+<p>Won, Joong-Ho, Johan Lim, Seung-Jean Kim, and Bala Rajaratnam. 2013. “Condition-number-regularized covariance estimation.” <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 75 (3): 427–50. <a href="https://doi.org/10.1111/j.1467-9868.2012.01049.x">https://doi.org/10.1111/j.1467-9868.2012.01049.x</a>.</p>
 </div>
 <div>
-<p>Wu, Di, and Gordon K. Smyth. 2012. “Camera: A competitive gene set test accounting for inter-gene correlation.” <em>Nucleic Acids Research</em> 40 (17). Oxford University Press: e133–e133. <a href="https://doi.org/10.1093/nar/gks461" class="uri">https://doi.org/10.1093/nar/gks461</a>.</p>
+<p>Wu, Di, and Gordon K. Smyth. 2012. “Camera: A competitive gene set test accounting for inter-gene correlation.” <em>Nucleic Acids Research</em> 40 (17): e133–e133. <a href="https://doi.org/10.1093/nar/gks461">https://doi.org/10.1093/nar/gks461</a>.</p>
 </div>
 <div>
-<p>Xiao, Qing. 2017. “Generating correlated random vector involving discrete variables.” <em>Communications in Statistics - Theory and Methods</em>. <a href="https://doi.org/10.1080/03610926.2015.1024860" class="uri">https://doi.org/10.1080/03610926.2015.1024860</a>.</p>
+<p>Xiao, Qing. 2017. “Generating correlated random vector involving discrete variables.” <em>Communications in Statistics - Theory and Methods</em>. <a href="https://doi.org/10.1080/03610926.2015.1024860">https://doi.org/10.1080/03610926.2015.1024860</a>.</p>
 </div>
 <div>
-<p>Zhao, Lili, Weisheng Wu, Dai Feng, Hui Jiang, and XuanLong Nguyen. 2018. “Bayesian Analysis of RNA-Seq Data Using a Family of Negative Binomial Models.” <em>Bayesian Analysis</em> 13 (2): 411–36. <a href="https://doi.org/10.1214/17-BA1055" class="uri">https://doi.org/10.1214/17-BA1055</a>.</p>
+<p>Yan, Jun. 2007. “Enjoy the Joy of Copulas : With a Package copula.” <em>Journal of Statistical Software</em> 21 (4): 1–21. <a href="http://www.jstatsoft.org/v21/i04">http://www.jstatsoft.org/v21/i04</a>.</p>
 </div>
 </div>
 </div>
@@ -292,7 +275,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="notes.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="nomenclaturenotation.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 
     </div>
   </div>
@@ -332,7 +315,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": null,
+"download": ["article_bigsimr.pdf"],
 "toc": {
 "collapse": "subsection",
 "scroll_highlight": true

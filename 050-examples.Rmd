@@ -1,9 +1,8 @@
 # Example applications for our motivating data
 
 ```{r LoadLib050, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
-## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
-reticulate::use_condaenv("bigsimr")
+# reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
 cores <- as.integer( parallel::detectCores() - 1 )
@@ -63,12 +62,12 @@ brca <- brca[ , genesToKeep ]
 ## ncol(brca) / 20501
 print(d <- length(genesToKeep))
 ## save data as rds
-saveRDS(brca, './data/brca99.rds')
+saveRDS(brca, 'data/brca99.rds')
 ```
 
 ```{r readBRCA, echo=FALSE, eval=TRUE}
 ## full workflow simulating RNA-seq data
-brca <- readRDS(file = './data/brca99.rds') 
+brca <- readRDS(file = 'data/brca99.rds') 
 ```
 
 Let's walk through a workflow simulating RNA-seq data

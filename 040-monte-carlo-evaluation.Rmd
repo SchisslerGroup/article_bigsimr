@@ -389,6 +389,5 @@ dat %>%
 ## Scale up to Ultra-High Dimensions
 
 ```{r gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
-
 knitr::include_graphics("fig/cpu-gpu-times.png")
 ```

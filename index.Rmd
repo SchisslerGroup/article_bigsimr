@@ -80,7 +80,7 @@ sum(counts)
 # Introduction
 
 Massive high-dimensional data sets are now commonplace in many areas of scientific inquiry.
-As new methods are developed for these data, a fundamental challenge lies in designing and conducting simulation studies to assess operating characteristics of proposed methodology, such as false positive rates, statistical power, and robustness --- often in comparison to existing methods.
+As new methods are developed for these data, a fundamental challenge lies in designing and conducting simulation studies to assess operating characteristics of proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness --- often in comparison to existing methods.
 Further efficient simulation empowers computational strategies (such as a parameteric bootstrap --- simulating from a hypothesized null model) to provide inference in analytically challenging settings.
 Such Monte Carlo techniques become difficult for high-dimensional data with the current existing algorithms and tools.
 This is particularly true when simulating massive multivariate, non-normal distributions, arising naturally in many fields of study in this era of big data.

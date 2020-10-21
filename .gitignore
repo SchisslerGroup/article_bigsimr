@@ -6,6 +6,7 @@ index.tex
 index.pdf
 *.html
 texput.log
+packages.bib
 
 # Mac Finder
 .DS_Store

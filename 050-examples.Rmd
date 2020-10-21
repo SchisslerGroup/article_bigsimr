@@ -1,6 +1,6 @@
 # Example applications for our motivating data
 
-```{r LoadLib050, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+```{r ch050-LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 # reticulate::use_condaenv("bigsimr")
 library(bigsimr)
@@ -9,7 +9,7 @@ cores <- as.integer( parallel::detectCores() - 1 )
 set.seed(10142020)
 ```
 
-```{r previewChapter050, echo = FALSE, eval = FALSE}
+```{r ch050-preview, echo = FALSE, eval = FALSE}
 bookdown::preview_chapter('050-examples.Rmd')
 ```
 
@@ -45,21 +45,21 @@ Here we are satisfied with approximate matching of the specified Gamma correlati
 Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
 -->
 
-```{r readBRCA, echo=FALSE, eval=TRUE}
+```{r ch050-readBRCA, echo=FALSE, eval=TRUE}
 ## full workflow simulating RNA-seq data
 brca <- readRDS(file = 'data/brca99.rds') 
 ```
 
 Let's walk through a workflow simulating RNA-seq data
 
-```{r estRhoBRCA, echo=TRUE, eval=TRUE}
+```{r ch050-estRhoBRCA, echo=TRUE, eval=TRUE}
 ## 1. Estimate Spearman's correlation on the count data
 ## corType <- 'pearson'
 corType <- 'spearman'
 system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
 ```
 
-```{r estMargins, echo = FALSE, eval = TRUE}
+```{r ch050-estMargins, echo = FALSE, eval = TRUE}
 ## 2. Estimate NegBin parameters using Method of Moments
 estimateNegBinMoM <- function(tmpGene, minP = 1e-7) {
     tmpMean <- mean(tmpGene)
@@ -81,7 +81,7 @@ sizes <- unlist( lapply( brcaMargins, function(x) {x$size} ) )
 ## head( sort( unlist( lapply( brcaMargins, function(x) {x$size} ) ) ) )
 ```
 
-```{r nbHelpers}
+```{r ch050-nbHelpers}
 make_nbinom_alist <- function(sizes, probs) {
   lapply(1:length(sizes), function(i) {
     substitute(qnbinom(size = s, prob = p), 
@@ -101,7 +101,7 @@ nbinom_mom <- function(x) {
 
 Now specify the desired multivariate negative binomial distribution.
 
-```{r runBRCA, echo=TRUE, results=TRUE, cache = TRUE}
+```{r ch050-runBRCA, echo=TRUE, results=TRUE, cache = TRUE}
 ## Set the number of random vectors
 n <- 10000
 ## construct margins
@@ -114,7 +114,7 @@ colnames(sim_nbinom) <- names(brca)
 
 Figure X.
 
-```{r simDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 randomly selected high-expressing genes, replicating the real data structure describing in the Introduction.'}
+```{r ch050-simDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 randomly selected high-expressing genes, replicating the real data structure describing in the Introduction.'}
 ## retrieve the examples from an earlier chapter
 ## there is probably a better way to do this
 exampleGenes <- readRDS(file = './data/exampleGenes.rds') 
@@ -125,7 +125,7 @@ Figure X shows the results of our simulation by comparing the specified target p
 The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
 Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in less than 30 seconds.
 
-```{r figBRCA, echo=F, eval=T, fig.cap="bigsimr produces simulated random vectors from a multivariate negative binomial that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters (vertical axes; derived from the simulated data) and the specified target parameters (horizontal axes)."}
+```{r ch050-figBRCA, echo=F, eval=T, fig.cap="bigsimr produces simulated random vectors from a multivariate negative binomial that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters (vertical axes; derived from the simulated data) and the specified target parameters (horizontal axes)."}
 par(mfrow=c(1,3))
 ## estimate rho from sims and plot
 nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
@@ -172,7 +172,7 @@ $$
 where $\bf{Y^{(b)}}$ is the $b^{th}$ simulated vector in a total of $B$ simulation replicates and $I(\dot)$ is the indicator function.
 For example, we can estimate from our $B=10,000$ simulated vectors the probability that all genes express more than $\bf{y_0} = 1000$.
 
-```{r densityEvaluation, echo=TRUE, eval=TRUE}
+```{r ch050-densityEvaluation, echo=TRUE, eval=TRUE}
 d <- ncol(sim_nbinom)
 B <- nrow(sim_nbinom)
 threshold <- rep( 1000, d)
@@ -187,7 +187,7 @@ mean(apply( sim_nbinom,  1,
 Since many of the correlations are near zero, one could ask whether it is
 possible that test the hypothesis that $H_0: R = R_0$.
 
-```{r corrTest, echo=FALSE, eval=FALSE, include=FALSE}
+```{r ch050-corrTest, echo=FALSE, eval=FALSE, include=FALSE}
 
 ```
 

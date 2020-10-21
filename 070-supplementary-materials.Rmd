@@ -17,7 +17,7 @@ FUNDING FROM EVERYONE HERE. CP3 grant.
 
 # Nomenclature/Notation
 
-```{r, eval=FALSE}
+```{r ch070-all-dists, eval=FALSE}
 all_dists <- list(
   list(dist = "beta", shape1, shape2),
   list(dist = "binom", size, prob),

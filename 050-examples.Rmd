@@ -45,26 +45,6 @@ Here we are satisfied with approximate matching of the specified Gamma correlati
 Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
 -->
 
-```{r processBRCA, echo=FALSE, eval=FALSE, results='none'}
-## full workflow simulating RNA-seq data
-allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
-lastClinical <- which( names(allDat) == 'tumorsize' )
-brca <- allDat[ allDat$disease == "BRCA", (lastClinical+1):ncol(allDat) ]
-dim(brca) ## num of genes 20501
-## compute the median expression! avoid the 0s
-brcaMedian <- apply(brca, 2, median)
-## retain top (1-probs)*100% highest expressing genes for illustration
-myProb <- 0.99
-cutPoint <- quantile( x = brcaMedian, probs = myProb )
-## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
-genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
-brca <- brca[ , genesToKeep ]
-## ncol(brca) / 20501
-print(d <- length(genesToKeep))
-## save data as rds
-saveRDS(brca, 'data/brca99.rds')
-```
-
 ```{r readBRCA, echo=FALSE, eval=TRUE}
 ## full workflow simulating RNA-seq data
 brca <- readRDS(file = 'data/brca99.rds') 

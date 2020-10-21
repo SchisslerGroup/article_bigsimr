@@ -122,6 +122,28 @@ example by employing our method and compare our simulations to empirically-deriv
 - check the talk history
 
 
+```{r processBRCA, echo=FALSE, eval=TRUE, results='none'}
+if ( !file.exists( 'data/brca99.rds' ) )  {
+    ## full workflow simulating RNA-seq data
+    allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
+    lastClinical <- which( names(allDat) == 'tumorsize' )
+    brca <- allDat[ allDat$disease == "BRCA", (lastClinical+1):ncol(allDat) ]
+    dim(brca) ## num of genes 20501
+    ## compute the median expression! avoid the 0s
+    brcaMedian <- apply(brca, 2, median)
+    ## retain top (1-probs)*100% highest expressing genes for illustration
+    myProb <- 0.99
+    cutPoint <- quantile( x = brcaMedian, probs = myProb )
+    ## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
+    genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
+    brca <- brca[ , genesToKeep ]
+    ## ncol(brca) / 20501
+    print(d <- length(genesToKeep))
+    ## save data as rds
+    saveRDS(brca, 'data/brca99.rds')
+}
+```
+
 ```{r realDataTabl, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
 brca <- readRDS(file = './data/brca99.rds')

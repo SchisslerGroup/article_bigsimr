@@ -1,9 +1,9 @@
 # Monte Carlo evaluations
 
 ```{r LoadLib040, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
-## devtools::install_github( "adknudson/bigsimr", ref = 'develop')
+## devtools::install_github("SchisslerGroup/bigsimr", ref = 'develop')
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
-## reticulate::use_condaenv("bigsimr")
+# reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
 cores <- as.integer( parallel::detectCores() - 1 )
@@ -58,7 +58,7 @@ sim_pars <- expand.grid(type = type, cores = cores, n = n,
                         adjustForDiscrete = adjustForDiscrete)
 
 res <- data.frame()
-
+dir.create("./results/sims_norm", showWarnings = TRUE, recursive = TRUE)
 for (i in 1:nrow(sim_pars)) {
     type <- sim_pars$type[i]
     cores <- sim_pars$cores[i]
@@ -94,7 +94,6 @@ for (i in 1:nrow(sim_pars)) {
             "-lib", "bigsimr"
         )
         ## save sims in their own subdirectory
-        dir.create("./results/sims_norm", showWarnings = FALSE)
         saveRDS(x, file = paste0("./results/sims_norm/", id, ".rds"))
 
         ## Estimate statistics
@@ -178,6 +177,7 @@ sim_pars <- expand.grid(type = type, cores = cores, n = n,
                         adjustForDiscrete = adjustForDiscrete)
 
 
+dir.create("./results/sims_gamma", showWarnings = TRUE, recursive = TRUE)
 res <- data.frame()
 for (i in 1:nrow(sim_pars)) {
     
@@ -217,7 +217,6 @@ for (i in 1:nrow(sim_pars)) {
             "-dev", "CPU",
             "-lib", "bigsimr"
         )
-        dir.create("./results/sims_gamma", showWarnings = FALSE)
         saveRDS(x, file = paste0("./results/sims_gamma/", id, ".rds"))
 
         ## Estimate statistics
@@ -300,6 +299,7 @@ sim_pars <- expand.grid(type = type, cores = cores, n = n,
                         adjustForDiscrete = adjustForDiscrete)
 
 
+dir.create("./results/nbinom_sims", showWarnings = TRUE, recursive = TRUE)
 res <- data.frame()
 for (i in 1:nrow(sim_pars)) {
     type <- sim_pars$type[i]
@@ -339,7 +339,6 @@ for (i in 1:nrow(sim_pars)) {
             "-dev", "CPU",
             "-lib", "bigsimr"
         )
-        dir.create("./results/nbinom_sims", showWarnings = FALSE)
         saveRDS(x, file = paste0("./results/nbinom_sims/", id, ".rds"))
 
         ## Estimate statistics

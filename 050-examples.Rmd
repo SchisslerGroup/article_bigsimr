@@ -1,4 +1,4 @@
-# Example applications for our motivating data
+# Example applications for our motivating data {#examples}
 
 ```{r ch050-LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
@@ -47,7 +47,10 @@ Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Pois
 
 ```{r ch050-readBRCA, echo=FALSE, eval=TRUE}
 ## full workflow simulating RNA-seq data
-brca <- readRDS(file = 'data/brca99.rds') 
+brca <- readRDS(file = 'data/brca99.rds')
+## smaller set for prototyping
+## d=5
+## brca <- brca[ , 1:d]
 ```
 
 Let's walk through a workflow simulating RNA-seq data
@@ -61,13 +64,14 @@ system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
 
 ```{r ch050-estMargins, echo = FALSE, eval = TRUE}
 ## 2. Estimate NegBin parameters using Method of Moments
-estimateNegBinMoM <- function(tmpGene, minP = 1e-7) {
+## estimateNegBinMoM <- function(tmpGene, minP = 1e-7) {
+estimateNegBinMoM <- function(tmpGene) {
     tmpMean <- mean(tmpGene)
     tmpVar <- var(tmpGene)
     ## relate to nbinom parameters
     ## See ?rbinom for details.
     p <- tmpMean / tmpVar
-    if (p < minP) {p <- minP } ## maybe add noise here
+    ## if (p < minP) {p <- minP } ## maybe add noise here
     n <- ( tmpMean * p) / ( 1  - p )  
     ## format for bigsimr margins
     return( list("nbinom", size = n, prob = p) )
@@ -80,6 +84,11 @@ sizes <- unlist( lapply( brcaMargins, function(x) {x$size} ) )
 ## summary(sizes)
 ## head( sort( unlist( lapply( brcaMargins, function(x) {x$size} ) ) ) )
 ```
+
+Here we use the basic method of moments (MoM) to estimate the marginal parameters for the multivariate negative binomial model.
+We model marginals distributions as coming from the same probability family (NB) yet are hetereogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$.
+
+TYPESTE MoM estimators here.
 
 ```{r ch050-nbHelpers}
 make_nbinom_alist <- function(sizes, probs) {
@@ -182,12 +191,41 @@ mean(apply( sim_nbinom,  1,
            ))
 ```
 
-## UHD Parameteric bootstrap
+## Monte Carlo estimation of MSE 
 
-Since many of the correlations are near zero, one could ask whether it is
-possible that test the hypothesis that $H_0: R = R_0$.
+Monte Carlo (MC) methods offer flexible and straightfoward statistical inferenec in this typically difficult analytic setting.
+MC methods are routinely used many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates.
+For an concise introduction to these Methos, see, for example @Rizzo2007, Ch. 6.
+As a simple example, let's now employ `bigsimr` to estimate the mean squared error (MSE) of the method of moments estimators we used in section X.
 
-```{r ch050-corrTest, echo=FALSE, eval=FALSE, include=FALSE}
+Specifically, 
+TYPESET THE MATH HERE. REF to MoM above.
 
+```{r ch050-mom-mse, echo=TRUE, eval=TRUE, cache=FALSE}
+## system( "rm results/mseSizes.rds")
+if ( !file.exists( 'results/mseSizes.rds') )  {
+    n <- nrow(brca)
+    m <- 100
+    momSizes <- replicate(n = m, expr =
+                                     { tmpSim <- rvec(n, nb_Rho, nb_margins, type = corType, ensure_PSD = TRUE, cores = cores)
+                                         tmpMom <- apply( unname(as.matrix(tmpSim)), 2, estimateNegBinMoM )
+                                         tmpSizes <- unlist( lapply( X = tmpMom, function(x) x$size ) )
+                                     }
+                          )
+    sqDiffSizes <- apply( momSizes, 2, function(x) { (x  - sizes)^2 } )
+    mseSizes <- rowMeans( sqDiffSizes )
+    saveRDS(mseSizes, 'results/mseSizes.rds')
+}
 ```
+
+Figure X.
+
+```{r ch050-fig-mseSizes, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Real data for the 3 selected high-expressing genes'}
+mseSizes <- readRDS(file = 'results/mseSizes.rds')
+qplot(mseSizes, bins = 20) + theme_bw()
+```
+
+
+One could then compare the MSE of the baisc MoM estimation scheme to other strategies ( such as MLE, trimmed approaches, etc.) and decide whether a more computational costly approach is warrented or if the MoM will suffice.
+
 

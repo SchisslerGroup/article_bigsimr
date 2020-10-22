@@ -162,5 +162,3 @@ Figure X.
 ## Describe and plot real data
 GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
-
-

@@ -9,6 +9,10 @@ distribution function $F_i$ and its inverse. To characterize dependency, every p
 
 The method is best understand as a **parallelized Gaussian copula** (see Equation \@ref(eq:gauss) to provide a high-performance NORTA (NORmal To Anything) algorithm.
 
+`mvnfast` High-performance multivariate normal simulator [@Fasiolo2016]
+
+`nortaRA` Implements exact Pearson matching (step 2 in NORTA) [@Chen2001] 
+
 To simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$,
 there is the well-known NORTA algorithm [@Cario1997]. It follows like this:
 

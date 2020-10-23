@@ -1,5 +1,91 @@
 # Background and notation
 
+Formally, this is our target:
+
+We'll show that quality of simulation does not require the use of the standard Pearson correlation matrix, even for normally distributed data. The purpose of our method is to generate random vectors that match exactly specified any possible Kendall's $\tau$ or Spearman's $\rho$, and approximately Pearson product-moment correlation.More formally, our goal is to simulate $N$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components.
+The algorithm must scale to a large number of simulation replicates,$N$ for high-dimensional multivariate constructions (dimension $d$ in the tens or hundred thousands.
+
+Ultra High Dimensional multivariate modeling and simulation desired properties, both basic properties (BP) and scaleability properties (SP). 
+With our application in mind and seeking a fairly general-purpose algorithm with broad applications, our purposed methodology should possess the following properties (adapted from criteria from @Nik13a):
+
+* BP1: Wide range of dependence, allowing both positive and negative dependence
+* BP2: Flexible dependence, meaning that the number of bivariate marginals is (approximately) equal to the number of dependence parameters.
+* BP3: Flexible marginal modeling, generating heterogeneous data --- possibly from differing probability families.
+
+Moreover, the simulation method must scale to high dimensions:
+
+* SP1: Procedure must scale to high dimensions, computable in a reasonable amount time.
+* SP2: Procedure must scale to high dimensions while maintaining accuracy.
+
+
+
+## Motivating example: RNA-seq data from breast cancer tumor samples
+
+Simulating high-dimensional non-normal data motivates this work --- in pursuit of modeling RNA-sequencing data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
+This laboratory procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. 
+Often researchers posit a negative binomial model (refs) as counts are often over (or under) expressed that a Poisson model would suggest. Yet due to inherent biological processes, gene expression data exhibits correlation (coexpression) across genes [@BE07; @Schissler2018]. 
+RNA-sequencing analysis has garnered much interest in the statistical literature (refs). 
+Often researchers simulate independently or from their proposed model in order to conduct Monte Carlo studies (refs). 
+An alternative strategy is to think *generatively* about the data collection process and scientific domain knowledge and design simulations with probabilistic models that reflect those processes.
+Our methodology provides another toolkit to generate data by considering how the data arise in the experimental setting.
+
+```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none'}
+if ( !file.exists( 'data/brca99.rds' ) )  {
+    ## full workflow simulating RNA-seq data
+    allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
+    lastClinical <- which( names(allDat) == 'tumorsize' )
+    brca <- allDat[ allDat$disease == "BRCA", (lastClinical+1):ncol(allDat) ]
+    dim(brca) ## num of genes 20501
+    ## compute the median expression! avoid the 0s
+    brcaMedian <- apply(brca, 2, median)
+    ## retain top (1-probs)*100% highest expressing genes for illustration
+    myProb <- 0.99
+    cutPoint <- quantile( x = brcaMedian, probs = myProb )
+    ## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
+    genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
+    brca <- brca[ , genesToKeep ]
+    ## ncol(brca) / 20501
+    print(d <- length(genesToKeep))
+    ## save data as rds
+    saveRDS(brca, 'data/brca99.rds')
+}
+```
+
+```{r ch010-realDataTabl, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
+## Describe and plot real data
+brca <- readRDS(file = './data/brca99.rds')
+set.seed(10192020)
+exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
+saveRDS(exampleGenes, file = './data/exampleGenes.rds')
+kable(round(brca[1:4, exampleGenes]))
+## GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
+```
+
+Figure X.
+
+```{r ch010-realDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Real data for the 3 selected high-expressing genes'}
+## Describe and plot real data
+GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
+```
+
+## Measures of dependency
+
+The population correlation coefficient, commonly called the Pearson (product-moment) correlation coefficient, describes the linear association between two random variables $X$ and $Y$ and is given by
+
+\begin{equation}
+(\#eq:pearson)
+\rho(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ var(X)var(Y)\right]^{1/2}} 
+\end{equation}
+
+As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pearson correlation adequately describes the dependency between the components. $\rho$'s utility in non-normal or non-linear associations is lacking (@MK01). Rank-based (ordinal) approaches performance better in these settings, such as Spearman's (denoted $\rho_s$) and Kendall's $\tau$. Define 
+
+\begin{equation}
+(\#eq:spearman)
+\rho_s(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right]
+\end{equation}
+
+\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. For continuous marginals, the measure works well due to zero probability of ties. 
+
 ## Gaussian copulas
 
 We present an general-purpose, scalable multivariate simulation algorithm. The crux of the method is construction of a Gaussian copula. This idea is well known [refs]. We chose a Gaussian copula among the many available copula functions primarily for two reasons: 1) the computationally convient closed expression to convert among the most common dependency measures when the margins are Gaussian and 2) the availability of high-performance multivariate normal simulators in R ('mvnfast' ref).  
@@ -31,23 +117,9 @@ F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}
 
 Simulation of a general multivariate random vector ${\bf T}$ with margins $F_i$ based on this copula is quite simple. Ensuring that one obtains a certain dependence among the marginal distributions, however, proves challenging in our proposed Gaussian-copula-based scheme. Two core issues: 1) marginal characteristics induce bounds on the possible bivariate correlations and 2) monotone transformations deform the Pearson correlation which no closed form expression exists in general (ref? Chen2001). The Frechet bounds are well-known.
 
-## Measures of dependency
+## Matching Pearson correlations
 
-The population correlation coefficient, commonly called the Pearson (product-moment) correlation coefficient, describes the linear association between two random variables $X$ and $Y$ and is given by
-
-\begin{equation}
-(\#eq:pearson)
-\rho(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ var(X)var(Y)\right]^{1/2}} 
-\end{equation}
-
-As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pearson correlation adequately describes the dependency between the components. $\rho$'s utility in non-normal or non-linear associations is lacking (@MK01). Rank-based (ordinal) approaches performance better in these settings, such as Spearman's (denoted $\rho_s$) and Kendall's $\tau$. Define 
-
-\begin{equation}
-(\#eq:spearman)
-\rho_s(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right]
-\end{equation}
-
-\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. For continuous marginals, the measure works well due to zero probability of ties. 
+In the NORTA, it is well known that blah
 
 ## Discrete marginal considerations
 
@@ -70,6 +142,12 @@ For discrete marginals, however, one could perform a rescaled version of $\rho_s
 
 ## Marginal-dependent bivariate correlation bounds
 
+Adding to the complexity is the well-known, marginal-dependent constraints on the possible bivariate correlation.
+This is a consequence of the bounds of bivariate distribution functions --- the *Frechet-Hoeffding bounds* [@Nelsen2007]). 
+Denote the pointwise upper bound as $M(y_i, y_{i^\prime})$ These bounds give strict restraints on the possible bounds and cannot be overcome through algorithm design. 
+Yet not all multivariate simulation approaches obtain these bounds [for example REF].
+Computationally, algorithms that rely on serial computation scale poorly to high dimensions (refs - hierarchy) and fail to make use of modern high-performance computing including parallelization and graphical processing unit acceleration [@Li2019gpu].
+
 The pairwise correlation between two correlated random variables cannot in general obtain the full range of possible values, $[-1,-1]$. The range, called the Frechet(-Hoeffding) bounds, is a well-known function of the marginal distributions and are given by [@BF17]:
 
 \begin{equation}
@@ -78,13 +156,3 @@ The pairwise correlation between two correlated random variables cannot in gener
 \end{equation}
 
 \noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse cdf of random variables $X_1$ and $X_2$, respectively. For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
-
-## Other `R` packages for simulating random vectors
-
-There are a few R packages for multivariate simulation.
-
-* `copula` Highly flexible copula specification [@Yan2007]
-* `nortaRA` Implements exact Pearson matching (step 2 in NORTA) [@Chen2001] 
-* `Genord` Simulated correlated discrete variables [@BF17]
-* `mvnfast` High-performance multivariate normal simulator [@Fasiolo2016]
-

@@ -1,6 +1,6 @@
-# Algorithms
+# Algorithms {#algorithms}
 
-```{r previewChapter020, echo = FALSE, eval = FALSE}
+```{r ch020-preview, echo = FALSE, eval = FALSE}
 bookdown::preview_chapter('020-simulation-algorithm.Rmd')
 ```
 
@@ -24,19 +24,6 @@ there is the well-known NORTA algorithm [@Cario1997]. It follows like this:
 5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,2,...,d$.
 
 We shall see that constructing continuous joint distributions that match a target Spearman or Kendall's correlations computes easily when employing Gaussian copulas, since this measures are invariant under the monotone transformations involved [refs]. 
-To do this, we take advantage of a closed form relationship [ref?] between Kendall's $\tau$ and Pearson's correlation coefficient for bivariate normal random variables:
-
-\begin{equation}
-(\#eq:convertKendall)
-r_{Pearson} = sin \left( \tau_{Kendall} \times \frac{\pi}{2} \right), 
-\end{equation}
-
-\noindent and similarly for Spearman's $\rho$ [@K58],
-
-\begin{equation}
-(\#eq:convertSpearman)
-\rho_{Pearson} = 2 \times sin \left( \rho_{Spearman} \times \frac{\pi}{6} \right).
-\end{equation}
 
 <!-- 
 For discrete marginals, achieving a target Spearman correlation under this scheme is possible by using components from Equation \@ref(eq:spearmanRescaled) to further adjust the input correlation matrix. Let the unscaled Spearman correlation coefficients be $\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)$ for two marginal distributions and divide the target correlation by the product in the denominator of Equation \@ref(eq:spearmanRescaled). Let these adjustment factors be denoted as $a_i = \left[ 1 - \sum_y p_i(y)^3 \right]^{1/2}$ and specifically rescale the target Spearman correlation matrix by

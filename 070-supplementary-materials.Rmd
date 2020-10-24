@@ -1,10 +1,12 @@
-# Supplementary Materials
+# Supplementary Materials {#misc}
 
 We provide an open-source implementation of our methology as the `bigsimr` R package, hosted on github. 
 
 # Acknowledgement(s)
 
 The authors gratefully acknowledge the helpful discussions with Professor Walter W. Piegorsch and Professor Edward J. Bedrick during this project's conception.
+Alex's sister graphic design.
+TCGA acknowledgement.
 
 # Disclosure statement
 

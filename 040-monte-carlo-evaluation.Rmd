@@ -1,4 +1,4 @@
-# Monte Carlo evaluations
+# Monte Carlo evaluations {#simulations}
 
 ```{r ch040-LoadLib040, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github("SchisslerGroup/bigsimr", ref = 'develop')
@@ -20,15 +20,12 @@ We focus the numerical experiments on assessing how well the procedure scales to
 The simulations will proceed in increasing complexity --- leading up to the setting in our motivating example. 
 We begin by exploring simple exchangeable (constant) correlation structures under a large number of simulation replicates while applying the algorithm above to first continuous then discrete marginal distributions to test the robustness of our algorithm since exact matching is not guaranteed.
 
-## Simulation I: Bivariate simulation using rank-based correlation
+## Bivariate experiments
 
-### Bivariate Normal
-
-* Let's simulate a bivariate normal and check our correlation matching
-  performance as N increases.
-* Here we have BVN( $\mu_1 = \mu_2 = 10, \rho_{type}$ )
-* We vary $\rho$ across the entire possible range of correlations for each
-  correlation type.
+*Bivariate Normal*.
+Let's simulate a bivariate normal and check our correlation matching performance as N increases.
+Here we have BVN( $\mu_1 = \mu_2 = 10, \rho_{type}$ ).
+We vary $\rho$ across the entire possible range of correlations for each correlation type.
 
 ```{r ch040-biNormal, echo = FALSE, eval = TRUE}
 mom_norm <- function(x) {
@@ -141,13 +138,10 @@ dat %>%
 ## ggsave('fig/plot-biNormPlot.pdf')
 ```
 
-## Bivariate Gamma
-
-* Similarly, let's check the performance for a non-symmetric continuous distribution: a
-  standard (rate =1) bivariate gamma.
-* Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
-* We vary $\rho$ across the entire possible range of correlations for each
-  correlation type.
+*Bivariate Gamma*. 
+Similarly, let's check the performance for a non-symmetric continuous distribution: a standard (rate =1) bivariate gamma.
+Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
+We vary $\rho$ across the entire possible range of correlations for each correlation type.
 
 ```{r ch040-biGamma, echo = FALSE, eval = TRUE}
 mom_gamma <- function(x) {
@@ -264,12 +258,10 @@ dat %>%
 ## ggsave('fig/plot-biGammaPlot.pdf')
 ```
 
-## Bivariate Negative Binomial
-
-* Let's check the performance for a discrete distribution: a bivariate negative binomial
-* Here we have Bivariate Negative Binomial ( $prob_1 = prob_2 = 0.5, size_1 = size_2 = 4,\rho_{type}$ )
-* We vary $\rho$ across the entire possible range of correlations for each
-  correlation type.
+*Bivariate Negative Binomial*. 
+Let's check the performance for a discrete distribution: a bivariate negative binomial.
+Here we have Bivariate Negative Binomial ( $prob_1 = prob_2 = 0.5, size_1 = size_2 = 4,\rho_{type}$ ).
+We vary $\rho$ across the entire possible range of correlations for each correlation type.
 
 ```{r ch040-biNegBin, echo = FALSE, eval = TRUE}
 mom_nbinom <- function(x) {

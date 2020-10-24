@@ -95,6 +95,9 @@ margins <- alist(
 
 Notice that we use the *quantile* function for the marginals, as that is the workhorse of the `rvec` function. By using an `alist`, users can also specify their own custom distributions (see the section on [creating custom margins](#custom-margins)).
 
+- all the base distributions are supported
+- one could extend using `extraDistr` .https://cran.r-project.org/web/packages/extraDistr/index.html
+
 It is a bit inconvenient to have to fill in the parameter values manually each time, so we provide a convenience function called `mlist` which behaves similarly to `alist`, except that it will evaluate the right hand side of argument values within the list.
 
 ```{r ch030-margins-mlist, echo=TRUE}

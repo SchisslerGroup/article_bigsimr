@@ -9,7 +9,7 @@ bibliography:
 site: bookdown::bookdown_site
 #output: distill::distill_article
 abstract: |
-  It is critical to realistically simulate data when conducting Monte Carlo studies and methods. But measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers often resort to simulation designs that posit independence. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This talk introduces the bigsimr R package that provides a general, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We'll describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation matrices, and find close positive semi-definite matrices. Finally, we showcase the power of bigsimr by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d>1000$.
+  It is critical to realistically simulate data when conducting Monte Carlo studies and methods. But measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers may resort to simulation designs that posit independence. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This article introduces the `bigsimr` R package that provides a flexible, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We'll describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation matrices, and find close positive semi-definite matrices. Finally, we demonstrate the power of `bigsimr` by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d>1000$.
 ---
 
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
@@ -58,7 +58,7 @@ sum(counts)
 Massive high-dimensional data sets are now commonplace in many areas of scientific inquiry.
 This is particularly true when simulating massive *multivariate*, *non-normal* distributions, arising naturally in many fields of study in this era of big data.
 As new methods are developed for these data, a fundamental challenge lies in designing and conducting simulation studies to assess the operating characteristics of proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness --- often in comparison to existing methods.
-Further, efficient simulation empowers statistical computing strategies, such as the *parameteric bootstrap* [@Rizzo2007] to simulate from a hypothesized null model, providing inference in analytically challenging settings.
+Further, efficient simulation empowers statistical computing strategies, such as the parameteric bootstrap [@Rizzo2007] to simulate from a hypothesized null model, providing inference in analytically challenging settings.
 Such Monte Carlo techniques become difficult for high-dimensional data with the current existing algorithms and tools.
 
 As others have noted, it can be vexing to simulate dependent, non-normal/discrete data ---  even for low dimensional settings [@MB13; @XZ19].
@@ -73,17 +73,17 @@ The choice of correlation in practice usually relates to the eventual analytic g
 <!-- Here we propose a scheme that ignores the analytic goal --- and, instead, aims to match the empirically-derived estimated correlation data and marginal characteristics.  -->
 For normal data, the Pearson product-moment correlation describes the dependency completely.
 As we will see, however, simulating arbitrary random vectors that match a target Pearson correlation matrix exactly is computationally intense [@Chen2001; @Xia17]. 
-On the other hand, an analyst may consider the use of non-parametric correlation measures to better characterize monotone dependency, such as Spearman's $\rho$ and Kendall's $\tau$.
+On the other hand, an analyst may consider the use of nonparametric correlation measures to better characterize monotone dependency, such as Spearman's $\rho$ and Kendall's $\tau$.
 Throughout, we'll emphasize matching these nonparametric dependency measures as our aim lies in modeling non-normal data.
 
-In the study, we present a scalable multivariate simulation algorithms and software. 
+In the study, we present scalable, flexible multivariate simulation algorithms. 
 The crux of the method lies in the construction of a Gaussian copula, in the spirit of the NORTA procedure.
 Further, we introduce the `bigsimr` R package that provides parallelized, high-performance software.
-The algorithm design relies on useful properties of non-parameteric correlation measures, namely invariance under monotone transformation and well-known closed form relationships between dependency measures for the multivariate normal (MVN) distribution. 
+The algorithm design relies on useful properties of nonparameteric correlation measures, namely invariance under monotone transformation and well-known closed form relationships between dependency measures for the multivariate normal (MVN) distribution. 
 
 The study proceeds with background and notation, including a description of our motivating example in RNA-sequencing (RNA-seq) breast cancer data.
 Then we describe and justify our simulation methodology and related algorithms.
 Next, a detailed illustrative low-dimensional example of basic and advanced use of the `bigsimr` R package is provided.
 Then we proceed with extensive Monte Carlo studies under various distributional assumptions.
 After evaluating *in silico*, we revisit our high-dimensional motivating RNA-seq example and employ our methods to commonplace statistical computing tasks.
-Finally, we'll make some concluding remarks regarding the method's utility/limitations and describe potential future directions.
+Finally, we'll discuss the method's utility, limitations, and future directions.

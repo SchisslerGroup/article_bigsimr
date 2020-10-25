@@ -16,19 +16,18 @@ bookdown::preview_chapter('050-examples.Rmd')
 This section demonstrates how to simulate high-dimensional multivariate data using `bigsimr`, aiming to replicate the structure of high dimensional dependent count data.
 In fact, simulating RNA-sequencing (RNA-seq) data is a one of the primary motivating applications of the proposed methodology, seeking scaleable Monte Carlo methods for realistic multivariate simulation (for example, see Schissler, Piegorsch, and Lussier 2018).
 
-The RNA-seq data generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
-Since this is a counting processing with no upper bound, many modeling approaches discrete random variables with infinite support.
-Often the counts exhibit over-dispersion and so the negative binomial arises as a sensible model for the expression levels (\emph{gene counts}).
-Moreover, the counts are correlated (co-expressed) and cannot be assumed to behave independently.
-RNA-seq platforms quantify the entire transcriptome in one experimental run, resulting in high dimensional data.
-In humans, this results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted.
-	This suggests simulating high-dimensional multivariate NB with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics.
-
 ## Simulating High-Dimensional RNA-seq data
 
 In an illustration of our proposed methodology applied to real data, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions with estimated parameters.
 Our goal is to replicate the structure of a breast cancer data set (BRCA data set from The Cancer Genome Atlas).
-For simplicity of illustration, we begin by filtering to retain the top 5\% highest expressing genes of the 20,501 gene measurements from $N=1212$ patients' tumor samples, resulting in $d=1026$ genes.
+All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments).
+Often researchers posit a negative binomial (NB) model as counts are often over-dispersed that a Poisson model would suggest.
+This suggests simulating high-dimensional multivariate NB (MVB) with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics.
+This procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. 
+Notably, the $\hat{p}_i's$ are small --- ranging in $[3.934 \times 10^{-6} , 1.217 \times 10^{-2}]$.
+To complete the simulation algorithm inputs, we estimate the Pearson correlation matrix $\bf{R_Y}$ and set that as the target correlation.
+
+
 
 <!--
 All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments).
@@ -225,7 +224,4 @@ mseSizes <- readRDS(file = 'results/mseSizes.rds')
 qplot(mseSizes, bins = 20) + theme_bw()
 ```
 
-
 One could then compare the MSE of the baisc MoM estimation scheme to other strategies ( such as MLE, trimmed approaches, etc.) and decide whether a more computational costly approach is warrented or if the MoM will suffice.
-
-

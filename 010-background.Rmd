@@ -20,12 +20,18 @@ Moreover, the simulation method must **scale** to high dimensions:
 
 To fix ideas and provide example applications enabled via `bigsimr`, we the next section describes our motivating data that originally inspired the authors` interest in creating this methodology.
 
-## Motivating example: RNA-seq data from breast cancer tumor samples
+## Motivating example: RNA-seq data
 
-Simulating high-dimensional non-normal data motivates this work --- in pursuit of modeling RNA-sequencing data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
-This laboratory procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. 
-Often researchers posit a negative-binomial (NB) model as counts are often over-dispersed that a Poisson model would suggest.
+Simulating high-dimensional, non-normal data motivates this work --- in pursuit of modeling RNA-sequencing data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
+The RNA-seq data-generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
+RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data.
+In humans, this results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted.
 Yet due to inherent biological processes, gene expression data exhibits correlation (co-expression) across genes [@BE07; @Schissler2018]. 
+
+Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas; TCGA; see Acknowledgements).
+For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
+Further, to illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
+Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first 5 patients' breast tumor samples. 
 
 ```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none'}
 if ( !file.exists( 'data/brca99.rds' ) )  {
@@ -49,19 +55,22 @@ if ( !file.exists( 'data/brca99.rds' ) )  {
 }
 ```
 
-```{r ch010-realDataTabl, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
+```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
 brca <- readRDS(file = './data/brca99.rds')
 set.seed(10192020)
 exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
 saveRDS(exampleGenes, file = './data/exampleGenes.rds')
-kable(round(brca[1:4, exampleGenes]))
+kable(round(head( brca[, exampleGenes], n = 5)),
+      booktabs = TRUE,
+      caption = 'Counts of 3 high-expressing genes for the first 5 observations of the BRCA dataset.'
+)
 ## GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
 
-Figure X.
+Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
 
-```{r ch010-realDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Real data for the 3 selected high-expressing genes'}
+```{r ch010-realDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $rho$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 ## Describe and plot real data
 GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
@@ -139,9 +148,12 @@ A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard nor
 F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 \end{equation}
 
-where $\Phi(\cdot)$ is the standard normal CDF. Note that the copula $C_{{\bf R}}$ is simply the CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where  $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$. 
+where $\Phi(\cdot)$ is the standard normal CDF.
+Note that the copula $C_{{\bf R}}$ is simply the CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where  $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$. 
 
-Sklar's Theorem (ref) guarantee's that any random vector with computational feasible inverse CDFs (P4 above) and obtainable correlation matrix (within the Frechet bounds) can be obtained via transformations involving copula functions. Namely, to simulate a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, we can construct a Gaussian copula ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$. When an $Y_i$ is discrete, some care must be taken to define $F_i$. Letting 
+Sklar's Theorem (ref) guarantees that given inverse CDFs (quantile) and obtainable correlation matrix (within the Frechet bounds) can be obtained via transformations involving copula functions. 
+Namely, to simulate a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, we can construct a Gaussian copula ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$. 
+When an $Y_i$ is discrete, some care must be taken to define $F_i$. Letting 
 
 \begin{equation}
 F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}
@@ -150,4 +162,4 @@ F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}
 
 \noindent ensures that $Y_i \sim F_i$.
 
-Simulation of a general multivariate random vector ${\bf T}$ with margins $F_i$ based on this copula is quite simple. Ensuring that one obtains a certain dependence among the marginal distributions, however, proves challenging in our proposed Gaussian-copula-based scheme. Two core issues: 1) marginal characteristics induce bounds on the possible bivariate correlations and 2) monotone transformations deform the Pearson correlation which no closed form expression exists in general (ref? Chen2001). The Frechet bounds are well-known.
+Simulation of a multivariate random vector ${\bf T}$ with margins $F_i$ based on this copula 

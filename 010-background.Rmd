@@ -1,4 +1,4 @@
-# Background and notation {#background}
+# Background {#background}
 
 The article presents several algorithms to work with high-dimesional multivariate data, but all `bigsimr` algorithms were originally designed to support a single task:
 to generate random vectors drawn from given marginal distributions and component-wise dependency metrics.
@@ -28,11 +28,6 @@ RNA-seq platforms typically quantify the entire transcriptome in one experimenta
 In humans, this results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted.
 Yet due to inherent biological processes, gene expression data exhibits correlation (co-expression) across genes [@BE07; @Schissler2018]. 
 
-Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas; TCGA; see Acknowledgements).
-For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
-Further, to illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
-Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first 5 patients' breast tumor samples. 
-
 ```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none'}
 if ( !file.exists( 'data/brca99.rds' ) )  {
     ## full workflow simulating RNA-seq data
@@ -54,6 +49,13 @@ if ( !file.exists( 'data/brca99.rds' ) )  {
     saveRDS(brca, 'data/brca99.rds')
 }
 ```
+
+Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas; TCGA; see Acknowledgements).
+For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
+This results in `r choose(d,2)` pairwise dependencies to characterize and simulate.
+Further, to illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
+Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first 5 patients' breast tumor samples. 
+
 
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
@@ -77,71 +79,106 @@ GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 
 ## Measures of dependency
 
-The population correlation coefficient, commonly called the Pearson (product-moment) correlation coefficient, describes the linear association between two random variables $X$ and $Y$ and is given by
+A central issue when describing multivariate distributinos is the choose of quantatitive description.
+The most widely-known is the Pearson (product-moment) correlation coefficient that describes the linear association between two random variables $X$ and $Y$ and is given by
 
 \begin{equation}
 (\#eq:pearson)
-\rho(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ var(X)var(Y)\right]^{1/2}} 
+\rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ var(X)var(Y)\right]^{1/2}}.
 \end{equation}
 
-As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pearson correlation adequately describes the dependency between the components. $\rho$'s utility in non-normal or non-linear associations is lacking (@MK01). Rank-based (ordinal) approaches performance better in these settings, such as Spearman's (denoted $\rho_s$) and Kendall's $\tau$. Define 
+As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pearson correlation completely describes the dependency between the components. 
+For non-normal marginals and monotone (possibly non-linear) correlation patterns, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships (@MK01).
+Alternatively, in these settings, analysts often prefer rank-based correlatino measures to describe the degree of monotonic association.
+
+Two nonparameteric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. 
+
+Formally, define
 
 \begin{equation}
 (\#eq:spearman)
-\rho_s(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right]
+\rho_S(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right]
 \end{equation}
 
-\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. For continuous marginals, the measure works well due to zero probability of ties. 
+\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. 
+Spearman's $\rho$ has an appealing correspondence as the Pearson's correlaiton coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
 
-To do this, we take advantage of a closed form relationship [ref?] between Kendall's $\tau$ and Pearson's correlation coefficient for bivariate normal random variables:
+Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations $(X_i, Y_i)$ and $(X_j, Y_j)$.
+By concordance we mean that orderings have the same direction if $X_i < X_j$, then $Y_i < Y_j$, and is determinded by the ranks of the values, not the values themselves (as in $\rho_P$).
+
+Both $\tau$ and $\rho_S$ are **invariant to under monotone transformations** of the underlying random variates.
+As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to our scheme to satistify properties SP1 and SP2, above.
+
+This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficent, as the marginal distributions $F_i$ are fundamental to their caclutain.
+But for bivariate normal vectors, however, the correspondence is well-known:
 
 \begin{equation}
 (\#eq:convertKendall)
-r_{Pearson} = sin \left( \tau_{Kendall} \times \frac{\pi}{2} \right), 
+\rho_{P} = sin \left( \tau \times \frac{\pi}{2} \right), 
 \end{equation}
 
 \noindent and similarly for Spearman's $\rho$ [@K58],
 
 \begin{equation}
 (\#eq:convertSpearman)
-\rho_{Pearson} = 2 \times sin \left( \rho_{Spearman} \times \frac{\pi}{6} \right).
+\rho_P = 2 \times sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
-*Marginal-dependent bivariate correlation bounds*. 
-Adding to the complexity is the well-known, marginal-dependent constraints on the possible bivariate correlation.
-This is a consequence of the bounds of bivariate distribution functions --- the *Frechet-Hoeffding bounds* [@Nelsen2007]). 
-Denote the pointwise upper bound as $M(y_i, y_{i^\prime})$ These bounds give strict restraints on the possible bounds and cannot be overcome through algorithm design. 
-Yet not all multivariate simulation approaches obtain these bounds [for example REF].
-Computationally, algorithms that rely on serial computation scale poorly to high dimensions (refs - hierarchy) and fail to make use of modern high-performance computing including parallelization and graphical processing unit acceleration [@Li2019gpu].
+These facts are also critical in our simulation algorithm to broaden the dependency measures supported by `bigsimr`.
 
-The pairwise correlation between two correlated random variables cannot in general obtain the full range of possible values, $[-1,-1]$. The range, called the Frechet(-Hoeffding) bounds, is a well-known function of the marginal distributions and are given by [@BF17]:
-
-\begin{equation}
-(\#eq:frechet)
-\rho^{max} = \rho \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho^{min} = \rho \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
-\end{equation}
-
-\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse cdf of random variables $X_1$ and $X_2$, respectively. For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
-
-For discrete marginals, however, one could perform a rescaled version of $\rho_s$ for random variables $X,Y$ with pmfs (or pdfs) $p(x)$ and $q(y)$, respectively. 
+*Discrete marginal considerations*.
+Spearman's correlation for discrete marginal suffers some issues due to the nonzero probability of ties (for example, the Spearman's correlation of a discrete-valued random variable $X$ could be less than 1; @MB13).
+One remedy for this issue is to rescale Equation \@ref(eq:spearman). 
+For two random variables $X,Y$ with pmfs (or pdfs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
 \begin{equation}
 (\#eq:spearmanRescaled)
-\rho_{RS}(X,Y) = \frac{\rho_s(X,Y)}{ \left[ \left[ 1 - \sum_x p(x)^3 \right] \left[ 1 - \sum_y q(y)^3 \right] \right]^{1/2}}
+\rho_{RS}(X,Y) = \frac{\rho_s(X,Y)}{ \left[ \left[ 1 - \sum_x p(x)^3 \right] \left[ 1 - \sum_y q(y)^3 \right] \right]^{1/2}}.
 \end{equation}
+
+Noting that with continuous marginals the rescaling returns $\rho_S$.
+For discrete marginals with large or infinite support, computing adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property *SP1*).
+And further the infinite sums must be approximately for count-valued data and potentially violating desired property *SP2*.
+
+Also we'll note that for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$.
+Let 
+
+\begin{equation}
+F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}.
+(\#eq:inverseCDF)
+\end{equation}
+
+*Marginal-dependent bivariate correlation bounds*. 
+Given two marginal distributions, the $\rho_P$ is not free to vary the entire range of possible correlations, $[-1,1]$.
+These so-called *Frechet-Hoeffding bounds* are well-studied (for example, see @Nelsen2007 and @BF17).
+This situatino gives strict restraints on the possible bounds and cannot be overcome through algorithm design.
+In general the bounds are given by
+
+\begin{equation}
+(\#eq:frechet)
+\rho_P^{max} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho_P^{min} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
+\end{equation}
+
+\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse cdf of random variables $X_1$ and $X_2$, respectively. 
+For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
 
 ## Gaussian copulas
 
-The crux of the method is construction of a Gaussian copula. This idea is well known [refs]. We chose a Gaussian copula among the many available copula functions primarily for two reasons: 1) the computationally convient closed expression to convert among the most common dependency measures when the margins are Gaussian and 2) the availability of high-performance multivariate normal simulators in R ('mvnfast' ref).  
+There is a strong connection of our simulatino strategy to Gaussian *copulas* (for a technical introduction see @Nelsen2007).
+A copula is a distribution function on $[0,1]^d$ describing a random vector with standard uniform marginals.
+This definition provides a powerful, natural way characterize joint probability structure and the study of copulas is important in statistical theory and practice.
 
-A copula is a distribution function on $[0,1]^d$ describing a random vector with standard uniform marginals. Moreover, for any random vector ${\bf X}=(X_1, \ldots, X_d)$ with cumulative distribution function (CDF) $F$ and marginal CDFs $F_i$ there is a copula function 
+For  any random vector ${\bf X}=(X_1, \ldots, X_d)$ with cumulative distribution function (CDF) $F$ and marginal CDFs $F_i$ there is a copula function 
 $C(u_1, \ldots, u_d)$ so that 
 
 \[
 F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), \,\,\, x_i\in \mathbb R, i=1,\ldots,d. 
 \]  
 
-A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard normal cdf, $\Phi$. The Gaussian copula is the one that corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R}$. (Since the marginals are standard normal, this ${\bf R}$ is also the correlation matrix). If $F_{{\bf R}}$ is the CDF of such multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
+A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard normal cdf, $\Phi$. 
+This representation corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R}$.
+But since the marginals are standardized to have unit variance, this ${\bf R}$ is a Pearson correlation matrix. 
+If $F_{{\bf R}}$ is the CDF of such multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
 
 \begin{equation}
 (\#eq:gauss)
@@ -151,15 +188,7 @@ F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 where $\Phi(\cdot)$ is the standard normal CDF.
 Note that the copula $C_{{\bf R}}$ is simply the CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where  $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$. 
 
-Sklar's Theorem (ref) guarantees that given inverse CDFs (quantile) and obtainable correlation matrix (within the Frechet bounds) can be obtained via transformations involving copula functions. 
-Namely, to simulate a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, we can construct a Gaussian copula ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$. 
-When an $Y_i$ is discrete, some care must be taken to define $F_i$. Letting 
+Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) *any* random vector can be obtained via transformations involving copula functions. 
+For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ povides $Y_i \sim F_i, \, \forall \, i$ .
 
-\begin{equation}
-F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}
-(\#eq:inverseCDF)
-\end{equation}
 
-\noindent ensures that $Y_i \sim F_i$.
-
-Simulation of a multivariate random vector ${\bf T}$ with margins $F_i$ based on this copula 

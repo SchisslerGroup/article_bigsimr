@@ -49,6 +49,8 @@ Despite all this, if one does desire to characterize dependency using Pearson co
 that simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution.
 We'll study the robustness of our method to this limitation later in the application section (Section BLAH).
 
+To do this, we take advantage of a closed form relationship [ref?] between Kendall's $\tau$ and Pearson's correlation coefficient for bivariate normal random variables:
+
 Putting the together the facts provided in the equations above, we come the following proposed simulation algorithm to produce a random vector ${\bf Y}$ with specified Spearman's correlation and marginal distributions. Note that all computational steps can be parallelized as each operation can be done or either the $d$ marginals or the $\binom{d}{2}$ pairs for the correlation values. Even the generation of multivariate normal random vectors is parallelized through optimized matrix multiplication/decomposition routines. 
 
 ## Random vector generation `bigsimr::rvec` algorithm {#rand-vec-gen}

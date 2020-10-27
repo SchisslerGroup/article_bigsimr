@@ -1,16 +1,16 @@
 # Background {#background}
 
 The article presents several algorithms to work with high-dimesional multivariate data, but all `bigsimr` algorithms were originally designed to support a single task:
-to generate random vectors drawn from given marginal distributions and component-wise dependency metrics.
-Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and hetereogeneous marginal distributions, where $d$ can be very large (possibly millions of variables).
+to generate random vectors drawn from multivariate probability distribution with given marginal distributions and component-wise dependency metrics.
+Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and hetereogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, and $d$ can be very large.
 
 When designing this methodology, we developed the following properties to guide our effort.
 We divide the properties into two categories: (1) basic properties (**BP**) and "scaleability" properties (**SP**). 
 The BPs are adapted from an existing criteria due to @Nik13a.
 Our simulation strategy should allow:
 
-* BP1: Wide range of dependences, allowing both positive and negative values, and, ideally, admitting the full range of possible values.
-* BP2: Flexible dependence, meaning that the number of bivariate marginals is (approximately) equal to the number of dependence parameters.
+* BP1: A wide range of dependences, allowing both positive and negative values, and, ideally, admitting the full range of possible values.
+* BP2: Flexible dependence, meaning that the number of bivariate marginals can be equal to the number of dependence parameters.
 * BP3: Flexible marginal modeling, generating heterogeneous data --- possibly from differing probability families.
 
 Moreover, the simulation method must **scale** to high dimensions:
@@ -18,14 +18,14 @@ Moreover, the simulation method must **scale** to high dimensions:
 * SP1: Procedure must scale to high dimensions, computable in a reasonable amount time.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
 
-To fix ideas and provide example applications enabled via `bigsimr`, we the next section describes our motivating data that originally inspired the authors` interest in creating this methodology.
+To fix ideas and provide example applications enabled via `bigsimr`, the next section describes a motivating data set that originally inspired the authors` interest in developing this methodology.
 
 ## Motivating example: RNA-seq data
 
-Simulating high-dimensional, non-normal data motivates this work --- in pursuit of modeling RNA-sequencing data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
+Simulating high-dimensional, non-normal, correleated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
 The RNA-seq data-generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
 RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data.
-In humans, this results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted.
+This results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted (for human derived samples).
 Yet due to inherent biological processes, gene expression data exhibits correlation (co-expression) across genes [@BE07; @Schissler2018]. 
 
 ```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none'}
@@ -50,12 +50,11 @@ if ( !file.exists( 'data/brca99.rds' ) )  {
 }
 ```
 
-Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas; TCGA; see Acknowledgements).
-For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
-This results in `r choose(d,2)` pairwise dependencies to characterize and simulate.
-Further, to illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
-Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first 5 patients' breast tumor samples. 
-
+Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgements).
+For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing (in terms of median expression) genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
+This results in `r choose(d,2)` pairwise dependencies among the bivariate marginals.
+To illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
+Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first five patients' breast tumor samples. 
 
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
@@ -65,7 +64,7 @@ exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
 saveRDS(exampleGenes, file = './data/exampleGenes.rds')
 kable(round(head( brca[, exampleGenes], n = 5)),
       booktabs = TRUE,
-      caption = 'Counts of 3 high-expressing genes for the first 5 observations of the BRCA dataset.'
+      caption = 'mRNA counts for three selected high-expressing genes from the first five observations of the BRCA data set.'
 )
 ## GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
@@ -74,25 +73,25 @@ Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimat
 
 ```{r ch010-realDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $rho$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 ## Describe and plot real data
+## NEED TO CHANGE TO SPEARMANS
 GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
 
 ## Measures of dependency
 
-A central issue when describing multivariate distributinos is the choose of quantatitive description.
-The most widely-known is the Pearson (product-moment) correlation coefficient that describes the linear association between two random variables $X$ and $Y$ and is given by
+In multivariate analysis, an analyst must select a metric to quantify dependency.
+The most widely-known is the Pearson (product-moment) correlation coefficient that describes the linear association between two random variables $X$ and $Y$, and, it is given by
 
 \begin{equation}
 (\#eq:pearson)
 \rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ var(X)var(Y)\right]^{1/2}}.
 \end{equation}
 
-As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector the Pearson correlation completely describes the dependency between the components. 
-For non-normal marginals and monotone (possibly non-linear) correlation patterns, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships (@MK01).
-Alternatively, in these settings, analysts often prefer rank-based correlatino measures to describe the degree of monotonic association.
+As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pearson correlation completely describes the dependency between the components. 
+For non-normal marginals with monotone correlation patterns, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships (@MK01).
+Alternatively, in these settings, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
 
 Two nonparameteric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. 
-
 Formally, define
 
 \begin{equation}
@@ -101,16 +100,17 @@ Formally, define
 \end{equation}
 
 \noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. 
-Spearman's $\rho$ has an appealing correspondence as the Pearson's correlaiton coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
+Spearman's $\rho_S$ has an appealing correspondence as the Pearson's correlaiton coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
 
 Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations $(X_i, Y_i)$ and $(X_j, Y_j)$.
-By concordance we mean that orderings have the same direction if $X_i < X_j$, then $Y_i < Y_j$, and is determinded by the ranks of the values, not the values themselves (as in $\rho_P$).
+By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determinded by the ranks of the values, not the values themselves.
 
 Both $\tau$ and $\rho_S$ are **invariant to under monotone transformations** of the underlying random variates.
-As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to our scheme to satistify properties SP1 and SP2, above.
+As we will describe more fully in the [Algorithms](#algorithms) section, this property is preferred in our scheme to satistify properties SP1 and SP2, above.
 
-This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficent, as the marginal distributions $F_i$ are fundamental to their caclutain.
-But for bivariate normal vectors, however, the correspondence is well-known:
+*Correspondence among Pearson, Spearman, $\tau$ correlations*.
+This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficent, as the marginal distributions $F_i$ are intrinstic in their calculation.
+But for **bivariate normal vectors**, however, the correspondence is well-known:
 
 \begin{equation}
 (\#eq:convertKendall)
@@ -124,21 +124,21 @@ But for bivariate normal vectors, however, the correspondence is well-known:
 \rho_P = 2 \times sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
-These facts are also critical in our simulation algorithm to broaden the dependency measures supported by `bigsimr`.
+These facts are also critical in our simulation algorithm to broaden the dependency measures supported by `bigsimr`, in a computationally effective manner.
 
 *Discrete marginal considerations*.
-Spearman's correlation for discrete marginal suffers some issues due to the nonzero probability of ties (for example, the Spearman's correlation of a discrete-valued random variable $X$ could be less than 1; @MB13).
+Spearman's correlation for discrete marginal suffers some issues due to the nonzero probability of ties (for example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1; @MB13).
 One remedy for this issue is to rescale Equation \@ref(eq:spearman). 
-For two random variables $X,Y$ with pmfs (or pdfs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
+For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
 \begin{equation}
 (\#eq:spearmanRescaled)
 \rho_{RS}(X,Y) = \frac{\rho_s(X,Y)}{ \left[ \left[ 1 - \sum_x p(x)^3 \right] \left[ 1 - \sum_y q(y)^3 \right] \right]^{1/2}}.
 \end{equation}
 
-Noting that with continuous marginals the rescaling returns $\rho_S$.
-For discrete marginals with large or infinite support, computing adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property *SP1*).
-And further the infinite sums must be approximately for count-valued data and potentially violating desired property *SP2*.
+Note that with continuous marginals the rescaling returns $\rho_S$.
+For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1).
+And further the infinite sums must be approximately for count-valued data and potentially violating desired property SP2.
 
 Also we'll note that for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$.
 Let 
@@ -149,9 +149,9 @@ F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}.
 \end{equation}
 
 *Marginal-dependent bivariate correlation bounds*. 
-Given two marginal distributions, the $\rho_P$ is not free to vary the entire range of possible correlations, $[-1,1]$.
-These so-called *Frechet-Hoeffding bounds* are well-studied (for example, see @Nelsen2007 and @BF17).
-This situatino gives strict restraints on the possible bounds and cannot be overcome through algorithm design.
+Given two marginal distributions, $\rho_P$ is not free to vary the entire range of possible correlations $[-1,1]$.
+The so-called *Frechet-Hoeffding bounds* are well-studied (for example, see @Nelsen2007 and @BF17).
+This situation gives strict restraints on the possible bounds and cannot be overcome through algorithm design.
 In general the bounds are given by
 
 \begin{equation}
@@ -164,11 +164,12 @@ For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCD
 
 ## Gaussian copulas
 
-There is a strong connection of our simulatino strategy to Gaussian *copulas* (for a technical introduction see @Nelsen2007).
-A copula is a distribution function on $[0,1]^d$ describing a random vector with standard uniform marginals.
-This definition provides a powerful, natural way characterize joint probability structure and the study of copulas is important in statistical theory and practice.
+There is a strong connection of our simulation strategy to Gaussian **copulas** (for a technical introduction see @Nelsen2007).
+A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals.
+This definition provides a powerful, natural way characterize joint probability structure.
+Consequently, the study of copulas is an important and active area of statistical theory and practice.
 
-For  any random vector ${\bf X}=(X_1, \ldots, X_d)$ with cumulative distribution function (CDF) $F$ and marginal CDFs $F_i$ there is a copula function 
+For any random vector ${\bf X}=(X_1, \ldots, X_d)$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function 
 $C(u_1, \ldots, u_d)$ so that 
 
 \[
@@ -176,9 +177,9 @@ F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \l
 \]  
 
 A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard normal cdf, $\Phi$. 
-This representation corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R}$.
-But since the marginals are standardized to have unit variance, this ${\bf R}$ is a Pearson correlation matrix. 
-If $F_{{\bf R}}$ is the CDF of such multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
+This representation corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$.
+But since the marginals are standardized to have unit variance, this ${\bf R_P}$ is a Pearson correlation matrix. 
+If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
 
 \begin{equation}
 (\#eq:gauss)
@@ -186,7 +187,7 @@ F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 \end{equation}
 
 where $\Phi(\cdot)$ is the standard normal CDF.
-Note that the copula $C_{{\bf R}}$ is simply the CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where  $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$. 
+Note that the copula $C_{{\bf R}}$ is the familar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$. 
 
 Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) *any* random vector can be obtained via transformations involving copula functions. 
 For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ povides $Y_i \sim F_i, \, \forall \, i$ .

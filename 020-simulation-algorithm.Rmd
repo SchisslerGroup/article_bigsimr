@@ -4,28 +4,73 @@
 bookdown::preview_chapter('020-simulation-algorithm.Rmd')
 ```
 
-This section describes the method for simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$. Each $Y_i$ has a specified marginal
-distribution function $F_i$ and its inverse. To characterize dependency, every pair $(Y_i, Y_j)$ has either a specified Pearson correlation \@ref(eq:pearson), (rescaled) Spearman correlation \, or Kendall's $\tau$ ). The method only approximately matches the Pearson correlation in general, whereas the rank-based methods are exact.
+This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$.
+Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$.
+To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, (rescaled) Spearman correlation $\rho_S$, and/or Kendall's $\tau$.
+The method is best understand as a **high-performance Gaussian copula** (Equation \@ref(eq:gauss)) providing a high-dimensianl NORTA-inspired algorithm.
 
-The method is best understand as a **parallelized Gaussian copula** (see Equation \@ref(eq:gauss) to provide a high-performance NORTA (NORmal To Anything) algorithm.
+## NORmal To Anything (NORTA)
 
-`mvnfast` High-performance multivariate normal simulator [@Fasiolo2016]
-
-`nortaRA` Implements exact Pearson matching (step 2 in NORTA) [@Chen2001] 
-
-To simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$,
-there is the well-known NORTA algorithm [@Cario1997]. It follows like this:
+The well-known NORTA algorithm [@Cario1997] can be used simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$.
+Specifically, the NORTA algorithm follows like this:
 
 1. Simulate a random vector $\bf Z$ with $d$ **independent** and **identical** standard normal components.
-2. Determine the input matrix $\Sigma_{\bf Z}$ to corresponds with the
-   specified output $\Sigma_{\bf Y}$ [@Chen2001; @Xia17]
+2. Determine the input matrix $\Sigma_{\bf Z}$ that corresponds with the specified output $\Sigma_{\bf Y}$.
 3. Produce the Cholesky factor $M$ of $\Sigma_{\bf Z}$ so that $M M^{\prime}=\Sigma_{\bf Z}$.
 4. Set $X$ by $X \gets MZ$.
 5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,2,...,d$.
 
-We shall see that constructing continuous joint distributions that match a target Spearman or Kendall's correlations computes easily when employing Gaussian copulas, since this measures are invariant under the monotone transformations involved [refs]. 
+With modern parallelized computing, steps 1, 3, 4, 5 are readily implemented as high-performance (multicore and/or graphical-processing-unit (GPU) acceleration) algorithms, providing the greatest scaleability in a practical manner.
+
+Matching specified Pearson correlation coefficients exactly (step 2 above), however, is problematic.
+In general, there is no closed form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$.
+Matching the correlations involves evaluating or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,2,\ldots,d$.
+For high-dimensional data, these evaluations are often too costly to enable feasible comprehensive MC studies.
+For low-dimensional problems, methods and tools exist to match exactly (see @Chen2001; @Xia17; @MB13), including the publicly available `nortaRA` R package.
+
+Our solution is to essentially avoid this complication in Pearson matching.
+Since our goal is to simulate non-normal marginals, we greatly prefer the use of rank-based measures $\rho_S$ and $\tau$ from a modeling standpoint.
+Further, $\rho_S$ and $\tau$ invariance under monotone transformation (see [Background](#background)), perserves the correlation coefficients through steps 3, 4, and 5 in the NORTA algorithm above.
+This eliminates the need for computing the $\binom{d}{2}$ integrals to match exactly (nothing is for free, however, as discussed in below in Section \@ref(rand-vec-gen)).
+
+Despite all this, if one does desire to characterize dependency using Pearson correlations, simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution (@Song00).
+The quality of this approximation depends on the modeling goal, but in practice, for high-dimensional count data we find the accuracy to be adequate.
+Later, we'll study the robustness of our method to this limitation in selected [Monte Carlo evalutations]({#simulations}).
+
+## Random vector generation via `bigsimr::rvec()` {#rand-vec-gen}
+
+Now we describe `bigsimr::rvec()`, our algorithm to generate random vectors.
+It mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
+
+1. Pre-processing for nonparameteric dependency matching.  
+	(i) Convert from either ${\bf R_{Spearman}}$ or ${\bf R_{Kendall}}$ into the corresponding MVN input correlation ${\bf R_{Pearson}}$.
+	(ii) Check that ${\bf R_{Pearson}}$ is semi-positive definite.  
+	(iii) If not compute a close semi-positive ${\bf \widetilde{R}_{Pearson}}$.  
+2. Gaussian copula construction.
+	(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_{Pearson}})$ ;  
+	(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+3. Quantile evaluations.
+	Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+The pre-processing (Step1) takes advantage of the closed form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertSpearman) or \@ref(eq:convertKendall), respectively (implemented as `bigsimr::cor_covert()`).
+
+A complication often arises at this stage: the parallelized pairwise conversions may become non-positive definite, especially in high dimensions.
+Researchers working in multivariate computation frequently encounter such difficulties and need to find a closest positive definiteness matrix.
+The most widely used routine for this task in R is called `matrix::nearPD()` and is not suitable for high dimensions.
+To overcome this issue, we've implemented `bigsimr::nearPSD()`, a quadractically convergent Netwon method for finding the nearest correlation matrix introduced by @QS2006.
+We hope that this routine could be useful in many applications aside from our primary goal of random vector generation.
+
+Once the target margins and algorithm inputs are determined, steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
+Specifically, step 2i uses either an efficient multicore multivariate normal simulator `mvnfast`[@Fasiolo2016] or a using Google's JAX python library for graphical-processing-unit (GPU) acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm in the preceeding section).
 
 <!-- 
+## Other high-performance `bigsimr` algorithms
+
+<mark> ALEX, briefly discuss other algorithms here </mark>
+- `cor_bounds()`  
+- `cor_fast()`  
+- `cor_nearPSD()`  
+
 For discrete marginals, achieving a target Spearman correlation under this scheme is possible by using components from Equation \@ref(eq:spearmanRescaled) to further adjust the input correlation matrix. Let the unscaled Spearman correlation coefficients be $\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)$ for two marginal distributions and divide the target correlation by the product in the denominator of Equation \@ref(eq:spearmanRescaled). Let these adjustment factors be denoted as $a_i = \left[ 1 - \sum_y p_i(y)^3 \right]^{1/2}$ and specifically rescale the target Spearman correlation matrix by
 
 \begin{equation}
@@ -41,37 +86,3 @@ In a similar fashion, we rescale Kendall's $\tau$ to adjust the input correlatio
 \end{equation}
 
 your comment -->
-
-In contrast the rank-based correlations, matching specified Pearson correlation coefficients exactly is computational intense in this scheme. In general, there is no closed form correspondence and involving computing or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,2,\ldots,d$ (see Xia17 and MB13). 
-For accurate numeric approximation of these integrals, the functions must be evaluated hundreds of times. 
-Others have used efficient Monte Carlo integration schemes (see @Chen2001), but scale poorly to large dimension in reasonable times (property **S2**). 
-Despite all this, if one does desire to characterize dependency using Pearson correlations, we often see in practice --- and it is theoretically justified under certain conditions (@Song00) --- 
-that simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution.
-We'll study the robustness of our method to this limitation later in the application section (Section BLAH).
-
-To do this, we take advantage of a closed form relationship [ref?] between Kendall's $\tau$ and Pearson's correlation coefficient for bivariate normal random variables:
-
-Putting the together the facts provided in the equations above, we come the following proposed simulation algorithm to produce a random vector ${\bf Y}$ with specified Spearman's correlation and marginal distributions. Note that all computational steps can be parallelized as each operation can be done or either the $d$ marginals or the $\binom{d}{2}$ pairs for the correlation values. Even the generation of multivariate normal random vectors is parallelized through optimized matrix multiplication/decomposition routines. 
-
-## Random vector generation `bigsimr::rvec` algorithm {#rand-vec-gen}
-
-<mark>make this algorithm pretty later </mark>
-
-1. Preprocessing for nonparameteric dependency matching.  
-	(i) Convert from either ${\bf R_{Spearman}}$ or ${\bf R_{Kendall}}$ into the corresponding MVN input correlation ${\bf R_{Pearson}}$ via \@ref(eq:convertSpearman) or \@ref(eq:convertKendall), respectivity.  
-	(ii) Check that ${\bf R_{Pearson}}$ is semi-positive definite.  
-	(ii) If not find a close semi-positive ${\bf \widetilde{R}_{Pearson}}$ via `cor_nearPSD()`.  
-2. NORTA transformation  
-	(1) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_{Pearson}})$;  
-	(2) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
-3. Return step  
-	(3) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
-
-## Other high-performance `bigsimr` algorithms
-
-<mark> ALEX, briefly discuss other algorithms here </mark>
-
-- `cor_bounds()`  
-- `cor_covert()` make sure that you are clear this is for only MVN.  
-- `cor_fast()`  
-- `cor_nearPSD()`  

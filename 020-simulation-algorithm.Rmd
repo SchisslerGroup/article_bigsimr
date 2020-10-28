@@ -54,14 +54,15 @@ It mirrors the classical NORTA algorithm above with some modifications for rank-
 
 The pre-processing (Step1) takes advantage of the closed form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertSpearman) or \@ref(eq:convertKendall), respectively (implemented as `bigsimr::cor_covert()`).
 
-A complication often arises at this stage: the parallelized pairwise conversions may become non-positive definite, especially in high dimensions.
+A complication often arises at this stage: the parallelized pairwise conversions may create a (spuriously) non-positive definite correlation matrix, especially in high dimensions.
 Researchers working in multivariate computation frequently encounter such difficulties and need to find a closest positive definiteness matrix.
 The most widely used routine for this task in R is called `matrix::nearPD()` and is not suitable for high dimensions.
-To overcome this issue, we've implemented `bigsimr::nearPSD()`, a quadractically convergent Netwon method for finding the nearest correlation matrix introduced by @QS2006.
+To overcome this issue, we've implemented `bigsimr::nearPSD()`, a quadractically convergent Netwon method for finding the nearest correlation matrix, developed by @QS2006.
 We hope that this routine could be useful in many applications aside from our primary goal of random vector generation.
 
 Once the target margins and algorithm inputs are determined, steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
-Specifically, step 2i uses either an efficient multicore multivariate normal simulator `mvnfast`[@Fasiolo2016] or a using Google's JAX python library for graphical-processing-unit (GPU) acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm in the preceeding section).
+Specifically, step 2i uses either an efficient multicore multivariate normal simulator `mvnfast`[@Fasiolo2016] or a using Google's JAX python library NumPy for graphical-processing-unit (GPU) acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm in the preceeding section).
+(JAX is a not acronym and can be thought of a high-performance NumPy).
 
 <!-- 
 ## Other high-performance `bigsimr` algorithms

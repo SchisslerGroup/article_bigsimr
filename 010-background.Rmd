@@ -37,7 +37,7 @@ if ( !file.exists( 'data/brca99.rds' ) )  {
     dim(brca) ## num of genes 20501
     ## compute the median expression! avoid the 0s
     brcaMedian <- apply(brca, 2, median)
-    ## retain top (1-probs)*100% highest expressing genes for illustration
+    ## retain top (1-myProb)*100% highest expressing genes for illustration
     myProb <- 0.99
     cutPoint <- quantile( x = brcaMedian, probs = myProb )
     ## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
@@ -48,6 +48,9 @@ if ( !file.exists( 'data/brca99.rds' ) )  {
     ## save data as rds
     saveRDS(brca, 'data/brca99.rds')
 }
+myProb <- 0.99
+brca <- readRDS(file = './data/brca99.rds')
+d <- ncol(brca)
 ```
 
 Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgements).
@@ -58,7 +61,6 @@ Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for 
 
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
-brca <- readRDS(file = './data/brca99.rds')
 set.seed(10192020)
 exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
 saveRDS(exampleGenes, file = './data/exampleGenes.rds')

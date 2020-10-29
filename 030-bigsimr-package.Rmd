@@ -74,10 +74,11 @@ For this example, we will not take up goodness-of-fit considerations.
 But it seems sensible without domain knowledge to estimate these quantities from the data and we have a suite of functions designed for this task.
 
 *Specifying marginal distributions*.
-Though we don't know the true distribution of ozone levels or air temperatures, we'll assume that both are log-normally distributed since the values are positive and skewed.
-We'll use the well-known maximum likelihood estimators for the lognormal parameters:
+Of course, we don't know the true distribution of ozone levels or air temperatures.
+Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we'll assume `Temp` is normally ditsributed and `Ozone` is log-normally distributed since its values are positive and skewed.
+We'll use the well-known unbiased estimators for normal distribution and maximum likelihood estimators for the lognormal parameters:
 
-```{r ch030-aq-temp-pars, echo=FALSE}
+```{r ch030-aq-temp-pars, echo=TRUE, eval=TRUE}
 df %>% 
   select(Temp) %>% 
   summarise_all(.funs = c(mean = mean, sd = sd))
@@ -88,7 +89,7 @@ mle_mean <- function(x) mean(log(x))
 mle_sd <- function(x) mean( (log(x) - mean(log(x)))^2 )
 
 df %>% 
-  select(Temp, Ozone) %>% 
+  select(Ozone) %>% 
   summarise_all(.funs = c(meanlog = mle_mean, sdlog = mle_sd))
 ```
 
@@ -98,8 +99,8 @@ This allows one to enter the distributions without evaluating anything (yet).
 
 ```{r ch030-margins-alist, echo=TRUE}
 margins <- alist(
-  qlnorm(meanlog = 0.74, sdlog = 0.016),
-  qlnorm(meanlog = 3.42, sdlog = 0.743)
+    qnorm(mean = 77.871, sd = 9.4855),
+    qlnorm(meanlog = 3.419, sdlog = 0.7426),
 )
 ```
 
@@ -113,7 +114,7 @@ This is intended to help when scaling up your code to high dimensions.
 
 ```{r ch030-margins-mlist, echo=TRUE}
 margins <- mlist(
-  qlnorm(meanlog = mle_mean(df$Temp), sdlog = mle_sd(df$Temp)),
+  qnorm(mean = mean(df$Temp), sd = sd(df$Temp)),
   qlnorm(meanlog = mle_mean(df$Ozone), sdlog = mle_sd(df$Ozone))
 )
 margins
@@ -140,7 +141,7 @@ To ensure that the simulation is not configured to impossible settings, we provi
 cor_bounds(margins = margins, type = type)
 ```
 
-Since our estimated Spearm correlation $\hat{ \rho_S }$ is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
+Since our estimated Spearm correlation $\hat{ \rho}_S$ is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
 By comparison, the Pearson correlation $\rho_P$ is restricted to [-0.8648, 0.8727] for these margins (see `bigsimr::cor_bounds`output below).
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
@@ -164,7 +165,7 @@ p1 <- df_sim %>%
   ggplot(aes(Temp, Ozone)) +
   geom_density_2d_filled() +
   theme(legend.position = "none") +
-  labs(x = "Temperature", y = "Ozone") +
+  labs(x = "Simulated Temperature", y = "Simulated Ozone") +
   scale_y_continuous(limits = c(0, max(df$Ozone))) +
   scale_x_continuous(limits = range(df$Temp))
 

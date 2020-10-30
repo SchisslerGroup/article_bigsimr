@@ -15,10 +15,13 @@ set.seed(10162020)
 bookdown::preview_chapter('040-monte-carlo-evaluation.Rmd')
 ```
 
-Before applying our methodology to real data simulation, we conduct several Monte Carlo studies to investigate method performance in comparison to other existing implementations. 
-We focus the numerical experiments on assessing how well the procedure scales to high dimension with respect to reasonable computation times (property S1 above) and accurately matching marginal and dependency parameters. 
-The simulations will proceed in increasing complexity --- leading up to the setting in our motivating example. 
-We begin by exploring simple exchangeable (constant) correlation structures under a large number of simulation replicates while applying the algorithm above to first continuous then discrete marginal distributions to test the robustness of our algorithm since exact matching is not guaranteed.
+Before applying our methodology to real data simulation, we conduct several Monte Carlo studies to investigate method performance.
+Since marginal parameter matching in our scheme is essentially a sequence of univariate inverse probability transforms, the challenging aspects are the accuracy of dependency matching and computational efficiency.
+And, so, we'll focus the numerical experiments on assessing how well the procedure scales to high dimension with respect to reasonable computation times (property S1 above) and accurately matching marginal and dependency parameters. 
+
+Further, we select simulaiton configurations to ultimately simulate discrete-valued RNA-seq data and the simulations will proceed in increasing complexity, leading to our motivating application in Section \@ref(examples). 
+We begin wiith empirically evaluating the dependency matching across all three supported correlations --- Pearson's, Spearman's, and Kendall's ---- in identical, bivariate marginal configurations.
+The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (mimicking RNA-seq counts).
 
 ## Bivariate experiments
 
@@ -123,6 +126,8 @@ for (i in 1:nrow(sim_pars)) {
 res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
 saveRDS(object = res, "./results/norm_sims.rds")
 ```
+
+Figure \@ref(fig:ch040-biNormPlot) `bigsimr` recovers the Pearson specified correlations for MVN.
 
 ```{r ch040-biNormPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
 dat <- readRDS("./results/norm_sims.rds")
@@ -244,6 +249,8 @@ res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
 saveRDS(object = res, "./results/sims_gamma.rds")
 ```
 
+Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma.
+
 ```{r ch040-biGammaPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
 dat <- readRDS("./results/sims_gamma.rds")
 dat %>%
@@ -364,6 +371,8 @@ res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
 saveRDS(object = res, "./results/nbinom_sims.rds")
 ```
 
+Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
+
 ```{r ch040-biNegBinPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
 dat <- readRDS("./results/nbinom_sims.rds")
 dat %>%
@@ -377,7 +386,22 @@ dat %>%
 ## ggsave('fig/plot-biNegBinPlot.pdf')
 ```
 
+Taken together, the studies show our methology are accuracy across the entire range of possible correlation values for the rank-based dependency measures in continuous marginals.
+For all selected bivariate marginals, the Pearson correlation matching is approximate.
+For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, especially near the correlation bounds.
+Yet generally the accuracy seems adequate for most applications, at least in these limited simulation settings.
+
+Of course, one could choose marginals that lead to poor matching by construction.
+In partice, we recommend users to always evaluate the accuracy for their application, using methods similar to those presented above.
+See [Discusion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
+
 ## Scale up to Ultra-High Dimensions
+
+The bivariate simulations provide a low-dimensional perspectitive.
+But, of course, this is not `bigsimr`'s primary purpose.
+We'd like the random vector methodolgy to scale to high-dimensional problems.
+
+DESCRIBE WHAT WE DID. Do we need to redo this?
 
 ```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
 knitr::include_graphics("fig/cpu-gpu-times.png")

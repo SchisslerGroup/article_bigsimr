@@ -25,112 +25,110 @@ The simulations progress from bivariate normal, to bivariate gamma (non-normal y
 
 ## Bivariate experiments
 
-*Bivariate Normal*.
-Let's simulate a bivariate normal and check our correlation matching performance as N increases.
-Here we have BVN( $\mu_1 = \mu_2 = 10, \rho_{type}$ ).
-We vary $\rho$ across the entire possible range of correlations for each correlation type.
-
 ```{r ch040-biNormal, echo = FALSE, eval = TRUE}
-mom_norm <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  list(mean = m, sd = s)
-}
-
-mu <- 10
+mu <- 0
 sigma <- 1
-margins <- alist(
-    qnorm(mean = mu, sd = sigma),
-    qnorm(mean = mu, sd = sigma)
-)
-
-type <- c("pearson", "spearman", "kendall")
-## cores <- as.integer( parallel::detectCores() - 1 )
-## n <- c(1e3, 1e4, 1e5)
-n <- c(1e1, 1e2, 1e3)
-adjustForDiscrete <- c(FALSE)
-
-eps <- 1e-2
-## grid_steps <- 100
-grid_steps <- 10
-sim_pars <- expand.grid(type = type, cores = cores, n = n,
-                        stringsAsFactors = FALSE,
-                        adjustForDiscrete = adjustForDiscrete)
-
-res <- data.frame()
-dir.create("./results/sims_norm", showWarnings = TRUE, recursive = TRUE)
-for (i in 1:nrow(sim_pars)) {
-    type <- sim_pars$type[i]
-    cores <- sim_pars$cores[i]
-    n <- sim_pars$n[i]
-    adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
-    tmp_bounds <- cor_bounds(margins, type = type)
-    cor_lo <- tmp_bounds$lower[1,2] + eps
-    cor_hi <- tmp_bounds$upper[1,2] - eps
-    cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
-    ## rho = cor_seq[1]
-    for (rho in cor_seq) {
-        Rho <- matrix(rho, 2, 2)
-        diag(Rho) <- 1.0
-        ## Rho <- convertCor( rho = Rho, from = type, to = 'pearson' )
-        time_data <- system.time({
-            ## x <- rmvn(n = n, mu = rep( mu, 2 ), sigma = Rho)
-            ## use rvec to test our software
-            x <- rvec(n = n,
-                      rho = Rho,
-                      margins = margins,
-                      type = type,
-                      cores = cores)
-        })
-        ## Save the sims in case
-        id <- paste0(
-            "d", 2,
-            "-N", n,
-            "-c", cores,
-            "-r", rho,
-            "-Cor", type,
-            "-adj", as.character(adjustForDiscrete),
-            "-dev", "1CORE",
-            "-lib", "bigsimr"
-        )
-        ## save sims in their own subdirectory
-        saveRDS(x, file = paste0("./results/sims_norm/", id, ".rds"))
-
-        ## Estimate statistics
-        Rho_hat <- cor_fast(x, method = type)
-        rho_hat <- Rho_hat[1, 2]
-        norm_args_hat <- mom_norm(x[,1])
-        mu_hat <- norm_args_hat$mean
-        sigma_hat <- norm_args_hat$sd
-
-        ## Save the results
-        res <- rbind(res, data.frame(
-                              method = "bigsimr",
-                              device = "CPU",
-                              type = type,
-                              cores = cores,
-                              margins = "norm",
-                              adjustForDiscrete = adjustForDiscrete,
-                              d = 2,
-                              N = n,
-                              rho = rho,
-                              rho_hat = rho_hat,
-                              mean = mu,
-                              sd = sigma,
-                              mean_hat = mu_hat,
-                              sd_hat = sigma_hat,
-                              sim_time = unname(time_data["elapsed"])
-                          ))
+if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
+    mom_norm <- function(x) {
+        m <- mean(x)
+        s <- sd(x)
+        list(mean = m, sd = s)
     }
+    mu <- 0
+    sigma <- 1
+    margins <- alist(
+        qnorm(mean = mu, sd = sigma),
+        qnorm(mean = mu, sd = sigma)
+    )
+    type <- c("pearson", "spearman", "kendall")
+    cores <- as.integer( parallel::detectCores() - 1 )
+    n <- c(1e3, 1e4, 1e5)
+    ## n <- c(1e1, 1e2, 1e3)
+    adjustForDiscrete <- c(FALSE)
+    eps <- 1e-2
+    grid_steps <- 100
+    ## grid_steps <- 10
+    sim_pars <- expand.grid(type = type, cores = cores, n = n,
+                            stringsAsFactors = FALSE,
+                            adjustForDiscrete = adjustForDiscrete)
+    res <- data.frame()
+    dir.create("./results/biNorm_sims", showWarnings = TRUE, recursive = TRUE)
+    for (i in 1:nrow(sim_pars)) {
+        type <- sim_pars$type[i]
+        cores <- sim_pars$cores[i]
+        n <- sim_pars$n[i]
+        adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+        tmp_bounds <- cor_bounds(margins, type = type)
+        cor_lo <- tmp_bounds$lower[1,2] + eps
+        cor_hi <- tmp_bounds$upper[1,2] - eps
+        cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+        ## rho = cor_seq[1]
+        for (rho in cor_seq) {
+            Rho <- matrix(rho, 2, 2)
+            diag(Rho) <- 1.0
+            ## Rho <- convertCor( rho = Rho, from = type, to = 'pearson' )
+            time_data <- system.time({
+                ## x <- rmvn(n = n, mu = rep( mu, 2 ), sigma = Rho)
+                ## use rvec to test our software
+                x <- rvec(n = n,
+                          rho = Rho,
+                          margins = margins,
+                          type = type,
+                          cores = cores)
+            })
+            ## Save the sims in case
+            id <- paste0(
+                "d", 2,
+                "-N", n,
+                "-c", cores,
+                "-r", rho,
+                "-Cor", type,
+                "-adj", as.character(adjustForDiscrete),
+                "-dev", "1CORE",
+                "-lib", "bigsimr"
+            )
+            ## save sims in their own subdirectory
+            saveRDS(x, file = paste0("./results/biNorm_sims/", id, ".rds"))
+            ## Estimate statistics
+            Rho_hat <- cor_fast(x, method = type)
+            rho_hat <- Rho_hat[1, 2]
+            norm_args_hat <- mom_norm(x[,1])
+            mu_hat <- norm_args_hat$mean
+            sigma_hat <- norm_args_hat$sd
+            ## Save the results
+            res <- rbind(res, data.frame(
+                                  method = "bigsimr",
+                                  device = "CPU",
+                                  type = type,
+                                  cores = cores,
+                                  margins = "norm",
+                                  adjustForDiscrete = adjustForDiscrete,
+                                  d = 2,
+                                  N = n,
+                                  rho = rho,
+                                  rho_hat = rho_hat,
+                                  mean = mu,
+                                  sd = sigma,
+                                  mean_hat = mu_hat,
+                                  sd_hat = sigma_hat,
+                                  sim_time = unname(time_data["elapsed"])
+                              ))
+        }
+    }
+    res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
+    saveRDS(object = res, "./results/biNorm_sims.rds")
 }
-res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
-saveRDS(object = res, "./results/norm_sims.rds")
 ```
 
+*Bivariate Normal*.
+Let's simulate a bivariate normal and check our correlation matching performance as N increases.
+Standard bivariate normal 
+Here we have BVN( $\mu_1 = \mu_2 = 0, \rho_{type}$ ).
+We vary $\rho$ across the entire possible range of correlations for each correlation type.
 Figure \@ref(fig:ch040-biNormPlot) `bigsimr` recovers the Pearson specified correlations for MVN.
 
 ```{r ch040-biNormPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
-dat <- readRDS("./results/norm_sims.rds")
+dat <- readRDS("./results/biNorm_sims.rds")
 dat %>%
     filter(cores == cores) %>%
     ggplot(aes(rho, rho_hat, color = type)) +
@@ -139,120 +137,119 @@ dat %>%
     geom_abline(slope = 1) +
     ## facet_wrap(~ + N) + theme_bw()
     facet_wrap(~ type + N) + theme_bw()
-    
 ## ggsave('fig/plot-biNormPlot.pdf')
+```
+
+```{r ch040-biGamma, echo = FALSE, eval = TRUE}
+shape <- 10
+rate <- 1
+if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
+    mom_gamma <- function(x) {
+        m <- mean(x)
+        s <- sd(x)
+        list(shape = m^2 / s^2, rate = m / s^2)
+    }
+    margins <- alist(
+        qgamma(shape = shape, rate = rate),
+        qgamma(shape = shape, rate = rate)
+    )
+
+    type <- c("pearson", "spearman", "kendall")
+    ## cores <- c(1L)
+    cores <- as.integer( parallel::detectCores() - 1 )
+    n <- c(1e3, 1e4, 1e5)
+    ## n <- c(1e1, 1e2, 1e3)
+    adjustForDiscrete <- c(FALSE)
+
+    eps <- 1e-2
+    grid_steps <- 100
+    ## grid_steps <- 10
+    sim_pars <- expand.grid(type = type, cores = cores, n = n,
+                            stringsAsFactors = FALSE,
+                            adjustForDiscrete = adjustForDiscrete)
+
+
+    dir.create("./results/biGamma_sims", showWarnings = TRUE, recursive = TRUE)
+    res <- data.frame()
+    for (i in 1:nrow(sim_pars)) {
+        
+        type <- sim_pars$type[i]
+        cores <- sim_pars$cores[i]
+        n <- sim_pars$n[i]
+        adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+
+        tmp_bounds <- cor_bounds(margins, type = type)
+        cor_lo <- tmp_bounds$lower[1,2] + eps
+        cor_hi <- tmp_bounds$upper[1,2] - eps
+        cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+
+        ## rho = cor_seq[1]
+        for (rho in cor_seq) {
+            Rho <- matrix(rho, 2, 2)
+            diag(Rho) <- 1.0
+
+            time_data <- system.time({
+                x <- rvec(n = n,
+                          rho = Rho,
+                          margins = margins,
+                          cores = cores,
+                          type = type,
+                          ensure_PSD = TRUE)
+            })
+
+            ## Save the sims in case
+            id <- paste0(
+                "d", 2,
+                "-N", n,
+                "-c", cores,
+                "-r", rho,
+                "-Cor", type,
+                "-adj", as.character(adjustForDiscrete),
+                "-dev", "CPU",
+                "-lib", "bigsimr"
+            )
+            saveRDS(x, file = paste0("./results/biGamma_sims/", id, ".rds"))
+
+            ## Estimate statistics
+            Rho_hat <- cor_fast(x, method = type)
+            rho_hat <- Rho_hat[1, 2]
+            gamma_args_hat <- mom_gamma(x[,1])
+            shape_hat <- gamma_args_hat$shape
+            rate_hat <- gamma_args_hat$rate
+
+            ## Save the results
+            res <- rbind(res, data.frame(
+                                  method = "bigsimr",
+                                  device = "CPU",
+                                  type = type,
+                                  cores = cores,
+                                  margins = "gamma",
+                                  adjustForDiscrete = adjustForDiscrete,
+                                  d = 2,
+                                  N = n,
+                                  rho = rho,
+                                  rho_hat = rho_hat,
+                                  shape = shape,
+                                  rate = rate,
+                                  shape_hat = shape_hat,
+                                  rate_hat = rate_hat,
+                                  sim_time = unname(time_data["elapsed"])
+                              ))
+        }
+    }
+    res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
+    saveRDS(object = res, "./results/biGamma_sims.rds")
+}
 ```
 
 *Bivariate Gamma*. 
 Similarly, let's check the performance for a non-symmetric continuous distribution: a standard (rate =1) bivariate gamma.
 Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
 We vary $\rho$ across the entire possible range of correlations for each correlation type.
-
-```{r ch040-biGamma, echo = FALSE, eval = TRUE}
-mom_gamma <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  list(shape = m^2 / s^2, rate = m / s^2)
-}
-
-shape <- 10
-rate <- 1
-margins <- alist(
-    qgamma(shape = shape, rate = rate),
-    qgamma(shape = shape, rate = rate)
-)
-
-type <- c("pearson", "spearman", "kendall")
-## cores <- c(1L)
-## n <- c(1e3, 1e4, 1e5)
-n <- c(1e1, 1e2, 1e3)
-adjustForDiscrete <- c(FALSE)
-
-eps <- 1e-2
-## grid_steps <- 100
-grid_steps <- 10
-sim_pars <- expand.grid(type = type, cores = cores, n = n,
-                        stringsAsFactors = FALSE,
-                        adjustForDiscrete = adjustForDiscrete)
-
-
-dir.create("./results/sims_gamma", showWarnings = TRUE, recursive = TRUE)
-res <- data.frame()
-for (i in 1:nrow(sim_pars)) {
-    
-    type <- sim_pars$type[i]
-    cores <- sim_pars$cores[i]
-    n <- sim_pars$n[i]
-    adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
-
-    tmp_bounds <- cor_bounds(margins, type = type)
-    cor_lo <- tmp_bounds$lower[1,2] + eps
-    cor_hi <- tmp_bounds$upper[1,2] - eps
-    cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
-    
-
-    ## rho = cor_seq[1]
-    for (rho in cor_seq) {
-        Rho <- matrix(rho, 2, 2)
-        diag(Rho) <- 1.0
-
-        time_data <- system.time({
-            x <- rvec(n = n,
-                      rho = Rho,
-                      margins = margins,
-                      cores = cores,
-                      type = type,
-                      ensure_PSD = TRUE)
-        })
-
-        ## Save the sims in case
-        id <- paste0(
-            "d", 2,
-            "-N", n,
-            "-c", cores,
-            "-r", rho,
-            "-Cor", type,
-            "-adj", as.character(adjustForDiscrete),
-            "-dev", "CPU",
-            "-lib", "bigsimr"
-        )
-        saveRDS(x, file = paste0("./results/sims_gamma/", id, ".rds"))
-
-        ## Estimate statistics
-        Rho_hat <- cor_fast(x, method = type)
-        rho_hat <- Rho_hat[1, 2]
-        gamma_args_hat <- mom_gamma(x[,1])
-        shape_hat <- gamma_args_hat$shape
-        rate_hat <- gamma_args_hat$rate
-
-        ## Save the results
-        res <- rbind(res, data.frame(
-                              method = "bigsimr",
-                              device = "CPU",
-                              type = type,
-                              cores = cores,
-                              margins = "gamma",
-                              adjustForDiscrete = adjustForDiscrete,
-                              d = 2,
-                              N = n,
-                              rho = rho,
-                              rho_hat = rho_hat,
-                              shape = shape,
-                              rate = rate,
-                              shape_hat = shape_hat,
-                              rate_hat = rate_hat,
-                              sim_time = unname(time_data["elapsed"])
-                          ))
-    }
-}
-res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
-saveRDS(object = res, "./results/sims_gamma.rds")
-```
-
 Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma.
 
 ```{r ch040-biGammaPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
-dat <- readRDS("./results/sims_gamma.rds")
+dat <- readRDS("./results/biGamma_sims.rds")
 dat %>%
     filter(cores == cores) %>%
     ggplot(aes(rho, rho_hat, color = type)) +
@@ -261,120 +258,120 @@ dat %>%
     geom_abline(slope = 1) +
     ## facet_wrap(~ + N) + theme_bw()
     facet_wrap(~ type + N) + theme_bw()
-    
 ## ggsave('fig/plot-biGammaPlot.pdf')
+```
+
+```{r ch040-biNegBin, echo = FALSE, eval = TRUE}
+size <- 4
+prob <- 3e-04
+if ( !file.exists( 'results/biNB_sims.rds' ) )  {
+    mom_nbinom <- function(x) {
+        m <- mean(x)
+        s <- sd(x)
+        list(size = m^2 / (s^2 - m), prob = m / s^2)
+    }
+
+    margins <- alist(
+        qnbinom(size = size, prob = prob),
+        qnbinom(size = size, prob = prob)
+    )
+
+    type <- c("pearson", "spearman", "kendall")
+    cores <- as.integer( parallel::detectCores() - 1 )
+    ## cores <- cores
+    n <- c(1e3, 1e4, 1e5)
+    ## n <- c(1e1, 1e2, 1e3)
+    adjustForDiscrete <- c(FALSE)
+
+    eps <- 1e-2
+    grid_steps <- 100
+    ## grid_steps <- 10
+    sim_pars <- expand.grid(type = type, cores = cores, n = n,
+                            stringsAsFactors = FALSE,
+                            adjustForDiscrete = adjustForDiscrete)
+
+    dir.create("./results/biNB_sims", showWarnings = TRUE, recursive = TRUE)
+    res <- data.frame()
+    for (i in 1:nrow(sim_pars)) {
+        type <- sim_pars$type[i]
+        cores <- sim_pars$cores[i]
+        n <- sim_pars$n[i]
+        adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+        ## AGS. 17 Oct 2020. cor_bounds failed.
+        ## I'll create a minimal working example and open an issue
+        ## tmp_bounds <- cor_bounds(margins, type = type)
+        ## cor_lo <- tmp_bounds$lower[1,2] + eps
+        ## cor_hi <- tmp_bounds$upper[1,2] - eps
+        cor_lo <- -0.75
+        cor_hi <- 0.95
+        cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+
+        for (rho in cor_seq) {
+            Rho <- matrix(rho, 2, 2)
+            diag(Rho) <- 1.0
+
+            time_data <- system.time({
+                x <- rvec(n = n,
+                          rho = Rho,
+                          margins = margins,
+                          cores = cores,
+                          type = type,
+                          ensure_PSD = TRUE)
+            })
+
+            ## Save the sims in case
+            id <- paste0(
+                "d", 2,
+                "-N", n,
+                "-c", cores,
+                "-r", rho,
+                "-Cor", type,
+                "-adj", as.character(adjustForDiscrete),
+                "-dev", "CPU",
+                "-lib", "bigsimr"
+            )
+            saveRDS(x, file = paste0("./results/biNB_sims/", id, ".rds"))
+
+            ## Estimate statistics
+            Rho_hat <- cor_fast(x, method = type)
+            rho_hat <- Rho_hat[1, 2]
+            nbinom_args_hat <- mom_nbinom(x[,1])
+            size_hat <- nbinom_args_hat$size
+            prob_hat <- nbinom_args_hat$prob
+
+            ## Save the results
+            res <- rbind(res, data.frame(
+                                  method = "bigsimr",
+                                  device = "CPU",
+                                  type = type,
+                                  cores = cores,
+                                  margins = "nbinom",
+                                  adjustForDiscrete = adjustForDiscrete,
+                                  d = 2,
+                                  N = n,
+                                  rho = rho,
+                                  rho_hat = rho_hat,
+                                  size = size,
+                                  prob = prob,
+                                  size_hat = size_hat,
+                                  prob_hat = prob_hat,
+                                  sim_time = unname(time_data["elapsed"])
+                              ))
+        }
+    }
+    res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
+    saveRDS(object = res, "./results/biNB_sims.rds")
+}
 ```
 
 *Bivariate Negative Binomial*. 
 Let's check the performance for a discrete distribution: a bivariate negative binomial.
 Here we have Bivariate Negative Binomial ( $prob_1 = prob_2 = 0.5, size_1 = size_2 = 4,\rho_{type}$ ).
 We vary $\rho$ across the entire possible range of correlations for each correlation type.
-
-```{r ch040-biNegBin, echo = FALSE, eval = TRUE}
-mom_nbinom <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  list(size = m^2 / (s^2 - m), prob = m / s^2)
-}
-
-size <- 10
-prob <- 0.1
-margins <- alist(
-    qnbinom(size = size, prob = prob),
-    qnbinom(size = size, prob = prob)
-)
-
-type <- c("pearson", "spearman", "kendall")
-## cores <- cores
-## n <- c(1e3, 1e4, 1e5)
-n <- c(1e1, 1e2, 1e3)
-adjustForDiscrete <- c(FALSE)
-
-eps <- 1e-2
-## grid_steps <- 100
-grid_steps <- 10
-sim_pars <- expand.grid(type = type, cores = cores, n = n,
-                        stringsAsFactors = FALSE,
-                        adjustForDiscrete = adjustForDiscrete)
-
-
-dir.create("./results/nbinom_sims", showWarnings = TRUE, recursive = TRUE)
-res <- data.frame()
-for (i in 1:nrow(sim_pars)) {
-    type <- sim_pars$type[i]
-    cores <- sim_pars$cores[i]
-    n <- sim_pars$n[i]
-    adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
-    ## AGS. 17 Oct 2020. cor_bounds failed.
-    ## I'll create a minimal working example and open an issue
-    ## tmp_bounds <- cor_bounds(margins, type = type)
-    ## cor_lo <- tmp_bounds$lower[1,2] + eps
-    ## cor_hi <- tmp_bounds$upper[1,2] - eps
-    cor_lo <- -0.75
-    cor_hi <- 0.95
-    cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
-
-    for (rho in cor_seq) {
-        Rho <- matrix(rho, 2, 2)
-        diag(Rho) <- 1.0
-
-        time_data <- system.time({
-            x <- rvec(n = n,
-                      rho = Rho,
-                      margins = margins,
-                      cores = cores,
-                      type = type,
-                      ensure_PSD = TRUE)
-        })
-
-        ## Save the sims in case
-        id <- paste0(
-            "d", 2,
-            "-N", n,
-            "-c", cores,
-            "-r", rho,
-            "-Cor", type,
-            "-adj", as.character(adjustForDiscrete),
-            "-dev", "CPU",
-            "-lib", "bigsimr"
-        )
-        saveRDS(x, file = paste0("./results/nbinom_sims/", id, ".rds"))
-
-        ## Estimate statistics
-        Rho_hat <- cor_fast(x, method = type)
-        rho_hat <- Rho_hat[1, 2]
-        nbinom_args_hat <- mom_nbinom(x[,1])
-        size_hat <- nbinom_args_hat$size
-        prob_hat <- nbinom_args_hat$prob
-
-        ## Save the results
-        res <- rbind(res, data.frame(
-                              method = "bigsimr",
-                              device = "CPU",
-                              type = type,
-                              cores = cores,
-                              margins = "nbinom",
-                              adjustForDiscrete = adjustForDiscrete,
-                              d = 2,
-                              N = n,
-                              rho = rho,
-                              rho_hat = rho_hat,
-                              size = size,
-                              prob = prob,
-                              size_hat = size_hat,
-                              prob_hat = prob_hat,
-                              sim_time = unname(time_data["elapsed"])
-                          ))
-    }
-}
-res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
-saveRDS(object = res, "./results/nbinom_sims.rds")
-```
-
 Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
 
 ```{r ch040-biNegBinPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
-dat <- readRDS("./results/nbinom_sims.rds")
+dat <- readRDS("./results/biNB_sims.rds")
 dat %>%
     filter(cores == cores) %>%
     ggplot(aes(rho, rho_hat, color = type)) +

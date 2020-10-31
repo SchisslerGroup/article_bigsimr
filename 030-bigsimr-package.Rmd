@@ -229,7 +229,7 @@ Notice that this uncorrelated bivariate distribution has the same marginal distr
 
 your comment -->
 
-## Advanced use
+## Advanced use {#advanced-use}
 
 *Creating a custom marginal distribution*.
 Because `bigsimr` uses an `alist` to store the margins, any kind of probability distribution can be used including custom marginal distributions not provided in base `R`. 

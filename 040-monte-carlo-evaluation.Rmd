@@ -366,7 +366,7 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
 
 *Bivariate Negative Binomial*. 
 Let's check the performance for a discrete distribution: a bivariate negative binomial.
-Here we have Bivariate Negative Binomial ( $prob_1 = prob_2 = 0.5, size_1 = size_2 = 4,\rho_{type}$ ).
+We use values that are motivated by our RNA-seq data, namely the mean probability and sizes estimated from the data ( see [Example applications for our motivating data](examples) for estimation details): Bivariate Negative Binomial ( $prob_1 = prob_2 = `r prob`, size_1 = size_2 = 4,\rho_{type}$ ).
 We vary $\rho$ across the entire possible range of correlations for each correlation type.
 Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
 
@@ -384,21 +384,58 @@ dat %>%
 ```
 
 Taken together, the studies show our methology are accuracy across the entire range of possible correlation values for the rank-based dependency measures in continuous marginals.
-For all selected bivariate marginals, the Pearson correlation matching is approximate.
+For the two non-normal bivariate marginals, the Pearson correlation matching is approximate.
+Table XX contains the average absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
 For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, especially near the correlation bounds.
-Yet generally the accuracy seems adequate for most applications, at least in these limited simulation settings.
+Since the bivariate normal exactly matches all dependency measures in our scheme, we also report relative MSE of the non-normal cases to the normal simulations.
 
+```{r ch040-biMSEtable}
+## compare relative differences in MSE for each dependency, compared to Pearson
+allDat <- NULL
+dat <- readRDS("./results/biNorm_sims.rds") %>% select( margins, type, N, rho, rho_hat  ) 
+allDat <- rbind( allDat, dat )
+dat <- readRDS("./results/biGamma_sims.rds") %>% select( margins, type, N, rho, rho_hat  )
+allDat <- rbind( allDat, dat )
+dat <- readRDS("./results/biNB_sims.rds") %>% select( margins, type, N, rho, rho_hat  )
+allDat <- rbind( allDat, dat )
+allDat$margins <- factor(allDat$margins, levels = c( 'norm', 'gamma', 'nbinom') )
+allDat$type <- factor(allDat$type, levels = c( 'kendall', 'spearman', 'pearson' ) )
+allDat$N <- factor(allDat$N, levels = c( 1000, 10000, 100000) )
+## tabMSE  <- allDat %>%
+##    group_by( N, margins ) %>%
+##    summarize( mse = mean( ( rho - rho_hat )^2 ) )
+tabMSE  <- allDat %>%
+    ## filter( N == 100000) %>%
+    group_by( N, type, margins ) %>%
+##     summarize( mse = mean( ( rho - rho_hat )^2 ) ) %>%
+    summarize( mae = mean( abs( rho - rho_hat )  ) )
+## normMSE <- as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ] ) 
+## ( tabMSE$mse - normMSE ) / normMSE
+## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) )
+## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) ) / tabMSE$mse
+knitr::kable(
+  tabMSE, booktabs = TRUE,
+  caption = 'Average abolute error in matching the target dependency and  '
+)
+```
+
+Generally, the accuracy seems adequate for most applications, at least in these limited simulation settings.
 Of course, one could choose marginals that lead to poor matching by construction.
 In partice, we recommend users to always evaluate the accuracy for their application, using methods similar to those presented above.
 See [Discusion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
 
 ## Scale up to Ultra-High Dimensions
 
-The bivariate simulations provide a low-dimensional perspectitive.
-But, of course, this is not `bigsimr`'s primary purpose.
-We'd like the random vector methodolgy to scale to high-dimensional problems.
-
-DESCRIBE WHAT WE DID. Do we need to redo this?
+With some assurance of the method's accuracy from the low-dimensional perspective in the bivariate setting, we now turn to assessing whether the `bigsimr` can scale to large dimesional problems. 
+Now we seek evidence to determine whether the method can scale to higher dimensions in a practical time.
+Using our motivating RNA-seq data, described in [Background](background), we filtered the orignal 20,501 genes to the high-expressing genes at increasing percentiles, $1, 5, 10, 15, 20, 25\%$, to obtain $d=\{206, 1026, 2051, 3076, 4101, 5127\}$ marginals and $\binom{d}{2}$ pairwise correlations at each setting.
+For example, for $d=5127$ there are $13,140,501$ correlation coefficients.
+We estimated the marginal negative binomial parameters and the correlation coefficients from the RNA-seq data to seed our simulations.
+( See [Example applications for our motivating data](examples) for a detailed descrition of estimation).
+Figure \@ref(fig:ch040-gpuVScpuFig) displays computation times using various high-performance settings to produce $B=10,000$ random vectors.
+The Pearson simulations are much faster since the correlation conversion steps are avoided (pre-processing step; see [Algorithms](algorithms)), but as we known from above the accuracy will suffer slightly, especially near the negative boundary of the possible correlations.
+Matching Spearman's correlation at larger $d$ gets costly if one wants to produce $B=10,000$ random vectors at many different simulation settings.
+We recommend computing this type of simulations on a computing cluster (possibly using `rslurm`; see the [Advance Use](advanced-use)).
 
 ```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
 knitr::include_graphics("fig/cpu-gpu-times.png")

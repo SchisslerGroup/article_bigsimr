@@ -17,7 +17,8 @@ bookdown::preview_chapter('040-monte-carlo-evaluation.Rmd')
 
 Before applying our methodology to real data simulation, we conduct several Monte Carlo studies to investigate method performance.
 Since marginal parameter matching in our scheme is essentially a sequence of univariate inverse probability transforms, the challenging aspects are the accuracy of dependency matching and computational efficiency.
-And, so, we'll focus the numerical experiments on assessing how well the procedure scales to high dimension with respect to reasonable computation times (property S1 above) and accurately matching marginal and dependency parameters. 
+And, so, we'll focus the numerical experiments on assessing how well the procedure scales to high dimension with respect to reasonable computation times (property S1 above) and accurately m
+atching marginal and dependency parameters. 
 
 Further, we select simulaiton configurations to ultimately simulate discrete-valued RNA-seq data and the simulations will proceed in increasing complexity, leading to our motivating application in Section \@ref(examples). 
 We begin wiith empirically evaluating the dependency matching across all three supported correlations --- Pearson's, Spearman's, and Kendall's ---- in identical, bivariate marginal configurations.

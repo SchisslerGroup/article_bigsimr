@@ -28,8 +28,13 @@ RNA-seq platforms typically quantify the entire transcriptome in one experimenta
 This results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted (for human derived samples).
 Yet due to inherent biological processes, gene expression data exhibits correlation (co-expression) across genes [@BE07; @Schissler2018]. 
 
-```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none'}
-if ( !file.exists( 'data/brca99.rds' ) )  {
+```{r ch010-myProb, include=FALSE, cache = TRUE}
+myProb <- 0.99
+```
+
+```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none', cache=F}
+brcaRDS <- paste0( "data/brca", round(myProb*100), ".rds" )
+if ( !file.exists( brcaRDS ) )  {
     ## full workflow simulating RNA-seq data
     allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
     lastClinical <- which( names(allDat) == 'tumorsize' )
@@ -38,33 +43,34 @@ if ( !file.exists( 'data/brca99.rds' ) )  {
     ## compute the median expression! avoid the 0s
     brcaMedian <- apply(brca, 2, median)
     ## retain top (1-myProb)*100% highest expressing genes for illustration
-    myProb <- 0.99
     cutPoint <- quantile( x = brcaMedian, probs = myProb )
     ## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
     genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
     brca <- brca[ , genesToKeep ]
     ## ncol(brca) / 20501
-    print(d <- length(genesToKeep))
+    ## print(d <- length(genesToKeep))
     ## save data as rds
-    saveRDS(brca, 'data/brca99.rds')
+    saveRDS(brca, brcaRDS)
 }
-myProb <- 0.99
-brca <- readRDS(file = './data/brca99.rds')
+brca <- readRDS(file = brcaRDS)
 d <- ncol(brca)
 ```
 
 Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgements).
 For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing (in terms of median expression) genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
-This results in `r choose(d,2)` pairwise dependencies among the bivariate marginals.
+This results in $`r choose(d,2)`$ pairwise dependencies among the bivariate marginals.
 To illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
 Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first five patients' breast tumor samples. 
 
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
-set.seed(10192020)
-exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
-saveRDS(exampleGenes, file = './data/exampleGenes.rds')
-kable(round(head( brca[, exampleGenes], n = 5)),
+if ( !file.exists( './data/exampleGenes.rds' ) )  {
+    set.seed(10192020)
+    exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
+    saveRDS(exampleGenes, file = './data/exampleGenes.rds')
+}
+exampleGenes <- readRDS('./data/exampleGenes.rds')
+knitr::kable(round(head( brca[, exampleGenes], n = 5)),
       booktabs = TRUE,
       caption = 'mRNA counts for three selected high-expressing genes from the first five observations of the BRCA data set.'
 )

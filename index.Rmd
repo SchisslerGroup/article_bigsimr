@@ -1,15 +1,9 @@
 --- 
 title: "Simulating High-Dimensional Multivariate Data"
 subtitle: "using the bigsimr R Package"
-author:
-  - name: Alexander D. Knudson, Tomasz J. Kozubowski, Anna K. Panorska, Juli Petereit, and Alfred G. Schissler
-bibliography:
-  - bigsimr.bib
-  - packages.bib
-site: bookdown::bookdown_site
-#output: distill::distill_article
-abstract: |
-  It is critical to realistically simulate data when conducting Monte Carlo studies and methods. But measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers may resort to simulation designs that posit independence or perform arbitrary data transformations. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This article introduces the `bigsimr` R package that provides a flexible, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We'll describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation matrices, and find close positive semi-definite matrices. Finally, we demonstrate the power of `bigsimr` by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d>1000$.
+author: "Alexander D. Knudson, Tomasz J. Kozubowski, Anna K. Panorska, Juli Petereit, and Alfred G. Schissler"
+bibliography: ["bigsimr.bib", "packages.bib"]
+abstract:  It is critical to realistically simulate data when conducting Monte Carlo studies and methods. But measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers may resort to simulation designs that posit independence or perform arbitrary data transformations. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This article introduces the `bigsimr` R package that provides a flexible, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We'll describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation matrices, and find close positive semi-definite matrices. Finally, we demonstrate the power of `bigsimr` by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d>1000$.
 ---
 
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
@@ -17,6 +11,7 @@ abstract: |
 ```{r indexSetup, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 library(tidyverse)
 library(knitr)
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, cache = TRUE)
 library(rmarkdown)
 library(bookdown)
 ## setwd('~/article_bigsimr')
@@ -87,3 +82,4 @@ Next, a detailed illustrative low-dimensional example of basic and advanced use 
 Then we proceed with extensive Monte Carlo studies under various distributional assumptions.
 After evaluating *in silico*, we revisit our high-dimensional motivating RNA-seq example and employ our methods to commonplace statistical computing tasks.
 Finally, we'll discuss the method's utility, limitations, and future directions.
+

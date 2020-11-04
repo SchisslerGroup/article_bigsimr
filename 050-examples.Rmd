@@ -38,9 +38,7 @@ All these genes exhibit over-dispersion and, so, we proceed to estimate the NB p
 Often researchers posit a negative binomial (NB) model as RNA-seq counts are often over-dispersed that a Poisson model would suggest.
 This suggests simulating high-dimensional multivariate NB (MVB) with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics.
 This procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. 
-Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in $[`r min(probs)` , `r max(probs)`]$.
-This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs.
-To complete the simulation algorithm inputs, we estimate the Spearman correlation matrix $\bf{R^{Spearman}_Y}$ and set that as the target correlation.
+To specify the simulation algorithm inputs, we estimate the Spearman correlation matrix $\bf{R^{Spearman}_Y}$ and marginal NB parameters.
 
 <!--
 All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments).
@@ -100,6 +98,8 @@ sizes <- apply( unname(as.matrix(brca)), 2, nbinom_mom )[1, ]
 probs <- apply( unname(as.matrix(brca)), 2, nbinom_mom )[2, ]
 ```
 
+Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in $[`r min(probs)` , `r max(probs)`]$.
+This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs.
 Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`:
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache = FALSE}

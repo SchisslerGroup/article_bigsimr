@@ -302,11 +302,15 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
         adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
         ## AGS. 17 Oct 2020. cor_bounds failed.
         ## I'll create a minimal working example and open an issue
-        ## tmp_bounds <- cor_bounds(margins, type = type)
-        ## cor_lo <- tmp_bounds$lower[1,2] + eps
-        ## cor_hi <- tmp_bounds$upper[1,2] - eps
-        cor_lo <- -0.75
-        cor_hi <- 0.95
+        ## work around for now
+        if ( type == 'pearson' ) {
+            tmp_bounds <- cor_bounds(margins, type = type)
+            cor_lo <- tmp_bounds$lower[1,2] + eps
+            cor_hi <- tmp_bounds$upper[1,2] - eps
+        } else {
+            cor_lo <- -1 + eps
+            cor_hi <- 1 - eps
+        }
         cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
 
         for (rho in cor_seq) {
@@ -392,7 +396,7 @@ Table XX contains the average absolute error (MAE) in reproducing the desired de
 For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, especially near the correlation bounds.
 Since the bivariate normal exactly matches all dependency measures in our scheme, we also report relative MSE of the non-normal cases to the normal simulations.
 
-```{r ch040-combineBiSims}
+```{r ch040-combineBiSims, cache=F}
 ## compare relative differences in MSE for each dependency, compared to Pearson
 allDat <- NULL
 dat <- readRDS("./results/biNorm_sims.rds") %>% select( margins, type, N, rho, rho_hat  ) 
@@ -407,7 +411,7 @@ allDat$N <- factor(allDat$N, levels = c( 1000, 10000, 100000) )
 ```
 
 
-```{r ch040-bPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.asp = 1.30, fig.weight = 4, fig.align='center', fig.cap = "Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attentuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
+```{r ch040-bPlot, cache=F, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.asp = 1.30, fig.weight = 4, fig.align='center', fig.cap = "Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attentuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
 # https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
 # New facet label names
 repsLabs <- paste0("B=", c("1,000", "10,000", "100,000") )
@@ -419,7 +423,8 @@ names(typeLabs) <- c( 'pearson', 'kendall', 'spearman' )
 ## RColorBrewer::display.brewer.all()
 numColors <- 4
 numGroups <- length(levels(allDat$margins))
-myColors <- rev( RColorBrewer::brewer.pal(n = numColors, name = 'Greys')[ ((numColors - numGroups) + 1): numColors  ] )
+## myColors <- rev( RColorBrewer::brewer.pal(n = numColors, name = 'Greys')[ ((numColors - numGroups) + 1): numColors  ] )
+myColors <- rev( RColorBrewer::brewer.pal(n = numColors, name = 'Blues')[ ((numColors - numGroups) + 1): numColors  ] )
 
 allDat %>%
     ## ggplot(aes(x = rho, y = rho_hat, color = margins, shape = margins)) +

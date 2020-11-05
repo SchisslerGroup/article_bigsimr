@@ -126,9 +126,11 @@ Let's simulate a bivariate normal and check our correlation matching performance
 Standard bivariate normal 
 Here we have BVN( $\mu_1 = \mu_2 = 0, \rho_{type}$ ).
 We vary $\rho$ across the entire possible range of correlations for each correlation type.
+<!-- 
 Figure \@ref(fig:ch040-biNormPlot) `bigsimr` recovers the Pearson specified correlations for MVN.
+ -->
 
-```{r ch040-biNormPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
+```{r ch040-biNormPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
 dat <- readRDS("./results/biNorm_sims.rds")
 dat %>%
     filter(cores == cores) %>%
@@ -247,9 +249,9 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
 Similarly, let's check the performance for a non-symmetric continuous distribution: a standard (rate =1) bivariate gamma.
 Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
 We vary $\rho$ across the entire possible range of correlations for each correlation type.
-Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma.
+<!--  Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma. -->
 
-```{r ch040-biGammaPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
+```{r ch040-biGammaPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
 dat <- readRDS("./results/biGamma_sims.rds")
 dat %>%
     filter(cores == cores) %>%
@@ -369,9 +371,9 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
 Let's check the performance for a discrete distribution: a bivariate negative binomial.
 We use values that are motivated by our RNA-seq data, namely the mean probability and sizes estimated from the data ( see [Example applications for our motivating data](examples) for estimation details): Bivariate Negative Binomial ( $prob_1 = prob_2 = `r prob`, size_1 = size_2 = 4,\rho_{type}$ ).
 We vary $\rho$ across the entire possible range of correlations for each correlation type.
-Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
+<!-- Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial. -->
 
-```{r ch040-biNegBinPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
+```{r ch040-biNegBinPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
 dat <- readRDS("./results/biNB_sims.rds")
 dat %>%
     filter(cores == cores) %>%
@@ -390,7 +392,7 @@ Table XX contains the average absolute error (MAE) in reproducing the desired de
 For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, especially near the correlation bounds.
 Since the bivariate normal exactly matches all dependency measures in our scheme, we also report relative MSE of the non-normal cases to the normal simulations.
 
-```{r ch040-biMSEtable}
+```{r ch040-combineBiSims}
 ## compare relative differences in MSE for each dependency, compared to Pearson
 allDat <- NULL
 dat <- readRDS("./results/biNorm_sims.rds") %>% select( margins, type, N, rho, rho_hat  ) 
@@ -400,8 +402,55 @@ allDat <- rbind( allDat, dat )
 dat <- readRDS("./results/biNB_sims.rds") %>% select( margins, type, N, rho, rho_hat  )
 allDat <- rbind( allDat, dat )
 allDat$margins <- factor(allDat$margins, levels = c( 'norm', 'gamma', 'nbinom') )
-allDat$type <- factor(allDat$type, levels = c( 'kendall', 'spearman', 'pearson' ) )
+allDat$type <- factor(allDat$type, levels = c( 'pearson', 'kendall', 'spearman' ) )
 allDat$N <- factor(allDat$N, levels = c( 1000, 10000, 100000) )
+```
+
+
+```{r ch040-bPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.asp = 1.30, fig.weight = 4, fig.align='center', fig.cap = "Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attentuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
+# https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
+# New facet label names
+repsLabs <- paste0("B=", c("1,000", "10,000", "100,000") )
+names(repsLabs) <- c(1000, 10000, 100000)
+typeLabs <- c( 'Pearson', 'Kendall', 'Spearman' ) 
+names(typeLabs) <- c( 'pearson', 'kendall', 'spearman' )
+
+# Set colors
+## RColorBrewer::display.brewer.all()
+numColors <- 4
+numGroups <- length(levels(allDat$margins))
+myColors <- rev( RColorBrewer::brewer.pal(n = numColors, name = 'Greys')[ ((numColors - numGroups) + 1): numColors  ] )
+
+allDat %>%
+    ## ggplot(aes(x = rho, y = rho_hat, color = margins, shape = margins)) +
+    ggplot(aes(x = rho, y = rho_hat, color = margins)) +
+    ## ggplot(aes(rho, rho_hat)) +
+    ## geom_point(alpha = 1, size = 2) +
+    geom_point(size = 2) +
+    ## scale_shape_manual(values=c(1, 2, 3))+
+    ## scale_color_manual(values=c('#999999','#E69F00', '#56B4E9')) +
+    scale_color_manual(values = myColors ) +
+    geom_abline(slope = 1, linetype = 'dashed') +
+    labs(x = "Specified Correlation", y = "Estimated Correlation") +
+    ## facet_wrap(~ + N) + theme_bw()
+    facet_wrap(~ type + N, labeller = labeller(N = repsLabs, type = typeLabs)) +
+    theme_bw() +
+    theme(legend.position = "bottom", legend.direction = "horizontal")
+
+## allDat %>%
+##     ggplot(aes(x = rho, y = rho_hat, color = type, shape = type)) +
+##     ## ggplot(aes(rho, rho_hat)) +
+##     geom_point(alpha = 0.75) +
+##     geom_abline(slope = 1) +
+##     labs(x = "Specified Correlation", y = "Estimated Correlation") + 
+##     ## facet_wrap(~ + N) + theme_bw()
+##     facet_wrap(~ margins + N) + theme_bw()
+ 
+## ggsave('fig/plot-biNormPlot.pdf')
+```
+
+
+```{r ch040-biMSEtable}
 ## tabMSE  <- allDat %>%
 ##    group_by( N, margins ) %>%
 ##    summarize( mse = mean( ( rho - rho_hat )^2 ) )

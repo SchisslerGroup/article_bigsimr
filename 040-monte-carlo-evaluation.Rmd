@@ -479,7 +479,7 @@ Of course, one could choose marginals that lead to poor matching by construction
 In partice, we recommend users to always evaluate the accuracy for their application, using methods similar to those presented above.
 See [Discusion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
 
-## Scale up to Ultra-High Dimensions
+## Scale up to High Dimensions
 
 With some assurance of the method's accuracy from the low-dimensional perspective in the bivariate setting, we now turn to assessing whether the `bigsimr` can scale to large dimesional problems. 
 Now we seek evidence to determine whether the method can scale to higher dimensions in a practical time.

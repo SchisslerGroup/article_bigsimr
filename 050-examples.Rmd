@@ -169,7 +169,7 @@ abline(a=0, b=1, col="red", lty="dashed")
 par(mfrow=c(1,1))
 ```
 
-## Simulation-based UHD joint probability calculations
+## Simulation-based joint probability calculations
 
 To conduct statistical inference a critical task is to evaluate the joint probability mass (or density) function:
 
@@ -205,7 +205,7 @@ mean(apply( sim_nbinom,  1,
 ## MC evaluation of correlation estimation efficiency
 
 ```{r ch010-myM, include=FALSE, cache = TRUE}
-m <- 100
+m <- 10
 ```
 
 MC methods are routinely used in many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates.
@@ -216,17 +216,24 @@ We used a conventional method, based on classical statistical theory.
 Yet this method was not designed for high-dimensional data.
 Indeed, high-dimensional covariance estimation (and precision matrices) is an active area of statistical science (see, for example, @Won2013g and @VanWieringen2016).
 In this example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(brca)`$.
-At each iteration we estimate the quadratic loss from the specified $\bf{R^{Spearman}_Y}$ and average over the $m$ iteration.
+Using the fact that our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-gpuVScpuFig), we convert the Spearman correlation matrix and ensure PSD outside the `rvec` call.
+At each iteration, we estimate the quadratic loss from the specified ${\bf R}^{Spearman}_{ \bf Y}$, producing a distribution of loss values.
 
-```{r ch050-quadloss, echo=TRUE, eval=FALSE, cache=FALSE}
+```{r ch050-quadloss, echo=TRUE, eval=T, cache=FALSE}
 quadLossRDS <- paste0( "results/brca", round(myProb*100), "quadLoss.rds" )
 if ( !file.exists( quadLossRDS) )  {
     n <- nrow(brca)
-    simRho <- replicate(n = m, expr = { tmpSim <- rvec(n = nrow(brca) , nb_Rho, nb_margins,
-                                                       type = corType, ensure_PSD = TRUE, cores = cores)
-                                                       tmpRho <- bigsimr::cor_fast( x = tmpSim )} ,
+    ## convert outside for faster simulation
+    nb_Rho_p <- bigsimr::cor_convert( rho = nb_Rho, from = corType, to = "pearson" )
+    ## ensure PSD
+    nb_Rho_p <- bigsimr::cor_nearPSD( G = nb_Rho_p )
+    ## create m random vectors and estimate correlation
+    simRho <- replicate(n = m,
+                        expr = { tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
+                                                type = 'pearson', ensure_PSD = FALSE, cores = cores);
+                                                bigsimr::cor_fast( x = tmpSim, method = corType )} ,
                         simplify = FALSE)
-
+    ## find quadratic loss at each rep
     quadLoss <- unlist( lapply( simRho, rags2ridges::loss, T = nb_Rho, type = "quadratic"  ) )
     saveRDS(quadLoss, quadLossRDS)
 }
@@ -235,7 +242,7 @@ quadLoss <- readRDS( quadLossRDS )
 
 The standard `R` summary function supplies the mean-augmented five-number summary of the quadratic loss distribution computed above.
 
-```{r ch050-quadloss-summary, echo=TRUE, eval=FALSE, cache=FALSE}
+```{r ch050-quadloss-summary, echo=TRUE, eval=T, cache=FALSE}
 summary(quadLoss)
 ```
 

@@ -24,7 +24,8 @@ The following subsections apply `bigsimr`'s methods to real RNA-seq data, includ
 
 ```{r ch050-readBRCA, echo=FALSE, eval=TRUE}
 ## full workflow simulating RNA-seq data
-## brcaRDS <- 'data/brca99.rds'
+## brcaRDS <- 'data/brca95.rds'
+## myProb = 0.95
 brca <- readRDS(file = brcaRDS)
 ## smaller set for prototyping
 ## d=5
@@ -217,7 +218,7 @@ Indeed, high-dimensional covariance estimation (and precision matrices) is an ac
 In this example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(brca)`$.
 At each iteration we estimate the quadratic loss from the specified $\bf{R^{Spearman}_Y}$ and average over the $m$ iteration.
 
-```{r ch050-quadloss, echo=TRUE, eval=TRUE, cache=FALSE}
+```{r ch050-quadloss, echo=TRUE, eval=FALSE, cache=FALSE}
 quadLossRDS <- paste0( "results/brca", round(myProb*100), "quadLoss.rds" )
 if ( !file.exists( quadLossRDS) )  {
     n <- nrow(brca)
@@ -234,7 +235,7 @@ quadLoss <- readRDS( quadLossRDS )
 
 The standard `R` summary function supplies the mean-augmented five-number summary of the quadratic loss distribution computed above.
 
-```{r ch050-quadloss-summary, echo=TRUE, eval=TRUE, cache=FALSE}
+```{r ch050-quadloss-summary, echo=TRUE, eval=FALSE, cache=FALSE}
 summary(quadLoss)
 ```
 

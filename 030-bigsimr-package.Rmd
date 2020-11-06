@@ -1,9 +1,9 @@
 # The `bigsimr` R package
 
 The `bigsimr` package is a high-performance implementation of the proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms) for details).
-When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration.
+When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate worflows.
 
-This section describes basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the often-used example data set `airquality`.
+This subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the often-used example data set `airquality`.
 This workflow proceeds from data, to estimation, simulation configuration, random vector generation, and result vizualization.
 For this low-dimensional setting, we compute using a single central processing unit (CPU) as the overhead in forking the tasks to multiple cores outways the computational gains. 
 Then we transition to advanced use where we briefly describe some of the high-performance features and syntax.
@@ -18,7 +18,7 @@ The next computational step after obtaining the correlated uniform marginals is 
 ## Basic use illustrated through a minimal example
 
 We'll demonstrate the basic use and syntax of `bigsimr` through an example workflow applied to the New York air quality data set (`airquality`) included in the R `datasets` package.
-First, we load the `bigsimr` library and a few other convenient data science packages, including the syntacically-pleasing `tidyverse` suite of `R` packages.
+First, we load the `bigsimr` library and a few other convenient data science packages, including the syntacically-elegant `tidyverse` suite of `R` packages.
 
 ```{r ch030-basic-example-setup, echo=TRUE, message=FALSE}
 library(bigsimr)
@@ -40,7 +40,7 @@ glimpse(df)
 
 Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between Ozone and Temperature.
 We aim to simulate random two-component vectors mimicking this structure. 
-The margins are not normally distributed, particulary the ozone level exhibits a strong left skew.
+The margins are not normally distributed, particulary the ozone level exhibits a strong positive skew.
 
 ```{r ch030-aq-joint-dist, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Bivariate scatterplot of Ozone vs. Temperature with estimated marginal densities. The data are left skewed tails and appear to be correlation."}
 
@@ -68,15 +68,14 @@ pTemp + plot_spacer() + p0 + pOzone +
   plot_layout(widths = c(3,1), heights = c(1, 3))
 ```
 
-Next we must specify the marginal distributions and correlation coefficient (type and magnitude).
+Next, we specify the marginal distributions and correlation coefficient (both its type and magnitude).
 Here the analyst is free to be creative.
-For this example, we will not take up goodness-of-fit considerations.
-But it seems sensible without domain knowledge to estimate these quantities from the data and we have a suite of functions designed for this task.
+For this example, we will not take up goodness-of-fit considerations to determine the marginal distributions.
+But it seems sensible without domain knowledge to estimate these quantities from the data and `bigsimr` contains fast functions designed for this task.
 
 *Specifying marginal distributions*.
-Of course, we don't know the true distribution of ozone levels or air temperatures.
 Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we'll assume `Temp` is normally ditsributed and `Ozone` is log-normally distributed since its values are positive and skewed.
-We'll use the well-known unbiased estimators for normal distribution and maximum likelihood estimators for the lognormal parameters:
+We'll use the well-known, unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the lognormal parameters:
 
 ```{r ch030-aq-temp-pars, echo=TRUE, eval=TRUE}
 df %>% 
@@ -93,7 +92,7 @@ df %>%
   summarise_all(.funs = c(meanlog = mle_mean, sdlog = mle_sd))
 ```
 
-Next, we'll configure the input marginals later input into `bigsimr::rvec`.
+Next, we'll configure the input marginals for later input into `bigsimr::rvec`.
 The marginal distributions are specifying using `R`'s special `alist` function.
 This allows one to enter the distributions without evaluating anything (yet).
 
@@ -106,11 +105,11 @@ margins <- alist(
 
 Notice that we use the *quantile* function for the marginals, as that is how the marginal distributions $F_i$ enter into the `bigsimr::rvec` algorthm.
 This implementation strategy supports all `R` `base` probability distributions.
-And allows flexible extensions using other `R` packages that adhere to conventions, such as `extraDistr`
+And allows flexible extensions using other `R` packages that adhere to conventions, such as `extraDistr`.
 Further, by using `alist`, users can specify their own custom distributions (see below in [creating custom margins](#custom-margins)).
 
-It is a bit inconvenient to have to fill in the parameter values manually each time, so we provide a convenience function called `mlist` which behaves similarly to `alist`, except that it will evaluate the right hand side of argument values within the list.
-This is intended to help when scaling up your code to high dimensions.
+It is a bit inconvenient to have to fill in the parameter values manually each time, so we provide a convenience function `mlist` which behaves similarly to `alist`, except that it will evaluate the right hand side of argument values within the list.
+This is intended to help when scaling up your code to high dimensions when many marginals to specify.
 
 ```{r ch030-margins-mlist, echo=TRUE}
 margins <- mlist(
@@ -121,10 +120,10 @@ margins
 ```
 
 *Specfying correlation*.
-Again the user must decide how to describe correlation, based on the particulars of the problem.
+As mentioned, the user must decide how to describe correlation, based on the particulars of the problem.
 For non-normal data and for improved simulation accuracy in our scheme, we advocate the use of rank-based correlations Spearman's $\rho_S$ and Kendall's $\tau$.
-But we also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parameteric multivariate model (see [Monte Carlo evaluations](#simulations) for evaluation strategies).
-To aid in correlation specification, and estimation in general, we provide a high-performance function `bigsimr::cor_fast` which can estimate Pearson, Spearman, or Kendall correlation using the fastest methods available.
+But we also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parameteric multivariate model (see [Monte Carlo evaluations](#simulations) for evaluation strategies and guidance).
+To aid in correlation specification, and estimation in general, we provide a high-performance function `bigsimr::cor_fast` which estimates Pearson, Spearman, or Kendall correlation using the fastest methods available.
 (Anyone who has tried estimating Kendall's $\tau$ using `stats::cor` can attest that the routine does not scale to even moderate dimensions).
 Notably, these estimation methods are the standard approaches, not designed specifically designed for high-dimensional correlation estimation (see [Conclusion and Discussion]({#discussion) for more on this).
 
@@ -135,13 +134,13 @@ type <- 'spearman'
 
 *Checking the theoretical correlation bounds*
 As discussed in Section \@ref(background), given a pair of marignal distributions the possible correlations are not free to vary between $[-1, 1]$. 
-To ensure that the simulation is not configured to impossible settings, we provide the `bigsimr::cor_bounds` fuction provides Monte Carlo estimated theoretical lower and upper bounds (using the Generate, Sort, and Correlate algorithm of @DH2011).
+To ensure that the simulation is not configured to impossible settings, we provide the `bigsimr::cor_bounds` fuction provides MC estimated theoretical lower and upper bounds (using the Generate, Sort, and Correlate algorithm of @DH2011).
 
 ```{r ch030-cor-bounds, echo=TRUE}
 cor_bounds(margins = margins, type = type)
 ```
 
-Since our estimated Spearm correlation $\hat{ \rho}_S$ is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
+Since our estimated Spearman correlation $\hat{ \rho}_S$ is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
 By comparison, the Pearson correlation $\rho_P$ is restricted to [-0.8648, 0.8727] for these margins (see `bigsimr::cor_bounds`output below).
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
@@ -150,7 +149,7 @@ cor_bounds(margins = margins, type = 'pearson')
 
 *Simulating random vectors*.
 Finally, we arrive at the main function of `bigsimr`, `rvec`.
-Let's now simulate $B=10,000$ observations from the assumed joint distribution of Ozone levels and Temp.
+Let's now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
 
 ```{r ch030-sim-margins, echo=TRUE}
 x <- rvec(10000, rho, margins, type)
@@ -232,9 +231,8 @@ your comment -->
 ## Advanced use {#advanced-use}
 
 *Creating a custom marginal distribution*.
-Because `bigsimr` uses an `alist` to store the margins, any kind of probability distribution can be used including custom marginal distributions not provided in base `R`. 
-This accommodation is possible because the main function `rvec` uses the inverse CDF of a margin to transform from correlated uniform margins to the target distribution.
-Therefore, to specify a marginal distribution absent from an existing packge, the user simply needs to provide a closed form expression from the corresponding quantile function.
+Because `bigsimr` uses an `alist` to store the margins, any probability distribution with a well-defined inverse CDF can be used including custom marginal distributions not provided in base `R`. 
+Therefore, to specify a marginal distribution absent from an existing packge, the user needs to provide a closed-form expression to form the corresponding quantile function.
 
 It is important to follow `R`'s naming convention for probability distributions.
 Users should prefix distributions with `r` and `q` for *random* and *quantile* respectively.
@@ -254,7 +252,7 @@ $$
 F^{-1}(p) = \frac{x_m}{\left(1 - p\right)^{1/\alpha}}
 $$
 
-Next we define the Pareto quantile function in R.
+Next we define the Pareto quantile function in R:
 
 ```{r ch030-define-qpareto, echo=TRUE}
 qpareto <- function(p, scale, shape) {
@@ -262,7 +260,7 @@ qpareto <- function(p, scale, shape) {
 }
 ```
 
-For example, writing random number generating function for our target marginal can be accomplished by calling the quantile function on a uniformly distributed random variable (the inverse transform method @Rizzo2007).
+Writing random number generating function for our target marginal can be accomplished by calling the quantile function on a uniformly distributed random variable (the inverse transform method @Rizzo2007).
 
 ```{r ch030-define-rpareto, echo=TRUE}
 rpareto <- function(n, scale, shape) {
@@ -270,7 +268,7 @@ rpareto <- function(n, scale, shape) {
 }
 ```
 
-Now with the quantile and RNG Pareto functions, we can use the distribution in `bigsimr` just like the other built-in distributions.
+Now with the `qpareto` and `rpareto` functions, we can use the distribution in `bigsimr` just like the other built-in distributions.
 
 ```{r ch030-cust-dist-example, echo=TRUE, eval=FALSE}
 margins <- alist(
@@ -287,7 +285,8 @@ x <- rvec(10, rho, margins)
 *Using `bigsimr` on a computing cluster via `rslurm`*.
 Though `bigsimr` runs quickly, at large $d$ users may want to run jobs on a shared computing server.
 The R package `rslurm` makes it easy to run embarrassingly large parallel `rvec` calls.
-This example assumes that `bigsimr` is installed on a system with a slurm scheduler installed. 
+This example assumes that `bigsimr` is installed on a system with a slurm scheduler installed.
+A single run of `bigsimr:rvec` using `rslurm` can be code as:
 
 ```{r ch030-rvecRslurm-with-comments, echo=FALSE, eval=FALSE}
 library(rslurm)
@@ -325,7 +324,7 @@ head(res, 3)
 ```
 
 Now, let's show off the real power of combining `bigsimr` and `rslurm` by simulating many correlation structures.
-The `rslurm::slumr_map` syntax mirrors the familiar `base::lapply` and `purrr::map` functions. 
+The `rslurm::slumr_map` syntax mirrors the `base::lapply` and `purrr::map` functions. 
 
 ```{r ch030-rvecRslurmMap-comments, echo=FALSE, eval=FALSE}
 library(rslurm)
@@ -353,7 +352,8 @@ sjob <- slurm_map(x = rhoList,
 ```{r ch030-rvecRslurmMap, echo=TRUE, eval=FALSE}
 library(rslurm)
 simReps <- 100
-rhoList <- replicate( n = simReps, bigsimr::cor_randPSD(d = length(margins)), simplify=FALSE )
+rhoList <- replicate( n = simReps, bigsimr::cor_randPSD(d = length(margins)),
+                     simplify=FALSE )
 sjob <- slurm_map(x = rhoList,
                   f = rvec,
                   jobname = 'rvecMap',

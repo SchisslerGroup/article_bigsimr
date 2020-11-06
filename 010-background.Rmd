@@ -1,11 +1,11 @@
 # Background {#background}
 
-The article presents several algorithms to work with high-dimesional multivariate data, but all `bigsimr` algorithms were originally designed to support a single task:
-to generate random vectors drawn from multivariate probability distribution with given marginal distributions and component-wise dependency metrics.
-Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and hetereogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, and $d$ can be very large.
+The `bigsimr` `R` package provides multiple algorithms to work with high-dimesional multivariate data, but all these algorithms were originally designed to support a single task:
+to generate random vectors drawn from multivariate probability distribution with given marginal distributions and dependency metrics.
+Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and hetereogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful times.
 
 When designing this methodology, we developed the following properties to guide our effort.
-We divide the properties into two categories: (1) basic properties (**BP**) and "scaleability" properties (**SP**). 
+We divide the properties into two categories: (1) basic properties (BP) and "scaleability" properties (SP). 
 The BPs are adapted from an existing criteria due to @Nik13a.
 Our simulation strategy should allow:
 
@@ -18,18 +18,18 @@ Moreover, the simulation method must **scale** to high dimensions:
 * SP1: Procedure must scale to high dimensions, computable in a reasonable amount time.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
 
-To fix ideas and provide example applications enabled via `bigsimr`, the next section describes a motivating data set that originally inspired the authors` interest in developing this methodology.
+To fix ideas and provide examples applications enabled via `bigsimr`, the next section describes a motivating data set that originally inspired the authors' interest in developing this methodology.
 
 ## Motivating example: RNA-seq data
 
 Simulating high-dimensional, non-normal, correleated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
 The RNA-seq data-generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
 RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data.
-This results in count data corresponding to over 20,000 genes (coding genomic regions) or even over 77,000 isoforms when alternating spliced mRNA are counted (for human derived samples).
-Yet due to inherent biological processes, gene expression data exhibits correlation (co-expression) across genes [@BE07; @Schissler2018]. 
+For human derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted.
+Importantly, due to inherent biological processes, gene expression data exhibits correlation --- co-expression --- across genes [@BE07; @Schissler2018]. 
 
 ```{r ch010-myProb, include=FALSE, cache = TRUE}
-myProb <- 0.99
+myProb <- 0.95
 ```
 
 ```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none', cache=F}
@@ -56,11 +56,12 @@ brca <- readRDS(file = brcaRDS)
 d <- ncol(brca)
 ```
 
-Specifically, we'll illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgements).
-For simplicity, we begin by filtering to retain the top `r (1-myProb)*100`% highest expressing (in terms of median expression) genes of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
-This results in $`r choose(d,2)`$ pairwise dependencies among the bivariate marginals.
-To illustrate our methodology's flexible/robust simulation scheme and better align with the actual data-generating process, we remove the statistical adjustment for read alignment ambiguity (RNA-seq by Expectation Maximization; RSEM; @Li2011c) by simple rounding to integer values.
-Table \@ref(tab:ch010-realDataTab) displays counts for three selected genes for the first five patients' breast tumor samples. 
+We'll illustrate our methodology using the well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgements).
+For simplicity, we only consider high expressing genes.
+In turn, we begin by filtering to retain the top `r (1-myProb)*100`% highest- expressing genes (in terms of median expression) of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
+This gives a massive number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters).
+We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011c's RNA-seq by Expectation Maximization (RSEM) values to counts.
+Table \@ref(tab:ch010-realDataTab) displays counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
 
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
@@ -77,9 +78,9 @@ knitr::kable(round(head( brca[, exampleGenes], n = 5)),
 ## GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
 
-Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
+To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
 
-```{r ch010-realDataFig, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $rho$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
+```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $\rho_s$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 ## Describe and plot real data
 ## NEED TO CHANGE TO SPEARMANS
 GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
@@ -97,24 +98,24 @@ The most widely-known is the Pearson (product-moment) correlation coefficient th
 
 As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pearson correlation completely describes the dependency between the components. 
 For non-normal marginals with monotone correlation patterns, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships (@MK01).
-Alternatively, in these settings, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
+Alternatively in these settings, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
 
 Two nonparameteric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. 
-Formally, define
+Define
 
 \begin{equation}
 (\#eq:spearman)
-\rho_S(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right]
+\rho_S(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right],
 \end{equation}
 
 \noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. 
-Spearman's $\rho_S$ has an appealing correspondence as the Pearson's correlaiton coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
+Spearman's $\rho_S$ has an appealing correspondence as the Pearson's correlation coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
 
 Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations $(X_i, Y_i)$ and $(X_j, Y_j)$.
 By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determinded by the ranks of the values, not the values themselves.
 
 Both $\tau$ and $\rho_S$ are **invariant to under monotone transformations** of the underlying random variates.
-As we will describe more fully in the [Algorithms](#algorithms) section, this property is preferred in our scheme to satistify properties SP1 and SP2, above.
+As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scaleable match rank-based correlations with speed (SP1) and accuracy (SP2).
 
 *Correspondence among Pearson, Spearman, $\tau$ correlations*.
 This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficent, as the marginal distributions $F_i$ are intrinstic in their calculation.
@@ -148,7 +149,7 @@ Note that with continuous marginals the rescaling returns $\rho_S$.
 For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1).
 And further the infinite sums must be approximately for count-valued data and potentially violating desired property SP2.
 
-Also we'll note that for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$.
+Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$.
 Let 
 
 \begin{equation}
@@ -159,8 +160,8 @@ F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}.
 *Marginal-dependent bivariate correlation bounds*. 
 Given two marginal distributions, $\rho_P$ is not free to vary the entire range of possible correlations $[-1,1]$.
 The so-called *Frechet-Hoeffding bounds* are well-studied (for example, see @Nelsen2007 and @BF17).
-This situation gives strict restraints on the possible bounds and cannot be overcome through algorithm design.
-In general the bounds are given by
+This situation gives strict restraints on the possible correlations and cannot be overcome through algorithm design.
+In general, the bounds are given by
 
 \begin{equation}
 (\#eq:frechet)
@@ -172,7 +173,7 @@ For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCD
 
 ## Gaussian copulas
 
-There is a strong connection of our simulation strategy to Gaussian **copulas** (for a technical introduction see @Nelsen2007).
+There is a strong connection of our simulation strategy to Gaussian **copulas** (see @Nelsen2007 for a technical introduction).
 A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals.
 This definition provides a powerful, natural way characterize joint probability structure.
 Consequently, the study of copulas is an important and active area of statistical theory and practice.
@@ -199,5 +200,3 @@ Note that the copula $C_{{\bf R}}$ is the familar multivariate normal CDF of the
 
 Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) *any* random vector can be obtained via transformations involving copula functions. 
 For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ povides $Y_i \sim F_i, \, \forall \, i$ .
-
-

@@ -121,12 +121,14 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
 }
 ```
 
-Table XX lists our identical-marginal, bivariate simulation configurations.
+Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations.
 We increase the simulate replicates $B$ to check that our results converge to the target correlations and gauge statistical efficiency.
 We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types.
 Then, we select a non-symmetric continuous distribution: a standard (rate =1) two-component multivariate gamma (MVG).
 Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [Example applications for our motivating data](examples) for estimation details).
 Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = `r prob`, r_1 = r_2 = 4,\rho$ ).
+
+Table: (\#tab:sims) Identical margin, bivariate simulation configurations to evaluate correlation matching accuracy and efficiency.
 
 | Simulation Reps ($B$) | Correlation Types | Distribution |
 |---------------------|:------------------:|--------------:|
@@ -416,6 +418,11 @@ allDat$type <- factor(allDat$type, levels = c( 'pearson', 'spearman', 'kendall' 
 allDat$N <- factor(allDat$N, levels = c( 1000, 10000, 100000) )
 ```
 
+Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results with a detailed summarization.
+Table \@ref(tab:ch040-biMAEtable) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
+Taken together, the studies show our methodology is generally accuracy across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations.
+For the two non-normal bivariate marginals, the Pearson correlation matching is approximate.
+For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, and particularly inaccurate near the lower bound of Pearson correlations.
 
 ```{r ch040-bPlot, cache=F, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.asp = 1.30, fig.weight = 4, fig.align='center', fig.cap = "Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark blue, gamma in medium blue, and negative binomial in light blue. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attentuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
 # https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
@@ -460,7 +467,7 @@ allDat %>%
 ## ggsave('fig/plot-biNormPlot.pdf')
 ```
 
-```{r ch040-biMSEtable, results='asis'}
+```{r ch040-biMAEtable, results='asis'}
 ## tabMSE  <- allDat %>%
 ##    group_by( N, margins ) %>%
 ##    summarize( mse = mean( ( rho - rho_hat )^2 ) )
@@ -483,27 +490,22 @@ knitr::kable(tabMSE,
 )
 ```
 
-Taken together, the studies show our methodology is generally accuracy across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations.
-For the two non-normal bivariate marginals, the Pearson correlation matching is approximate.
-Table \@ref(tab:ch040-biMSEtable) contains the average absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
-For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, and particularly inaccurate near the lower bound of Pearson correlations.
-
 The accuracy appears adequate for many applications.
 In practice, we recommend users to always evaluate the accuracy for their application, using methods similar to those presented above.
 See [Discussion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
 
 ## Scale up to High Dimensions
 
-With some assurance of the method's accuracy from the low-dimensional perspective in the bivariate setting, we now turn to assessing whether the `bigsimr` can scale to large dimesional problems. 
-Now we seek evidence to determine whether the method can scale to higher dimensions in a practical time.
-Using our motivating RNA-seq data, described in [Background](background), we filtered the orignal 20,501 genes to the high-expressing genes at increasing percentiles, $1, 5, 10, 15, 20, 25\%$, to obtain $d=\{206, 1026, 2051, 3076, 4101, 5127\}$ marginals and $\binom{d}{2}$ pairwise correlations at each setting.
+With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether the `bigsimr` can scale to larger dimensional problems. 
+Specifically, we seek evidence to determine whether the method can scale to higher dimensions in a practical time.
+Using our motivating RNA-seq data, described in [Background](background), we filtered the original 20,501 genes to the high-expressing genes at increasing percentiles, $1, 5, 10, 15, 20, 25\%$, to obtain $d=\{206, 1026, 2051, 3076, 4101, 5127\}$ marginals and $\binom{d}{2}$ pairwise correlations at each setting.
 For example, for $d=5127$ there are $13,140,501$ correlation coefficients.
 We estimated the marginal negative binomial parameters and the correlation coefficients from the RNA-seq data to seed our simulations.
-( See [Example applications for our motivating data](examples) for a detailed descrition of estimation).
-Figure \@ref(fig:ch040-gpuVScpuFig) displays computation times using various high-performance settings to produce $B=10,000$ random vectors.
-The Pearson simulations are much faster since the correlation conversion steps are avoided (pre-processing step; see [Algorithms](algorithms)), but as we known from above the accuracy will suffer slightly, especially near the negative boundary of the possible correlations.
-Matching Spearman's correlation at larger $d$ gets costly if one wants to produce $B=10,000$ random vectors at many different simulation settings.
-We recommend computing this type of simulations on a computing cluster (possibly using `rslurm`; see the [Advance Use](advanced-use)).
+(See [Example applications for our motivating data](examples) for a detailed description of estimation).
+
+Figure \@ref(fig:ch040-gpuVScpuFig) displays computation times using various high-performance settings (1 central processing unit, CPU-1, versus twenty CPUs, CPU-20; with and without GPU acceleration, GPU-1; GPU-20) to produce $B=10,000$ random vectors.
+The Pearson simulations are much faster since the correlation conversion steps are avoided (pre-processing step; see [Algorithms](algorithms)), but as we know from above the accuracy will suffer slightly, especially near the negative boundary of the possible correlations.
+Matching Spearman's correlation at larger $d$ gets costly if one wants to produce $B=10,000$ random vectors at many different simulation settings, but the conversion steps need only be computed once (see [MC evaluation of correlation estimation efficiency](MC-evaluation-of-correlation-estimation-efficiency) for an example of this strategy).
 
 ```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
 knitr::include_graphics("fig/cpu-gpu-times.png")

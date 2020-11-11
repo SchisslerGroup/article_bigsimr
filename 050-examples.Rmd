@@ -1,7 +1,7 @@
-# Example applications for RNA-seq data {#examples}
+# RNA-seq data example applications  {#examples}
 
 ```{r ch050-LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide", cache=F}
-knitr::opts_chunk$set(echo = FALSE, cache = FALSE)
+## knitr::opts_chunk$set(echo = FALSE, cache = FALSE)
 # reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
@@ -14,35 +14,35 @@ bookdown::preview_chapter('050-examples.Rmd')
 ```
 
 This section demonstrates how to simulate multivariate data using `bigsimr`, aiming to replicate the structure of high-dimensional dependent count data.
-Simulating RNA-sequencing (RNA-seq) data is a primary motivating application of the proposed methodology, seeking scaleable Monte Carlo (MC) methods for realistic multivariate simulation for these data.
-Intergene correlation is an inherent part of biological processes.
-Yet many models do not account for this, leading to major distruptions to the operating characteristics of statistical estimation, testing, and prediction.
+In an illustration of our proposed methodology applied to real data, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions with estimated parameters that mimick the observed data and its generating process.
+We seek scaleable realistic multivariate simulation to enable Monte Carlo (MC) methods for thes data.
+Modeling RNA-seq using multivariate probabilities distributions is natural as inter-gene correlation is an inherent part of biological processes.
+Yet many models do not account for this, leading to major disruptions to the operating characteristics of statistical estimation, testing, and prediction.
 See @Efron2012 for a detailed discussion with related methods and see @Wu2012b, @Schissler2018, @Schissler2019 for applied examples.
-The following subsections apply `bigsimr`'s methods to real RNA-seq data, including replicated an estimated parameteric structure, MC probability estimation, and MC evaluation of correlation estimation efficiency.
+The following subsections apply `bigsimr`'s methods to real RNA-seq data, including replicated an estimated parametric structure, MC probability estimation, and MC evaluation of correlation estimation efficiency.
 
 ## Simulating High-Dimensional RNA-seq data
 
 ```{r ch050-readBRCA, echo=FALSE, eval=TRUE, cache=F}
 ## full workflow simulating RNA-seq data
-## brcaRDS <- 'data/brca95.rds'
-## myProb = 0.95
+brcaRDS <- 'data/brca95.rds'
+myProb = 0.95
 brca <- readRDS(file = brcaRDS)
+d <- ncol(brca)
 ## smaller set for prototyping
 ## d=5
 ## brca <- brca[ , 1:d]
 ```
 
-
-In an illustration of our proposed methodology applied to real data, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions with estimated parameters.
-Our goal is to replicate the structure of a breast cancer data set (BRCA data set from The Cancer Genome Atlas).
-Specifically, we will simulate $B=10,000$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$
-All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments).
+Our first goal is to replicate the structure of the TCGA BRCA RNA-seq data set (see [Background](background)).
+Ultimately, we will simulate $B=10,000$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with $d=`r d`$.
 Often researchers posit a negative binomial (NB) model as RNA-seq counts are often over-dispersed that a Poisson model would suggest.
-This suggests simulating high-dimensional multivariate NB (MVB) with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics.
-This procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. 
-To specify the simulation algorithm inputs, we estimate the Spearman correlation matrix $\bf{R^{Spearman}_Y}$ and marginal NB parameters.
+All $d$ selected genes exhibit over-dispersion (data not shown) and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $f_i$ (via method of moments).
+To complete specification of the simulation algorithm inputs, we'll estimate the Spearman correlation matrix ${ \bf R}_{Spearman}$ to characterize dependency.
 
 <!--
+This suggests simulating high-dimensional multivariate NB (MVB) with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics.
+This procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. 
 All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments).
 Notably, the $\hat{p}_i's$ are small --- ranging in $[3.934 \times 10^{-6} , 1.217 \times 10^{-2}]$.
 To complete the simulation algorithm inputs, we estimate the Pearson correlation matrix $\bf{R_Y}$ and set that as the target correlation.
@@ -59,16 +59,16 @@ Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Pois
 
 With our goal in mind, we first estimate the desired correlation matrix using the fast implementation provided by `bigsimr`:
 
-```{r ch050-estRhoBRCA, echo=TRUE, eval=TRUE}
+```{r ch050-estRhoBRCA, echo=TRUE, eval=TRUE, cache=F}
 ## Estimate Spearman's correlation on the count data
 corType <- 'spearman'
 system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
 ```
 
-Next we estimate the marginal parameters. 
-Here we use the basic method of moments (MoM) to estimate the marginal parameters for the multivariate negative binomial model.
-We model the marginals distributions as coming from the same probability family (NB) yet are hetereogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$.
-The code below features some advanced `R` utilities for concise, rapid, and generalizable target marginal specification:
+Next, we estimate the marginal parameters. 
+We use method of moments (MoM) to estimate the marginal parameters for the multivariate negative binomial model.
+The marginal distributions are from the same probability family (NB) yet are hetereogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$.
+The functions below help achieve this estimation and specifying the inputs for use in `bigsimr::rvec`.
 
 <!-- 
 TYPESTE MoM estimators here.
@@ -92,9 +92,9 @@ nbinom_mom <- function(x) {
 }
 ```
 
-Once the functions are defined to complete marginal estimation, we specify the desired multivariate negative binomial distribution and generate the desired random vectors:
+Now we estimate the marginal parameters using the built-in `apply`function:
 
-```{r ch050-estMargins, echo = TRUE, eval = TRUE}
+```{r ch050-estMargins, echo = TRUE, eval = TRUE, cache=F}
 sizes <- apply( unname(as.matrix(brca)), 2, nbinom_mom )[1, ]
 probs <- apply( unname(as.matrix(brca)), 2, nbinom_mom )[2, ]
 ```
@@ -122,6 +122,7 @@ if( !file.exists(brcaSimRDS) ) {
     n <- 10000
     ## construct margins
     ## run sims
+    set.seed(44)
     system.time( sim_nbinom <- rvec(n, nb_Rho, nb_margins, type = corType,
                                     ensure_PSD = TRUE, cores = cores) )
     colnames(sim_nbinom) <- names(brca)
@@ -130,44 +131,45 @@ if( !file.exists(brcaSimRDS) ) {
 sim_nbinom <- readRDS( brcaSimRDS )
 ```
 
-Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes in \@ref(fig:ch010-realDataFig).
-Simulated counts roughly mimick the observed data but with a smoothier appearance due to the assumed parameter form.
+Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes in Table \@ref(tab:ch010-realDataFig).
+Simulated counts roughly mimick the observed data but with a smoothier appearance due to the assumed parameter form and with less extreme points then the observed data (c.f. Figure \@ref(fig:ch010-realDataFig).)
 
 ```{r ch050-simDataFig, echo = FALSE, eval=TRUE, cache=T, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 selected high-expressing genes, replicating the observed data structure.'}
 exampleGenes <- readRDS(file = './data/exampleGenes.rds')
 GGally::ggpairs(
   data = as.data.frame( sim_nbinom[ ,exampleGenes] ), 
   upper = list(
-    continuous = wrap('cor', method = "spearman")
+    continuous = GGally::wrap('cor', method = "spearman")
   ), 
 ) + theme_bw()
 ```
 
 Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).
 The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
-Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed just shy of 7.5 minutes.
+Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed just over of 2 minutes.
 
-```{r ch050-figBRCA, echo=F, eval=T, cache=T, fig.cap="`bigsimr` produces simulated random vectors from a multivariate negative binomial that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data(vertical axes) and the specified target parameters (horizontal axes)."}
-par(mfrow=c(1,3))
+```{r ch050-figBRCA, echo=F, eval=T, cache=T, fig.cap="`bigsimr` produces simulated random vectors from a multivariate negative binomial that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
 ## estimate rho from sims and plot
 nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
+## triplot
+par(mfrow=c(1,3))
 plot(nb_Rho[lower.tri(nb_Rho)], nb_Rho_hat[lower.tri(nb_Rho_hat)],
      xlim = c(-1, 1), ylim = c(-1, 1),
-     pch = 4, cex = 1, col = rgb(0, 0, 1, 0.05),
+     pch = 1, cex = 1, col = rgb(0, 0, 0, 0.05),
      xlab = "Target Correlation", ylab = "Estimated Correlation",
-     main = "Correlation Matching")
+     main = "Spearman Cor. Matching")
 abline(a = 0, b = 1, col="red", lty="dashed")
 ## estimate prob,size from sims and plot
 nbinom_size_prob_hat <- apply(sim_nbinom, 2, nbinom_mom)
 plot(sizes, nbinom_size_prob_hat[1,],
-     pch = 4, cex = 1, col = rgb(0, 0, 1, 1),
+     pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
      xlab = "Target Size", ylab = "Estimated Size",
      main = "Marginal NB Size Matching")
 abline(a=0, b=1, col="red", lty="dashed")
 plot(log(probs), log(nbinom_size_prob_hat[2,]),
-     pch = 4, cex = 1, col = rgb(0, 0, 1, 1),
+     pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
      xlab = "Target Log Probability", ylab = "Estimated Log Probability",
-     main = "Marginal NB Probability Matching")
+     main = "Marginal NB Prob Matching")
 abline(a=0, b=1, col="red", lty="dashed")
 par(mfrow=c(1,1))
 ```
@@ -204,40 +206,62 @@ mean(apply( sim_nbinom,  1,
            ))
 ```
 
-
-## MC evaluation of correlation estimation efficiency
+## Evaluation of correlation estimation efficiency
 
 ```{r ch010-myM, include=FALSE, cache = TRUE}
 m <- 10
 ```
 
 MC methods are routinely used in many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates.
-For an concise introduction to these methods, see, for example @Rizzo2007, Ch. 6.
-Now, we demonstrate how `bigsimr` can be used evaluate estimation efficiency.
-In particular, we'd like to assess the error our correlation estimation above.
+For an concise introduction to these methods, see @Rizzo2007, Ch. 6.
+To conclude the example applications, we demonstrate how `bigsimr` can be used evaluate estimation efficiency.
+In particular, we'd like to assess the error in our correlation estimation above.
 We used a conventional method, based on classical statistical theory. 
 Yet this method was not designed for high-dimensional data.
-Indeed, high-dimensional covariance estimation (and precision matrices) is an active area of statistical science (see, for example, @Won2013g and @VanWieringen2016).
-In this example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(brca)`$.
-Using the fact that our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-gpuVScpuFig), we convert the Spearman correlation matrix and ensure PSD outside the `rvec` call.
-At each iteration, we estimate the quadratic loss from the specified ${\bf R}^{Spearman}_{ \bf Y}$, producing a distribution of loss values.
+Indeed, high-dimensional covariance estimation (and precision matrices) is an active area of statistical science (see, for example, [@Won2013g; @VanWieringen2016].
 
-```{r ch050-quadloss, echo=TRUE, eval=T, cache=FALSE}
+In this small example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(brca)`$.
+Since our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-gpuVScpuFig)), we only convert the Spearman correlation matrix once (and ensure its PSD).
+At each iteration, we estimate the quadratic loss from the specified ${\bf R}_{Spearman}$, producing a distribution of loss values.
+
+```{r ch050-quadlossECHO, echo=T, eval=F, cache=FALSE}
+## Simulate random vectors equal to the sample size
+n <- nrow(brca)
+## convert outside for faster simulation
+nb_Rho_p <- bigsimr::cor_convert( rho = nb_Rho,
+                                 from = corType, to = "pearson" )
+## ensure PSD
+nb_Rho_p <- bigsimr::cor_nearPSD( G = nb_Rho_p )
+## create m random vectors and estimate correlation
+simRho <- replicate(n = m,
+  expr = { tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
+    type = 'pearson', ensure_PSD = FALSE, cores = cores);
+    bigsimr::cor_fast( x = tmpSim, method = corType )} ,
+simplify = FALSE)
+## find quadratic loss at each rep
+quadLoss <- unlist( lapply( simRho, rags2ridges::loss,
+                           T = nb_Rho, type = "quadratic"))
+
+```
+
+```{r ch050-quadloss, echo=F, eval=T, cache=FALSE}
 quadLossRDS <- paste0( "results/brca", round(myProb*100), "quadLoss.rds" )
 if ( !file.exists( quadLossRDS) )  {
     n <- nrow(brca)
     ## convert outside for faster simulation
-    nb_Rho_p <- bigsimr::cor_convert( rho = nb_Rho, from = corType, to = "pearson" )
+    nb_Rho_p <- bigsimr::cor_convert( rho = nb_Rho,
+                                     from = corType, to = "pearson" )
     ## ensure PSD
     nb_Rho_p <- bigsimr::cor_nearPSD( G = nb_Rho_p )
     ## create m random vectors and estimate correlation
     simRho <- replicate(n = m,
-                        expr = { tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
-                                                type = 'pearson', ensure_PSD = FALSE, cores = cores);
-                                                bigsimr::cor_fast( x = tmpSim, method = corType )} ,
-                        simplify = FALSE)
+        expr = { tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
+          type = 'pearson', ensure_PSD = FALSE, cores = cores);
+          bigsimr::cor_fast( x = tmpSim, method = corType )} ,
+     simplify = FALSE)
     ## find quadratic loss at each rep
-    quadLoss <- unlist( lapply( simRho, rags2ridges::loss, T = nb_Rho, type = "quadratic"  ) )
+    quadLoss <- unlist( lapply( simRho, rags2ridges::loss,
+                               T = nb_Rho, type = "quadratic"))
     saveRDS(quadLoss, quadLossRDS)
 }
 quadLoss <- readRDS( quadLossRDS )
@@ -250,7 +274,7 @@ summary(quadLoss)
 ```
 
 
-This distribution could be compared to more elaborate, high-dimensional estimators to guide analysts in deciding whether the additional complexity and computation time are warranted for their application.
+This distribution could be compared to high-dimensional designed covariance estimators to guide to help decide whether the additional complexity and computation time are warranted.
 
 <!-- 
 ## Monte Carlo estimation of MSE 

@@ -121,51 +121,6 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
 }
 ```
 
-Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations.
-We increase the simulate replicates $B$ to check that our results converge to the target correlations and gauge statistical efficiency.
-We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types.
-Then, we select a non-symmetric continuous distribution: a standard (rate =1) two-component multivariate gamma (MVG).
-Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [Example applications for our motivating data](examples) for estimation details).
-Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = `r prob`, r_1 = r_2 = 4,\rho$ ).
-
-Table: (\#tab:sims) Identical margin, bivariate simulation configurations to evaluate correlation matching accuracy and efficiency.
-
-| Simulation Reps ($B$) | Correlation Types | Distribution |
-|---------------------|:------------------:|--------------:|
-|$\{ 1000, 10000, 100000 \}$ | $\{ \rho_P, \rho_S, \tau \}$ | $\{ { \bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho ), \\ { \bf Y} \sim MVG( shape = 10, rate = 1, \rho ), \\ { \bf Y} \sim MVNB(p = `r prob`, r = 4,\rho) \}$. |
-
-For each of the unique 9 simulation configurations above, we estimate the correlation bounds and vary $\rho$ along a sequence of 100 points evenly placed within the bounds (minus an adjustment factor $\epsilon=0.01$ to handle numeric issues when the bound is specified exactly).
-
-<!-- 
-*Bivariate Normal*.
-Let's simulate a bivariate normal and check our correlation matching performance as N increases.
-Standard bivariate normal 
-Here we have BVN( $\mu_1 = \mu_2 = 0, \rho_{type}$ ).
-We vary $\rho$ across the entire possible range of correlations for each correlation type.
-Figure \@ref(fig:ch040-biNormPlot) `bigsimr` recovers the Pearson specified correlations for MVN.
-
-*Bivariate Gamma*. 
-Similarly, let's check the performance for a non-symmetric continuous distribution: a standard (rate =1) bivariate gamma.
-Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
-We vary $\rho$ across the entire possible range of correlations for each correlation type.
-Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma.
-*Bivariate Negative Binomial*. 
-Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
-
- -->
-
-```{r ch040-biNormPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
-dat <- readRDS("./results/biNorm_sims.rds")
-dat %>%
-    filter(cores == cores) %>%
-    ggplot(aes(rho, rho_hat, color = type)) +
-    ## ggplot(aes(rho, rho_hat)) +
-    geom_point() +
-    geom_abline(slope = 1) +
-    ## facet_wrap(~ + N) + theme_bw()
-    facet_wrap(~ type + N) + theme_bw()
-## ggsave('fig/plot-biNormPlot.pdf')
-```
 
 ```{r ch040-biGamma, echo = FALSE, eval = TRUE}
 shape <- 10
@@ -267,19 +222,6 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
     res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
     saveRDS(object = res, "./results/biGamma_sims.rds")
 }
-```
-
-```{r ch040-biGammaPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
-dat <- readRDS("./results/biGamma_sims.rds")
-dat %>%
-    filter(cores == cores) %>%
-    ggplot(aes(rho, rho_hat, color = type)) +
-    ## ggplot(aes(rho, rho_hat)) +
-    geom_point() +
-    geom_abline(slope = 1) +
-    ## facet_wrap(~ + N) + theme_bw()
-    facet_wrap(~ type + N) + theme_bw()
-## ggsave('fig/plot-biGammaPlot.pdf')
 ```
 
 ```{r ch040-biNegBin, echo = FALSE, eval = TRUE}
@@ -388,6 +330,66 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
     saveRDS(object = res, "./results/biNB_sims.rds")
 }
 ```
+
+Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations.
+We increase the simulate replicates $B$ to check that our results converge to the target correlations and gauge statistical efficiency.
+We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types.
+Then, we select a non-symmetric continuous distribution: a standard (rate =1) two-component multivariate gamma (MVG).
+Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [Example applications for our motivating data](examples) for estimation details).
+Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = `r prob`, r_1 = r_2 = 4,\rho$ ).
+
+Table: (\#tab:sims) Identical margin, bivariate simulation configurations to evaluate correlation matching accuracy and efficiency.
+
+| Simulation Reps ($B$) | Correlation Types | Distribution |
+|---------------------|:------------------:|--------------:|
+|$\{ 1000, 10000, 100000 \}$ | $\{ \rho_P, \rho_S, \tau \}$ | $\{ { \bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho ),  { \bf Y} \sim MVG( shape = 10, rate = 1, \rho ),  { \bf Y} \sim MVNB(p = `r prob`, r = 4,\rho) \}$. |
+
+For each of the unique 9 simulation configurations above, we estimate the correlation bounds and vary $\rho$ along a sequence of 100 points evenly placed within the bounds (minus an adjustment factor $\epsilon=0.01$ to handle numeric issues when the bound is specified exactly).
+
+<!-- 
+*Bivariate Normal*.
+Let's simulate a bivariate normal and check our correlation matching performance as N increases.
+Standard bivariate normal 
+Here we have BVN( $\mu_1 = \mu_2 = 0, \rho_{type}$ ).
+We vary $\rho$ across the entire possible range of correlations for each correlation type.
+Figure \@ref(fig:ch040-biNormPlot) `bigsimr` recovers the Pearson specified correlations for MVN.
+
+*Bivariate Gamma*. 
+Similarly, let's check the performance for a non-symmetric continuous distribution: a standard (rate =1) bivariate gamma.
+Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
+We vary $\rho$ across the entire possible range of correlations for each correlation type.
+Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma.
+*Bivariate Negative Binomial*. 
+Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
+
+ -->
+
+```{r ch040-biNormPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
+dat <- readRDS("./results/biNorm_sims.rds")
+dat %>%
+    filter(cores == cores) %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    ## ggplot(aes(rho, rho_hat)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ + N) + theme_bw()
+    facet_wrap(~ type + N) + theme_bw()
+## ggsave('fig/plot-biNormPlot.pdf')
+```
+
+```{r ch040-biGammaPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma."}
+dat <- readRDS("./results/biGamma_sims.rds")
+dat %>%
+    filter(cores == cores) %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    ## ggplot(aes(rho, rho_hat)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ + N) + theme_bw()
+    facet_wrap(~ type + N) + theme_bw()
+## ggsave('fig/plot-biGammaPlot.pdf')
+```
+
 
 ```{r ch040-biNegBinPlot, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
 dat <- readRDS("./results/biNB_sims.rds")

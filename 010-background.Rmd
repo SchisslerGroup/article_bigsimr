@@ -1,6 +1,6 @@
 # Background {#background}
 
-```{r ch010-background, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+```{r ch010-background, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide", cache=F}
 library(tidyverse)
 library(GGally)
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
@@ -83,18 +83,24 @@ knitr::kable(round(head( small, n = 5)),
       booktabs = TRUE,
       caption = 'mRNA counts for three selected high-expressing genes from the first five observations of the BRCA data set.'
 )
-## GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
 ```
 
 To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
 
 ```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $\rho_s$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
-GGally::ggpairs(
-  data = small, 
-  upper = list(
-    continuous = wrap('cor', method = "spearman")
-  ), 
-) + theme_bw()
+# lowerfun <- function(data,mapping){
+#   ggplot(data = data, mapping = mapping)+
+#     geom_point()+
+#     scale_x_continuous(limits = c(-1.5,1.5))+
+#     scale_y_continuous(limits = c(-1.5,1.5))
+# }  
+ 
+GGally::ggpairs( data = small,
+                # lower = list( continuous = wrap(lowerfun)),
+                upper = list(
+                    continuous = wrap('cor', method = "spearman")
+                ), 
+                ) + theme_bw()
 ```
 
 ## Measures of dependency

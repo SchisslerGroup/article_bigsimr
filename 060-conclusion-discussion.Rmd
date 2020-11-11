@@ -1,12 +1,11 @@
 # Conclusion and discussion {#discussion}
 
-We've introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a high-performance implementation called [`bigsimr`](https://schisslergroup.github.io/bigsimr/). 
-The high-performance --- efficient, multi-core and GPU enabled --- algorithms and software provide 
+We've introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a high-performance `R` package called [`bigsimr`](https://schisslergroup.github.io/bigsimr/).
 The random vector generation method is largely inspired by NORTA (@Cario1997) and Gaussian copula-based approaches (@MB13, @BF17, @Xia17).
-The major contributions of our work presented here involve high-dimensional scalability, model flexibility, and high-performance implementation with broad potential data analytic applications for modern big data challenges.
+The major contributions of this work are high-dimensional scalability, flexible modeling of dependency, and an high-performance implementation with broad potential data analytic applications for modern, big-data statistical computing.
 
-It is usually customary to compare new tools and algorthms directly to existing competing methods.
-In our MC studies, however, we only employ our proposed methodology, since our previous work has show that existing tools are simply not designed or feasible to meet our HD goal (see @Li2019gpu for evalutions of the `R` `copula`package and others). 
+It is customary to compare new tools and algorthms directly to existing competing methods and software.
+In this study, however, we only employ our proposed methodology, since our previous work has show that existing tools are simply not designed or feasible to meet our high-dimensional goal (see @Li2019gpu for evalutions of the `R` `copula`package and others). 
 For the bivariate simulations, existing packages such as [`nortaRA`](https://github.com/cran/NORTARA/blob/master/inst/doc/NORTARA.R) work well to match Pearson correlations exactly.
 
 <!-- 
@@ -22,17 +21,17 @@ Even the best-performing simulations we provide show a gap from the empirical di
 -->
 
 There are limitations to the methodology and implementation.
-The most obvious missing feature the proposed methodology is the inability to match a Pearson correlation matrix exactly.
-As discussed in [Algorithms](algorithms) and extensively by @XZ19, this is a computational intense procedure and not a natural choice for characterizing dependency for non-normal marginals, especially in the high-dimensional setting.
-While we do not provide an implementation directly supporting Pearson matching, user can always supply their own input Pearson after using a supplementary matching scheme [@Cario1997; @XZ19].
+The most obvious missing feature of the proposed methodology is the inability to match a Pearson correlation matrix exactly.
+As discussed in [Algorithms](algorithms) and extensively by @XZ19, this is a computationally intense procedure and Pearson's correlation is not a natural choice to describe dependency for non-normal marginals.
+While we do not provide an implementation directly supporting Pearson matching, users may supply their own input Pearson correlation after using a supplementary matching scheme [@Cario1997; @XZ19].
 
 <!-- 
 Further, while we provide the ability of the user to specify discrete marginals, exact matching a desired dependency measure is not yet obtained. One potential solution for this is *rescale* to account for ties [ref]. Finally we note, that the algorithm requires invertible marginal cdfs. This gives some restriction to the available marginal probability distributions (DOES IT? FOR EXAMPLE?). 
 From a practical computing standpoint, the user's computing resource provides the ultimate limit on how large a dimension can be simulated using the `bigsimr` R package. A user must consider carefully the available memory and cores when conducting a Monte Carlo experiment. 
 -->
 
-Future work includes developing scalable algorithms to match the Pearson correlation matrix more precisely, discrete-margin specific modifications including fast Spearman's correlation rescaling (see Equation \@ref(eq:spearmanRescaled)), and *bona fide* high-dimensional correlation estimation (for example, see @Won2013g).
-From an implementation standpoint, `bigsimr` only supports Nvidia GPUs and refactoring the code using OpenCL would broaden the user base.
-As problems grow even larger, multi-GPU support is a logical progression in this highly parallelization algorthmic scheme and warrant further development.
+Future work includes developing scaleable algorithms to match the Pearson correlation matrix more precisely, discrete-margin specific modifications including fast Spearman's correlation rescaling (see Equation \@ref(eq:spearmanRescaled)), and high-dimensional covariance estimation.
+From an implementation standpoint, `bigsimr` only supports Nvidia GPUs and redesigning the code using OpenCL would broaden the users who would benefit.
+As data-analytic problems grow to even larger dimension, multi-GPU support is a promising hardware-based future direction.
 
 

@@ -340,11 +340,13 @@ Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = `r prob`,
 
 Table: (\#tab:sims) Identical margin, bivariate simulation configurations to evaluate correlation matching accuracy and efficiency.
 
-| Simulation Reps ($B$) | Correlation Types | Distribution |
-|---------------------|:------------------:|--------------:|
-|$\{ 1000, 10000, 100000 \}$ | $\{ \rho_P, \rho_S, \tau \}$ | $\{ { \bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho ),  { \bf Y} \sim MVG( shape = 10, rate = 1, \rho ),  { \bf Y} \sim MVNB(p = `r prob`, r = 4,\rho) \}$. |
+| Simulation Reps ($B$) | Correlation Types | Identical-margin 2D distribution |
+|-------------|:--------------:|----------------------:|
+|$1000$ | Pearson ($\rho_P$) | ${ \bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho )$ |
+|$10,000$ | Spearman ($\rho_S$) | ${ \bf Y} \sim MVG( shape = 10, rate = 1, \rho )$ |
+| $100,000$| Kendall ($\tau$)| ${ \bf Y} \sim MVNB(p = `r prob`, r = 4,\rho)$ |
 
-For each of the unique 9 simulation configurations above, we estimate the correlation bounds and vary $\rho$ along a sequence of 100 points evenly placed within the bounds (minus an adjustment factor $\epsilon=0.01$ to handle numeric issues when the bound is specified exactly).
+For each of the unique 9 simulation configurations above, we estimate the correlation bounds and vary $\rho$ along a sequence of 100 points evenly placed within the bounds (minus an adjustment factor of $\epsilon=0.01$ to handle numeric issues when the bound is specified exactly).
 
 <!-- 
 *Bivariate Normal*.
@@ -469,7 +471,7 @@ allDat %>%
 ## ggsave('fig/plot-biNormPlot.pdf')
 ```
 
-```{r ch040-biMAEtable, results='asis'}
+```{r ch040-biMAEtable, results='asis', cache=F}
 ## tabMSE  <- allDat %>%
 ##    group_by( N, margins ) %>%
 ##    summarize( mse = mean( ( rho - rho_hat )^2 ) )
@@ -482,13 +484,16 @@ tabMSE  <- allDat %>%
 ## ( tabMSE$mse - normMSE ) / normMSE
 ## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) )
 ## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) ) / tabMSE$mse
+
 knitr::kable(tabMSE,
+             format = 'latex',
              col.names = c("No. of random vectors",
                            "Correlation type",
                            "Distribution",
                            "Mean abs. error"),
              booktabs = TRUE,
-             caption = 'Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.'
+             caption = 'Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.',
+             linesep = c('', '',  '\\addlinespace')
 )
 ```
 

@@ -22,7 +22,7 @@ The following subsections apply `bigsimr`'s methods to real RNA-seq data, includ
 
 ## Simulating High-Dimensional RNA-seq data
 
-```{r ch050-readBRCA, echo=FALSE, eval=TRUE}
+```{r ch050-readBRCA, echo=FALSE, eval=TRUE, cache=F}
 ## full workflow simulating RNA-seq data
 ## brcaRDS <- 'data/brca95.rds'
 ## myProb = 0.95

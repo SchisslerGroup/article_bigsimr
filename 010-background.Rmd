@@ -1,5 +1,12 @@
 # Background {#background}
 
+```{r ch010-background, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+library(tidyverse)
+library(GGally)
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+```
+
+
 The `bigsimr` `R` package provides multiple algorithms to work with high-dimesional multivariate data, but all these algorithms were originally designed to support a single task:
 to generate random vectors drawn from multivariate probability distribution with given marginal distributions and dependency metrics.
 Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and hetereogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful times.
@@ -71,7 +78,8 @@ if ( !file.exists( './data/exampleGenes.rds' ) )  {
     saveRDS(exampleGenes, file = './data/exampleGenes.rds')
 }
 exampleGenes <- readRDS('./data/exampleGenes.rds')
-knitr::kable(round(head( brca[, exampleGenes], n = 5)),
+small <-  brca %>% select( exampleGenes )
+knitr::kable(round(head( small, n = 5)),
       booktabs = TRUE,
       caption = 'mRNA counts for three selected high-expressing genes from the first five observations of the BRCA data set.'
 )
@@ -81,9 +89,12 @@ knitr::kable(round(head( brca[, exampleGenes], n = 5)),
 To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
 
 ```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $\rho_s$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
-## Describe and plot real data
-## NEED TO CHANGE TO SPEARMANS
-GGally::ggpairs(data = as.data.frame(brca[ ,exampleGenes] ))
+GGally::ggpairs(
+  data = small, 
+  upper = list(
+    continuous = wrap('cor', method = "spearman")
+  ), 
+) + theme_bw()
 ```
 
 ## Measures of dependency

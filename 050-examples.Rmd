@@ -134,10 +134,13 @@ Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise re
 Simulated counts roughly mimick the observed data but with a smoothier appearance due to the assumed parameter form.
 
 ```{r ch050-simDataFig, echo = FALSE, eval=TRUE, cache=T, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 selected high-expressing genes, replicating the observed data structure.'}
-## retrieve the examples from an earlier chapter
-## there is probably a better way to do this
-exampleGenes <- readRDS(file = './data/exampleGenes.rds') 
-GGally::ggpairs(data = as.data.frame(sim_nbinom[ ,exampleGenes] ))
+exampleGenes <- readRDS(file = './data/exampleGenes.rds')
+GGally::ggpairs(
+  data = as.data.frame( sim_nbinom[ ,exampleGenes] ), 
+  upper = list(
+    continuous = wrap('cor', method = "spearman")
+  ), 
+) + theme_bw()
 ```
 
 Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).

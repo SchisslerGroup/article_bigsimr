@@ -26,14 +26,14 @@ Matching specified Pearson correlation coefficients exactly (step 2 above), howe
 In general, there is no closed form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$.
 Matching the correlations involves evaluating or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,2,\ldots,d, \; i \neq j$.
 For high-dimensional data, these evaluations are often too costly to enable feasible simulation studies.
-For low-dimensional problems, methods and tools exist to match Pearson correlations precisely (see @Chen2001; @Xia17; @MB13), including the publicly available `nortaRA` R package.
+For low-dimensional problems, methods and tools exist to match Pearson correlations precisely, see @Chen2001; @Xia17; @MB13 and the publicly available `nortaRA` R package.
 
 To maintain scaleability (SP1), our solution is to essentially avoid this complication in Pearson matching.
 Since our goal is to simulate non-normal marginals, we greatly prefer the use of rank-based measures $\rho_S$ and $\tau$ from a modeling standpoint.
 Further, $\rho_S$ and $\tau$'s invariance under monotone transformation (see [Background](#background)), perserves the correlation coefficients through steps 3, 4, and 5 in the NORTA algorithm above.
 This eliminates the need for computing the $\binom{d}{2}$ integrals to match exactly (nothing is for free, however, as discussed in below in Section \@ref(rand-vec-gen)).
 
-Despite all this, if one does desire to characterize dependency using Pearson correlations, simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution (@Song00) in many practical applications.
+Despite all this, if one does desire to characterize dependency using Pearson correlations, simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution [@Song00] in many practical applications.
 The quality of this approximation depends on the setting, but in practice, for high-dimensional count data we find the accuracy to be adequate.
 Later, we'll study the robustness of our method to this limitation in selected [Monte Carlo evalutations]({#simulations}).
 
@@ -52,7 +52,7 @@ It mirrors the classical NORTA algorithm above with some modifications for rank-
 3. Quantile evaluations.  
 	(i) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
 
-The pre-processing (Step1) takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertSpearman) or \@ref(eq:convertKendall), respectively (implemented as `bigsimr::cor_covert`).
+The pre-processing (Step 1) takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertSpearman) or \@ref(eq:convertKendall), respectively (implemented as `bigsimr::cor_covert`).
 
 A complication often arises at this stage: the parallelized, pairwise conversions may create a (spuriously) non-positive definite correlation matrix, especially in high dimensions.
 Researchers working in multivariate computation frequently encounter such difficulties and need to find a close positive (semi-)definiteness matrix.

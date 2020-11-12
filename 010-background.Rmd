@@ -87,7 +87,7 @@ knitr::kable(round(head( small, n = 5)),
 
 To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
 
-```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's $\rho_s$ for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
+```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 # lowerfun <- function(data,mapping){
 #   ggplot(data = data, mapping = mapping)+
 #     geom_point()+

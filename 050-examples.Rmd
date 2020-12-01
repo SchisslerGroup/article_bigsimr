@@ -14,8 +14,8 @@ bookdown::preview_chapter('050-examples.Rmd')
 ```
 
 This section demonstrates how to simulate multivariate data using `bigsimr`, aiming to replicate the structure of high-dimensional dependent count data.
-In an illustration of our proposed methodology applied to real data, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions with estimated parameters that mimick the observed data and its generating process.
-We seek scaleable realistic multivariate simulation to enable Monte Carlo (MC) methods for thes data.
+In an illustration of our proposed methodology applied to real data, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions with estimated parameters that mimic the observed data and its generating process.
+We seek scaleable realistic multivariate simulation to enable Monte Carlo (MC) methods for these data.
 Modeling RNA-seq using multivariate probabilities distributions is natural as inter-gene correlation is an inherent part of biological processes.
 Yet many models do not account for this, leading to major disruptions to the operating characteristics of statistical estimation, testing, and prediction.
 See @Efron2012 for a detailed discussion with related methods and see @Wu2012b, @Schissler2018, @Schissler2019 for applied examples.
@@ -67,7 +67,7 @@ system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
 
 Next, we estimate the marginal parameters. 
 We use method of moments (MoM) to estimate the marginal parameters for the multivariate negative binomial model.
-The marginal distributions are from the same probability family (NB) yet are hetereogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$.
+The marginal distributions are from the same probability family (NB) yet are heterogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$.
 The functions below help achieve this estimation and specifying the inputs for use in `bigsimr::rvec`.
 
 <!-- 
@@ -132,7 +132,7 @@ sim_nbinom <- readRDS( brcaSimRDS )
 ```
 
 Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes in Table \@ref(tab:ch010-realDataTab).
-Simulated counts roughly mimick the observed data but with a smoothier appearance due to the assumed parameter form and with less extreme points then the observed data (c.f. Figure \@ref(fig:ch010-realDataFig).)
+Simulated counts roughly mimic the observed data but with a smoother appearance due to the assumed parameter form and with less extreme points then the observed data (c.f. Figure \@ref(fig:ch010-realDataFig).)
 
 ```{r ch050-makeSimDataFig, echo = FALSE, eval=T, cache=F, message=FALSE, warning=FALSE}
 if( !file.exists("fig/ch050-simDataFig.png") ) {
@@ -190,7 +190,6 @@ if( !file.exists("fig/ch050-figBRCA.png") ) {
 knitr::include_graphics('fig/ch050-figBRCA.png')
 ```
 
-
 ## Simulation-based joint probability calculations
 
 To conduct statistical inference a critical task is to evaluate the joint probability mass (or density) function:
@@ -200,7 +199,7 @@ P( {\bf Y} = {\bf y} ), y_i \in \chi_i.
 $$
 
 where $\chi_i$ is the sample space for the $i^{th}$ component of the random vector $\bf{Y}$.
-Compact representations with convenient computational forms are rare for high-dimensional constructions, especially with hetereogeneous, correlated marginal distributions (or margins of mixed data types).
+Compact representations with convenient computational forms are rare for high-dimensional constructions, especially with heterogeneous, correlated marginal distributions (or margins of mixed data types).
 Given a large number simulated vectors as produced above, estimated probabilities are readily given by counting the proportion of simulated vectors meeting the desired condition.
 In our motivating application, one may ask what is the probability that all genes expressed greater than a certain threshold value ${ \bf y}_0$.
 
@@ -289,7 +288,6 @@ The `R` summary function supplies the mean-augmented five-number summary of the 
 ```{r ch050-quadloss-summary, echo=TRUE, eval=T, cache=FALSE}
 summary(quadLoss)
 ```
-
 
 This distribution could be compared to high-dimensional designed covariance estimators to guide to help decide whether the additional complexity and computation time are warranted.
 

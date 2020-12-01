@@ -20,7 +20,7 @@ Specifically, the NORTA algorithm follows like this:
 4. Set $X$ by $X \gets MZ$.
 5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,2,...,d$.
 
-With modern parallelized computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multicore and/or graphical-processing-unit (GPU) accelerated, algorithms --- providing the fast scaleability using readily-available hardware.
+With modern parallelized computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multi-core and/or graphical-processing-unit (GPU) accelerated, algorithms --- providing the fast scaleability using readily-available hardware.
 
 Matching specified Pearson correlation coefficients exactly (step 2 above), however, is problematic.
 In general, there is no closed form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$.
@@ -30,19 +30,19 @@ For low-dimensional problems, methods and tools exist to match Pearson correlati
 
 To maintain scaleability (SP1), our solution is to essentially avoid this complication in Pearson matching.
 Since our goal is to simulate non-normal marginals, we greatly prefer the use of rank-based measures $\rho_S$ and $\tau$ from a modeling standpoint.
-Further, $\rho_S$ and $\tau$'s invariance under monotone transformation (see [Background](#background)), perserves the correlation coefficients through steps 3, 4, and 5 in the NORTA algorithm above.
+Further, $\rho_S$ and $\tau$'s invariance under monotone transformation (see [Background](#background)), preserves the correlation coefficients through steps 3, 4, and 5 in the NORTA algorithm above.
 This eliminates the need for computing the $\binom{d}{2}$ integrals to match exactly (nothing is for free, however, as discussed in below in Section \@ref(rand-vec-gen)).
 
 Despite all this, if one does desire to characterize dependency using Pearson correlations, simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution [@Song00] in many practical applications.
 The quality of this approximation depends on the setting, but in practice, for high-dimensional count data we find the accuracy to be adequate.
-Later, we'll study the robustness of our method to this limitation in selected [Monte Carlo evalutations]({#simulations}).
+Later, we'll study the robustness of our method to this limitation in selected [Monte Carlo evaluations]({#simulations}).
 
 ## Random vector generation via `bigsimr::rvec` {#rand-vec-gen}
 
 Now we describe `bigsimr::rvec`, our algorithm to generate random vectors.
 It mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
-1. Pre-processing for nonparameteric dependency matching.  
+1. Pre-processing for nonparametric dependency matching.  
 	(i) Convert from either ${\bf R_{Spearman}}$ or ${\bf R_{Kendall}}$ into the corresponding MVN input correlation ${\bf R_{Pearson}}$.
 	(ii) Check that ${\bf R_{Pearson}}$ is semi-positive definite.  
 	(iii) If not compute a close semi-positive definite correlation matrix ${\bf \widetilde{R}_{Pearson}}$.  
@@ -57,13 +57,13 @@ The pre-processing (Step 1) takes advantage of the closed-form relationships bet
 A complication often arises at this stage: the resultant matrix may become indefinite, either through numerical error or naturally occurring in the correlation conversion.
 Researchers working in multivariate computation frequently encounter such difficulties and need to find a close positive (semi-)definite matrix.
 A widely-available routine for this task in `R` is called `matrix::nearPD`, though it is not suitable for high dimensions.
-To overcome this issue, we've developed `bigsimr::nearPSD`, a quadractically-convergent Netwon method for finding the nearest correlation matrix, developed by @QS2006.
+To overcome this issue, we've developed `bigsimr::nearPSD`, a quadractically-convergent Newton method for finding the nearest correlation matrix, developed by @QS2006.
 We hope that this routine could be useful in many applications aside from our primary goal of random vector generation.
 
 Once the target margins and algorithm inputs are determined, steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
-Specifically, step 2i uses either an efficient multicore multivariate normal simulator (the `R` package `mvnfast`[@Fasiolo2016]) or a using Google's JAX python library NumPy for graphical-processing-unit (GPU) acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm in the preceeding section).
+Specifically, step 2i uses either an efficient multi-core multivariate normal simulator (the `R` package `mvnfast`[@Fasiolo2016]) or a using Google's JAX python library NumPy for graphical-processing-unit (GPU) acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm in the preceding section).
 
-## NORTA in higher dimensions
+## A note on NORTA in higher dimensions
 
 Sklar's theorem provides a useful characterization of multivariate distributions through copulas.
 Yet the choice of copula-based simulation algorithm affects which joint distributions may be simulated.
@@ -76,7 +76,7 @@ They found at what is now considered low-to-moderate dimensions ($d \approx 20$)
 This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
 
 There is hope, however, as @GH02 also show that by augmenting the NORTA procedure by replacing the indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$.
-This provides evidence that our nearest positive semidefinite (PSD) augmented approach will maintain reasonable accuracy if our input matching scheme returns an indefinite matrix, at least for the rank-based matching scheme described above.
+This provides evidence that our nearest positive semi-definite (PSD) augmented approach will maintain reasonable accuracy if our input matching scheme returns an indefinite matrix, at least for the rank-based matching scheme described above.
 
 <!-- 
 ## Other high-performance `bigsimr` algorithms

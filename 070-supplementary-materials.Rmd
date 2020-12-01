@@ -1,12 +1,12 @@
 # Supplementary Materials {.unnumbered #misc}
 
-We provide an open-source implementation of our methology as the `bigsimr` R package, hosted on github, https://schisslergroup.github.io/bigsimr/.
+We provide an open-source implementation of our methodology as the `bigsimr` R package, hosted on github, https://schisslergroup.github.io/bigsimr/.
 
 ```{r, out.width='5%', fig.align='center'}
 knitr::include_graphics('images/hex-bigsimr.png')
 ```
 
-# Acknowledgement(s) {.unnumbered #acknowledgements}
+# Acknowledgment(s) {.unnumbered #acknowledgments}
 
 The authors gratefully acknowledge the helpful discussions with University of Arizona's Professor Walter W. Piegorsch and Professor Edward J. Bedrick during this project's conception.
 We also gratefully acknowledge Heather Knudson's graphic design for the `bigsimr` R Package.

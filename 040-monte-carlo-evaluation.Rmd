@@ -422,13 +422,39 @@ allDat$type <- factor(allDat$type, levels = c( 'pearson', 'spearman', 'kendall' 
 allDat$N <- factor(allDat$N, levels = c( 1000, 10000, 100000) )
 ```
 
-Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results with a detailed summarization.
+```{r ch040-biMAEtable, results='asis', cache=F}
+## tabMSE  <- allDat %>%
+##    group_by( N, margins ) %>%
+##    summarize( mse = mean( ( rho - rho_hat )^2 ) )
+tabMSE  <- allDat %>%
+    ## filter( N == 100000) %>%
+    group_by( N, type, margins ) %>%
+##     summarize( mse = mean( ( rho - rho_hat )^2 ) ) %>%
+    summarize( MAE = mean( abs( rho - rho_hat )  ) )
+## normMSE <- as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ] ) 
+## ( tabMSE$mse - normMSE ) / normMSE
+## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) )
+## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) ) / tabMSE$mse
+
+knitr::kable(tabMSE,
+             format = 'latex',
+             col.names = c("No. of random vectors",
+                           "Correlation type",
+                           "Distribution",
+                           "Mean abs. error"),
+             booktabs = TRUE,
+             caption = 'Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.',
+             linesep = c('', '',  '\\addlinespace')
+)
+```
+
+Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results.
 Table \@ref(tab:ch040-biMAEtable) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
 Taken together, the studies show our methodology is generally accuracy across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations.
 For the two non-normal bivariate marginals, the Pearson correlation matching is approximate.
 For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, and particularly inaccurate near the lower bound of Pearson correlations.
 
-```{r ch040-bPlot, cache=F, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.asp = 1.30, fig.weight = 4, fig.align='center', fig.cap = "Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark blue, gamma in medium blue, and negative binomial in light blue. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attentuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
+```{r ch040-bPlot, cache=F, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.asp = 1.30, fig.weight = 4, fig.align='center', fig.cap = "Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark blue, gamma in medium blue, and negative binomial in light blue. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attenuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
 # https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
 # New facet label names
 repsLabs <- paste0("B=", c("1,000", "10,000", "100,000") )
@@ -469,32 +495,6 @@ allDat %>%
 ##     facet_wrap(~ margins + N) + theme_bw()
  
 ## ggsave('fig/plot-biNormPlot.pdf')
-```
-
-```{r ch040-biMAEtable, results='asis', cache=F}
-## tabMSE  <- allDat %>%
-##    group_by( N, margins ) %>%
-##    summarize( mse = mean( ( rho - rho_hat )^2 ) )
-tabMSE  <- allDat %>%
-    ## filter( N == 100000) %>%
-    group_by( N, type, margins ) %>%
-##     summarize( mse = mean( ( rho - rho_hat )^2 ) ) %>%
-    summarize( MAE = mean( abs( rho - rho_hat )  ) )
-## normMSE <- as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ] ) 
-## ( tabMSE$mse - normMSE ) / normMSE
-## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) )
-## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) ) / tabMSE$mse
-
-knitr::kable(tabMSE,
-             format = 'latex',
-             col.names = c("No. of random vectors",
-                           "Correlation type",
-                           "Distribution",
-                           "Mean abs. error"),
-             booktabs = TRUE,
-             caption = 'Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.',
-             linesep = c('', '',  '\\addlinespace')
-)
 ```
 
 The accuracy appears adequate for many applications.

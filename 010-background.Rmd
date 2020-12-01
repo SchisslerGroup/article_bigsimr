@@ -6,10 +6,9 @@ library(GGally)
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 ```
 
-
-The `bigsimr` `R` package provides multiple algorithms to work with high-dimesional multivariate data, but all these algorithms were originally designed to support a single task:
+The `bigsimr` `R` package provides multiple algorithms to work with high-dimensional multivariate data, but all these algorithms were originally designed to support a single task:
 to generate random vectors drawn from multivariate probability distribution with given marginal distributions and dependency metrics.
-Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and hetereogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful times.
+Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful times.
 
 When designing this methodology, we developed the following properties to guide our effort.
 We divide the properties into two categories: (1) basic properties (BP) and "scaleability" properties (SP). 
@@ -29,7 +28,7 @@ To fix ideas and provide examples applications enabled via `bigsimr`, the next s
 
 ## Motivating example: RNA-seq data
 
-Simulating high-dimensional, non-normal, correleated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
+Simulating high-dimensional, non-normal, correlated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
 The RNA-seq data-generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
 RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data.
 For human derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted.
@@ -63,13 +62,13 @@ brca <- readRDS(file = brcaRDS)
 d <- ncol(brca)
 ```
 
-We'll illustrate our methodology using the well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgements).
+We'll illustrate our methodology using the well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
 For simplicity, we only consider high expressing genes.
 In turn, we begin by filtering to retain the top `r (1-myProb)*100`% highest- expressing genes (in terms of median expression) of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
 This gives a massive number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters).
-We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011c's RNA-seq by Expectation Maximization (RSEM) values to counts.
+We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011 RNA-seq by Expectation Maximization (RSEM) values to counts.
 Table \@ref(tab:ch010-realDataTab) displays counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
-
+ 
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
 if ( !file.exists( './data/exampleGenes.rds' ) )  {
@@ -117,7 +116,7 @@ As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pe
 For non-normal marginals with monotone correlation patterns, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships (@MK01).
 Alternatively in these settings, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
 
-Two nonparameteric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. 
+Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. 
 Define
 
 \begin{equation}
@@ -129,13 +128,13 @@ Define
 Spearman's $\rho_S$ has an appealing correspondence as the Pearson's correlation coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
 
 Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations $(X_i, Y_i)$ and $(X_j, Y_j)$.
-By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determinded by the ranks of the values, not the values themselves.
+By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determined by the ranks of the values, not the values themselves.
 
 Both $\tau$ and $\rho_S$ are **invariant to under monotone transformations** of the underlying random variates.
 As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scaleable match rank-based correlations with speed (SP1) and accuracy (SP2).
 
 *Correspondence among Pearson, Spearman, $\tau$ correlations*.
-This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficent, as the marginal distributions $F_i$ are intrinstic in their calculation.
+This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation.
 But for **bivariate normal vectors**, however, the correspondence is well-known:
 
 \begin{equation}
@@ -185,7 +184,7 @@ In general, the bounds are given by
 \rho_P^{max} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho_P^{min} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
 \end{equation}
 
-\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse cdf of random variables $X_1$ and $X_2$, respectively. 
+\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse CDF of random variables $X_1$ and $X_2$, respectively. 
 For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
 
 ## Gaussian copulas
@@ -202,7 +201,7 @@ $C(u_1, \ldots, u_d)$ so that
 F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), \,\,\, x_i\in \mathbb R, i=1,\ldots,d. 
 \]  
 
-A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard normal cdf, $\Phi$. 
+A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard normal CDF, $\Phi$. 
 This representation corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$.
 But since the marginals are standardized to have unit variance, this ${\bf R_P}$ is a Pearson correlation matrix. 
 If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
@@ -215,5 +214,5 @@ F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 where $\Phi(\cdot)$ is the standard normal CDF.
 Note that the copula $C_{{\bf R}}$ is the familar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$. 
 
-Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) *any* random vector can be obtained via transformations involving copula functions. 
+Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions.
 For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ povides $Y_i \sim F_i, \, \forall \, i$ .

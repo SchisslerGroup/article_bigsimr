@@ -2,10 +2,10 @@
 
 We've introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a high-performance `R` package called [`bigsimr`](https://schisslergroup.github.io/bigsimr/).
 The random vector generation method is largely inspired by NORTA (@Cario1997) and Gaussian copula-based approaches (@MB13, @BF17, @Xia17).
-The major contributions of this work are high-dimensional scalability, flexible modeling of dependency, and an high-performance implementation with broad potential data analytic applications for modern, big-data statistical computing.
+The major contributions of this work are high-dimensional scaleability, flexible modeling of dependency, and an high-performance implementation with broad potential data analytic applications for modern, big-data statistical computing.
 
-It is customary to compare new tools and algorthms directly to existing competing methods and software.
-In this study, however, we only employ our proposed methodology, since our previous work has show that existing tools are simply not designed or feasible to meet our high-dimensional goal (see @Li2019gpu for evalutions of the `R` `copula`package and others). 
+It is customary to compare new tools and algorithms directly to existing competing methods and software.
+In this study, however, we only employ our proposed methodology, since our previous work has show that existing tools are simply not designed or feasible to meet our high-dimensional goal (see @Li2019gpu for evaluations of the `R` `copula`package and others). 
 For the bivariate simulations, existing packages such as [`nortaRA`](https://github.com/cran/NORTARA/blob/master/inst/doc/NORTARA.R) work well to match Pearson correlations exactly.
 
 <!-- 
@@ -33,5 +33,3 @@ From a practical computing standpoint, the user's computing resource provides th
 Future work includes developing scaleable algorithms to match the Pearson correlation matrix more precisely, discrete-margin specific modifications including fast Spearman's correlation rescaling (see Equation \@ref(eq:spearmanRescaled)), and high-dimensional covariance estimation.
 From an implementation standpoint, `bigsimr` only supports Nvidia GPUs and redesigning the code using OpenCL would broaden the users who would benefit.
 As data-analytic problems grow to even larger dimension, multi-GPU support is a promising hardware-based future direction.
-
-

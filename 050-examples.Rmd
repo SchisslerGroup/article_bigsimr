@@ -2,7 +2,6 @@
 
 ```{r ch050-LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide", cache=F}
 ## knitr::opts_chunk$set(echo = FALSE, cache = FALSE)
-knitr::opts_chunk$set(dev = "png", dev.args = list(type = "cairo-png"))
 # reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
@@ -135,7 +134,7 @@ sim_nbinom <- readRDS( brcaSimRDS )
 Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes in Table \@ref(tab:ch010-realDataTab).
 Simulated counts roughly mimick the observed data but with a smoothier appearance due to the assumed parameter form and with less extreme points then the observed data (c.f. Figure \@ref(fig:ch010-realDataFig).)
 
-```{r ch050-simDataFig, echo = FALSE, eval=TRUE, cache=T, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 selected high-expressing genes, replicating the observed data structure.', dpi=36}
+```{r ch050-simDataFig, echo = FALSE, eval=T, cache=F, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 selected high-expressing genes, replicating the observed data structure.'}
 exampleGenes <- readRDS(file = './data/exampleGenes.rds')
 GGally::ggpairs(
   data = as.data.frame( sim_nbinom[ ,exampleGenes] ), 
@@ -149,7 +148,7 @@ Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulatio
 The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
 Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed just over of 2 minutes.
 
-```{r ch050-figBRCA, echo=F, eval=T, cache=T,fig.cap="`bigsimr` produces simulated random vectors from a multivariate negative binomial that replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).", dpi=36}
+```{r ch050-figBRCA, echo=F, eval=T, cache=F, fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
 ## estimate rho from sims and plot
 nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
 ## triplot

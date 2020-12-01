@@ -49,5 +49,3 @@ all_dists <- list(
 ```
 
 your comment -->
-
-# References {.unnumbered #references}

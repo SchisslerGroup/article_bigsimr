@@ -134,45 +134,62 @@ sim_nbinom <- readRDS( brcaSimRDS )
 Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes in Table \@ref(tab:ch010-realDataTab).
 Simulated counts roughly mimick the observed data but with a smoothier appearance due to the assumed parameter form and with less extreme points then the observed data (c.f. Figure \@ref(fig:ch010-realDataFig).)
 
-```{r ch050-simDataFig, echo = FALSE, eval=T, cache=F, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for 3 selected high-expressing genes, replicating the observed data structure.'}
-exampleGenes <- readRDS(file = './data/exampleGenes.rds')
-GGally::ggpairs(
-  data = as.data.frame( sim_nbinom[ ,exampleGenes] ), 
-  upper = list(
-    continuous = GGally::wrap('cor', method = "spearman")
-  ), 
-) + theme_bw()
+```{r ch050-makeSimDataFig, echo = FALSE, eval=T, cache=F, message=FALSE, warning=FALSE}
+if( !file.exists("fig/ch050-simDataFig.png") ) {
+    exampleGenes <- readRDS(file = './data/exampleGenes.rds')
+    p <- GGally::ggpairs(
+                     data = as.data.frame( sim_nbinom[ ,exampleGenes] ), 
+                     upper = list(
+                         continuous = GGally::wrap('cor', method = "spearman")
+                     )) + theme_bw()
+    ## ggsave("fig/ch050-simDataFig.png", plot = p, width = 5, height = 4, dpi = 300)
+    ggsave("fig/ch050-simDataFig.png", plot = p, dpi = 300) 
+}
+```
+
+```{r ch050-simDataFig, echo=F, fig.align='center', fig.cap='Simulated data for three selected high-expressing genes replicates the estimated data structure.'}
+knitr::include_graphics('fig/ch050-simDataFig.png')
 ```
 
 Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).
 The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
 Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed just over of 2 minutes.
 
-```{r ch050-figBRCA, echo=F, eval=T, cache=F, fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
-## estimate rho from sims and plot
-nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
-## triplot
-par(mfrow=c(1,3))
-plot(nb_Rho[lower.tri(nb_Rho)], nb_Rho_hat[lower.tri(nb_Rho_hat)],
-     xlim = c(-1, 1), ylim = c(-1, 1),
-     pch = 1, cex = 1, col = rgb(0, 0, 0, 0.05),
-     xlab = "Target Correlation", ylab = "Estimated Correlation",
-     main = "Spearman Cor. Matching")
-abline(a = 0, b = 1, col="red", lty="dashed")
-## estimate prob,size from sims and plot
-nbinom_size_prob_hat <- apply(sim_nbinom, 2, nbinom_mom)
-plot(sizes, nbinom_size_prob_hat[1,],
-     pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
-     xlab = "Target Size", ylab = "Estimated Size",
-     main = "Marginal NB Size Matching")
-abline(a=0, b=1, col="red", lty="dashed")
-plot(log(probs), log(nbinom_size_prob_hat[2,]),
-     pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
-     xlab = "Target Log Probability", ylab = "Estimated Log Probability",
-     main = "Marginal NB Prob Matching")
-abline(a=0, b=1, col="red", lty="dashed")
-par(mfrow=c(1,1))
+```{r ch050-makeFigBRCA, echo=F, eval=T, cache=F}
+if( !file.exists("fig/ch050-figBRCA.png") ) {
+    ## estimate rho from sims and plot
+    nb_Rho_hat <- cor_fast(sim_nbinom, method = corType)
+    ## triplot
+    ## png("fig/ch050-figBRCA.png", width = 4, res = 100, units = 'in')
+    png("fig/ch050-figBRCA.png", res = 300, width = 5, height = 4, units = 'in')
+    par(mfrow=c(1,3))
+    plot(nb_Rho[lower.tri(nb_Rho)], nb_Rho_hat[lower.tri(nb_Rho_hat)],
+         xlim = c(-1, 1), ylim = c(-1, 1),
+         pch = 1, cex = 1, col = rgb(0, 0, 0, 0.05),
+         xlab = "Target Correlation", ylab = "Estimated Correlation")
+         ## main = "Spearman Cor. Matching")
+    abline(a = 0, b = 1, col="red", lty="dashed")
+    ## estimate prob,size from sims and plot
+    nbinom_size_prob_hat <- apply(sim_nbinom, 2, nbinom_mom)
+    plot(sizes, nbinom_size_prob_hat[1,],
+         pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
+         xlab = "Target Size", ylab = "Estimated Size")
+         ## main = "Marginal NB Size Matching")
+    abline(a=0, b=1, col="red", lty="dashed")
+    plot(log(probs), log(nbinom_size_prob_hat[2,]),
+         pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
+         xlab = "Target Log Probability", ylab = "Estimated Log Probability")
+         ## main = "Marginal NB Prob Matching")
+    abline(a=0, b=1, col="red", lty="dashed")
+    dev.off()
+    par(mfrow=c(1,1))
+}
 ```
+
+```{r ch050-figBRCA, echo=F, out.width = '80%', fig.align='center', fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
+knitr::include_graphics('fig/ch050-figBRCA.png')
+```
+
 
 ## Simulation-based joint probability calculations
 
@@ -267,7 +284,7 @@ if ( !file.exists( quadLossRDS) )  {
 quadLoss <- readRDS( quadLossRDS )
 ```
 
-The standard `R` summary function supplies the mean-augmented five-number summary of the quadratic loss distribution computed above.
+The `R` summary function supplies the mean-augmented five-number summary of the quadratic loss distribution computed above.
 
 ```{r ch050-quadloss-summary, echo=TRUE, eval=T, cache=FALSE}
 summary(quadLoss)

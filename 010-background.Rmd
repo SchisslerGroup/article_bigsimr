@@ -66,7 +66,7 @@ We'll illustrate our methodology using the well-studied Breast Invasive Carcinom
 For simplicity, we only consider high expressing genes.
 In turn, we begin by filtering to retain the top `r (1-myProb)*100`% highest- expressing genes (in terms of median expression) of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
 This gives a massive number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters).
-We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011 RNA-seq by Expectation Maximization (RSEM) values to counts.
+We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011c RNA-seq by Expectation Maximization (RSEM) values to counts.
 Table \@ref(tab:ch010-realDataTab) displays counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
  
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}

@@ -1,22 +1,22 @@
 ---
-title: "Simulating Ultra High-Dimensional Multivariate Data"
+subtitle: "Simulating Ultra High-Dimensional Multivariate Data"
 author:
-  - Alfred G. Schissler
-  - Alexander D. Knudson
-  - Tomasz J. Kozubowski
-  - Anna K. Panorska
-  - Juli Petereit
+  - "Alfred G. **Schissler**, PhD"
+  - "Alexander D. **Knudson**, MS"
+  - "Tomasz J. **Kozubowski**, PhD"
+  - "Anna K. **Panorska**, PhD"
+  - "Juli **Petereit**, PhD"
+  - "*University of Nevada, Reno (UNR)*"
 institute: |
     "Department of Mathematics & Statistics" |
     "University of Nevada, Reno"
-date: "21 Dec 2020 (updated: `r Sys.Date()`)"
+date: "21 Dec 2020 (*updated: `r Sys.Date()`)*"
 output:
   ioslides_presentation:
     widescreen: true
     smaller: true
     logo: ../images/hex-bigsimr.png
 bibliography: ../bigsimr.bib
-abstract: "It is critical to realistically simulate data when conducting Monte Carlo studies and methods. But measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers may resort to simulation designs that posit independence or perform arbitrary data transformations. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This article introduces the `bigsimr` R package that provides a flexible, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We'll describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation, and find close positive semi-definite matrices. Finally, we demonstrate the power of `bigsimr` by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d =1026$"
 ---
 
 ```{r LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
@@ -47,7 +47,7 @@ knitr::include_graphics("../fig/realDataFig.png")
 
 - Our goal is to simulate $N$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components.
 
-Our purposed methodology should possess the following properties  
+Our proposed methodology should possess the following properties  
 (adapted from @Nik13a):
 
 * BP1: A wide range of dependences, allowing both positive and negative values, and, ideally, admitting the full range of possible values.
@@ -63,6 +63,7 @@ Moreover, the simulation method must **scale** to high dimensions:
 
 - We propose a Gaussian-copula random vector algorithm; an augmented NORmal To Anything (NORTA) @Cario1997 method. 
 - We provide a high-performance and GPU-accelerated implementation in the `R` package `bigsimr`, along with related tools.
+- An article motivating, describing, and applying the methods; archived [here](???).
 
 # 2 - Background 
 
@@ -121,7 +122,7 @@ knitr::kable(round(head( small, n = 5)),
 
 ---
 
-```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
+```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, out.width='60%', fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 # lowerfun <- function(data,mapping){
 #   ggplot(data = data, mapping = mapping)+
 #     geom_point()+
@@ -403,8 +404,8 @@ sim_nbinom <- readRDS( brcaSimRDS )
 
 ## 4B -  Results for the three example genes 
 
-```{r ch050-simDataFig, echo=F, fig.align='center', fig.cap='Simulated data for three selected high-expressing genes replicates the estimated data structure.', fig.show = 'hold', out.width='50%'}
-knitr::include_graphics("../fig/realDataFig.png")
+```{r ch050-simDataFig, echo=F, fig.align='center', fig.cap='Simulated data for three selected high-expressing genes replicates the estimated data structure.', fig.show = 'hold', out.width='40%', fig.asp=1}
+## knitr::include_graphics("../fig/realDataFig.png")
 knitr::include_graphics('../fig/ch050-simDataFig.png')
 ```
 
@@ -502,9 +503,9 @@ knitr::include_graphics("../fig/cpu-gpu-times.png")
 
 # 5 - Conclusions
 	
-## Concluding remarks
+## 5 - Concluding remarks
 
-- Our scaleable NORmal To Anything provides a flexible way to simulate high-dimensional *fake datasets*.
+- Our scaleable simulation algorithm provides a flexible way to simulate high-dimensional *fake datasets*.
 - `bigsimr` is on `Github`: [https://github.com/SchisslerGroup/bigsimr](https://github.com/SchisslerGroup/bigsimr).
 - Use `devtools` to install.
 - `bigsimr` uses `JAX` python libraries for GPU acceleration and other high
@@ -519,32 +520,35 @@ knitr::include_graphics("../fig/cpu-gpu-times.png")
   of algorithm and other fast correlation utilities.
 
 ### Cons
-* Our method requires a well-defined inverse CDF.
 * Discrete margins can slightly disrupt the matching algorithm (due the probability of ties). 
-* Not all algorithms are currently optimized.
+* (Nearly) exact Pearson matching is not supported.
 
 ## Future Work
 
 * Investigate *rescaling* the correlations to adjust for discrete margins.
-* GPU accelerate the `normal2marginal()`.
-* Better handling of non-positive definiteness (fast checks for PD and faster
-  implementation/algorithms of nearest PD).
-* High-performance implementations for exact Pearson matching.
-* Match *partial correlations*.
-* Implement user-defined inverse CDFs.
+* High-performance implementations, algorithms for Pearson matching.
 * Implement high-dimensional covariance estimation algorithms.
-* Take advantage of sparsity.
-* Explore different simulation algorithms.
 
-## Acknowledgements
+## Gratefully acknowledge
 
-- Ed
-- Walt
-- Heather
-- Eric Li
-- Fred Harris
-- CP3 grant
-- Co-aothers
+- Walter W. Piegorsch, PhD
+- Edward J. Bedrick, PhD
+- Yves A. Lussier, MD
+- Heather Knudson
+- Eric Li, MS
+- Fred Harris, PhD
+
+### Funding and grants
+
+- Research reported in this publication was supported by MW-CTR-IN of the National Institutes of Health under award number NIH 1U54GM104944.
+- Research & Innovation, UNR
+
+### CFE-CMSTATS 2020 organizers
+
+ - Thanks to everyone who makes this event possible!
+ - Professor Anna Panorska for the invitation to speak today.
+
+</div>
 
 <style>
 slides > slide { overflow: scroll; }

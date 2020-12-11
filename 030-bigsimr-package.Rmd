@@ -141,7 +141,7 @@ cor_bounds(margins = margins, type = type)
 ```
 
 Since our estimated Spearman correlation $\hat{ \rho}_S$ is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
-By comparison, the Pearson correlation $\rho_P$ is restricted to [-0.8648, 0.8727] for these margins (see `bigsimr::cor_bounds`output below).
+On the other hand, the bounds on the Pearson correlation coefficient $\rho_P$ between these margins is
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
 cor_bounds(margins = margins, type = 'pearson', reps=1e6)

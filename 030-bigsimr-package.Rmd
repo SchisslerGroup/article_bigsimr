@@ -85,7 +85,7 @@ df %>%
 
 ```{r ch030-aq-ozone-pars, echo=TRUE}
 mle_mean <- function(x) mean(log(x))
-mle_sd <- function(x) mean( (log(x) - mean(log(x)))^2 )
+mle_sd <- function(x) mean( sqrt( (log(x) - mean(log(x)))^2 ) )
 
 df %>% 
   select(Ozone) %>% 
@@ -99,7 +99,7 @@ This allows one to enter the distributions without evaluating anything (yet).
 ```{r ch030-margins-alist, echo=TRUE}
 margins <- alist(
     qnorm(mean = 77.871, sd = 9.4855),
-    qlnorm(meanlog = 3.419, sdlog = 0.7426),
+    qlnorm(meanlog = 3.419, sdlog = 0.6967),
 )
 ```
 
@@ -144,7 +144,7 @@ Since our estimated Spearman correlation $\hat{ \rho}_S$ is within the theoretic
 By comparison, the Pearson correlation $\rho_P$ is restricted to [-0.8648, 0.8727] for these margins (see `bigsimr::cor_bounds`output below).
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
-cor_bounds(margins = margins, type = 'pearson')
+cor_bounds(margins = margins, type = 'pearson', reps=1e6)
 ```
 
 *Simulating random vectors*.

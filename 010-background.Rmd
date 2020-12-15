@@ -6,9 +6,9 @@ library(GGally)
 knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 ```
 
-The `bigsimr` `R` package provides multiple algorithms to work with high-dimensional multivariate data, but all these algorithms were originally designed to support a single task:
-to generate random vectors drawn from multivariate probability distribution with given marginal distributions and dependency metrics.
-Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful times.
+The `bigsimr` `R` package presented here provides multiple algorithms that operate with high-dimensional multivariate data; however, all these algorithms were originally designed to support a single task:
+to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics.
+Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful timescale.
 
 When designing this methodology, we developed the following properties to guide our effort.
 We divide the properties into two categories: (1) basic properties (BP) and "scaleability" properties (SP). 
@@ -24,14 +24,14 @@ Moreover, the simulation method must **scale** to high dimensions:
 * SP1: Procedure must scale to high dimensions, computable in a reasonable amount time.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
 
-To fix ideas and provide examples applications enabled via `bigsimr`, the next section describes a motivating data set that originally inspired the authors' interest in developing this methodology.
+To fix ideas and provide example applications enabled via `bigsimr`, the next section describes a motivating data set.
 
 ## Motivating example: RNA-seq data
 
 Simulating high-dimensional, non-normal, correlated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. 
-The RNA-seq data-generating process involves counting how often a particular messenger RNA (mRNA) is expressed in a biological sample.
+The RNA-seq data-generating process involves counting how often a particular form of human messenger RNA (mRNA) is expressed in a biological sample.
 RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data.
-For human derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted.
+For human-derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted [@Schissler2019].
 Importantly, due to inherent biological processes, gene expression data exhibits correlation --- co-expression --- across genes [@BE07; @Schissler2018]. 
 
 ```{r ch010-myProb, include=FALSE, cache = TRUE}
@@ -40,11 +40,14 @@ myProb <- 0.95
 
 ```{r ch010-processBRCA, echo=FALSE, eval=TRUE, results='none', cache=F}
 brcaRDS <- paste0( "data/brca", round(myProb*100), ".rds" )
-if ( !file.exists( brcaRDS ) )  {
+if ( !file.exists( brcaRDS ) | !file.exists( './data/examplePatients.txt' ))  {
     ## full workflow simulating RNA-seq data
     allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
     lastClinical <- which( names(allDat) == 'tumorsize' )
-    brca <- allDat[ allDat$disease == "BRCA", (lastClinical+1):ncol(allDat) ]
+    brca <- allDat[ allDat$disease == "BRCA", ]
+    ## Patient ID
+    writeLines( as.character( brca$patient ), './data/examplePatients.txt' ) 
+    brca <- brca[ , (lastClinical+1):ncol(allDat) ]
     dim(brca) ## num of genes 20501
     ## compute the median expression! avoid the 0s
     brcaMedian <- apply(brca, 2, median)
@@ -67,7 +70,7 @@ For simplicity, we only consider high expressing genes.
 In turn, we begin by filtering to retain the top `r (1-myProb)*100`% highest- expressing genes (in terms of median expression) of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
 This gives a massive number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters).
 We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011c RNA-seq by Expectation Maximization (RSEM) values to counts.
-Table \@ref(tab:ch010-realDataTab) displays counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
+Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
  
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
@@ -77,10 +80,16 @@ if ( !file.exists( './data/exampleGenes.rds' ) )  {
     saveRDS(exampleGenes, file = './data/exampleGenes.rds')
 }
 exampleGenes <- readRDS('./data/exampleGenes.rds')
-small <-  brca %>% select( exampleGenes )
-knitr::kable(round(head( small, n = 5)),
+## Add row names per WWP comment
+small <-  brca %>% select( exampleGenes ) %>% as.data.frame
+numPatients <- 5
+smallForTable <- head( small, n = numPatients )
+smallForTable$PatientID <- head( readLines('./data/examplePatients.txt'), n = numPatients )
+smallForTable <- smallForTable[ , c(4, 1:3 ) ]
+smallForTable[ , 2:4 ] <- round( smallForTable[ , 2:4 ] )
+knitr::kable(smallForTable ,
       booktabs = TRUE,
-      caption = 'mRNA counts for three selected high-expressing genes from the first five observations of the BRCA data set.'
+      caption = "mRNA express for three selected high-expressing genes (*RPL5*, *TKNIP*, and *VIM*) for the first five patients in the TCGA BRCA data set."
 )
 ```
 

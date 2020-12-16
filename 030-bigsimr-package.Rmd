@@ -1,13 +1,13 @@
 # The `bigsimr` R package
 
-The `bigsimr` package is a high-performance implementation of the proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms) for details).
+The `bigsimr` package is a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate workflows.
 
-This subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the often-used example data set `airquality`.
+This subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the often-used example data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983].
 This workflow proceeds from data, to estimation, simulation configuration, random vector generation, and result visualization.
-For this low-dimensional setting, we compute using a single central processing unit (CPU) as the overhead in forking the tasks to multiple cores outweighs the computational gains. 
+For this low-dimensional setting, we operate using a single central processing unit (CPU), as the overhead in forking the tasks to multiple cores outweighs the computational gains. 
 Then we transition to advanced use where we briefly describe some of the high-performance features and syntax.
-The section concludes with a short description of how to use `bigsimr` on a computer clusters through slurm scheduling via the `rslurm` package.
+The section concludes with a short description of how to use `bigsimr` on a computer clusters through slurm scheduling via the `rslurm` package [@R-rslurm].
 
 <!-- 
 `bigsimr` is an R package for simulating high-dimensional multivariate data with arbitrary marginal distributions. The efficiency behind generating multivariate samples comes from the ability to utilize a GPU during the generation of multivariate normal samples and the subsequent transformation to uniform samples (see section \@ref(rand-vec-gen)). A GPU is not necessary in order to use `bigsimr`, and the speed benefits generally only come when simulating very high dimensional data ($d > 10000$).

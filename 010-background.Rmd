@@ -19,7 +19,7 @@ Our simulation strategy should allow:
 * BP2: Flexible dependence, meaning that the number of bivariate marginals can be equal to the number of dependence parameters.
 * BP3: Flexible marginal modeling, generating heterogeneous data --- possibly from differing probability families.
 
-Moreover, the simulation method must **scale** to high dimensions:
+Moreover, the simulation method must *scale* to high dimensions:
 
 * SP1: Procedure must scale to high dimensions, computable in a reasonable amount time.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
@@ -139,7 +139,7 @@ Spearman's $\rho_S$ has an appealing correspondence as the Pearson's correlation
 Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations $(X_i, Y_i)$ and $(X_j, Y_j)$.
 By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determined by the ranks of the values, not the values themselves.
 
-Both $\tau$ and $\rho_S$ are **invariant to under monotone transformations** of the underlying random variates.
+Both $\tau$ and $\rho_S$ are *invariant to under monotone transformations* of the underlying random variates.
 As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scaleable match rank-based correlations with speed (SP1) and accuracy (SP2).
 
 *Correspondence among Pearson, Spearman, $\tau$ correlations*.
@@ -198,7 +198,7 @@ For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCD
 
 ## Gaussian copulas
 
-There is a strong connection of our simulation strategy to Gaussian **copulas** (see @Nelsen2007 for a technical introduction).
+There is a strong connection of our simulation strategy to Gaussian *copulas* (see @Nelsen2007 for a technical introduction).
 A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals.
 This provides a powerful, natural way to characterize joint probability structures.
 Consequently, the study of copulas is an important and active area of statistical theory and practice.

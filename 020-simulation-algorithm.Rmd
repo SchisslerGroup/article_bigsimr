@@ -7,14 +7,14 @@ bookdown::preview_chapter('020-simulation-algorithm.Rmd')
 This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$.
 Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$.
 To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$.
-The method is best understand as a **high-performance Gaussian copula** (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
+The method is best understand as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
 
 ## NORmal To Anything (NORTA)
 
 The well-known NORTA algorithm [@Cario1997] can be used simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$.
 Specifically, NORTA algorithm proceedings as follows:
 
-1. Simulate a random vector $\bf Z$ with $d$ **independent** and **identical** standard normal components.
+1. Simulate a random vector $\bf Z$ with $d$ *independent* and *identical* standard normal components.
 2. Determine the input matrix $\Sigma_{\bf Z}$ that corresponds with the specified output $\Sigma_{\bf Y}$.
 3. Produce a Cholesky factor $M$ of $\Sigma_{\bf Z}$ such that $M M^{\prime}=\Sigma_{\bf Z}$.
 4. Set $X$ by $X \gets MZ$.

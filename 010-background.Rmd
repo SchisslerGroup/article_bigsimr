@@ -65,9 +65,9 @@ brca <- readRDS(file = brcaRDS)
 d <- ncol(brca)
 ```
 
-We'll illustrate our methodology using the well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
+We illustrate our methodology using a well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
 For simplicity, we only consider high expressing genes.
-In turn, we begin by filtering to retain the top `r (1-myProb)*100`% highest- expressing genes (in terms of median expression) of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
+In turn, we begin by filtering to retain the top `r (1-myProb)*100`% of highest- expressing genes (in terms of median expression) of the 20,501 gene measurements from $N=`r nrow(brca)`$ patients' tumor samples, resulting in $d=`r d`$ genes.
 This gives a massive number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters).
 We further process the data to illustrate our methodology's flexible and robust simulation scheme, while better aligning with the actual data-generating process, by rounding @Li2011c RNA-seq by Expectation Maximization (RSEM) values to counts.
 Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
@@ -89,13 +89,13 @@ smallForTable <- smallForTable[ , c(4, 1:3 ) ]
 smallForTable[ , 2:4 ] <- round( smallForTable[ , 2:4 ] )
 knitr::kable(smallForTable ,
       booktabs = TRUE,
-      caption = "mRNA express for three selected high-expressing genes (*RPL5*, *TKNIP*, and *VIM*) for the first five patients in the TCGA BRCA data set."
+      caption = "mRNA expression for three selected high-expressing genes (*RPL5*, *TKNIP*, and *VIM*) for the first five patients in the TCGA BRCA data set."
 )
 ```
 
 To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) plots the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
 
-```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
+```{r ch010-realDataFig, cache=F, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 # lowerfun <- function(data,mapping){
 #   ggplot(data = data, mapping = mapping)+
 #     geom_point()+
@@ -122,7 +122,7 @@ The most widely-known is the Pearson (product-moment) correlation coefficient th
 \end{equation}
 
 As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pearson correlation completely describes the dependency between the components. 
-For non-normal marginals with monotone correlation patterns, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships (@MK01).
+For non-normal marginals with monotone correlation patterns, however, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships [@MK01].
 Alternatively in these settings, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
 
 Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. 
@@ -143,8 +143,8 @@ Both $\tau$ and $\rho_S$ are **invariant to under monotone transformations** of 
 As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scaleable match rank-based correlations with speed (SP1) and accuracy (SP2).
 
 *Correspondence among Pearson, Spearman, $\tau$ correlations*.
-This is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation.
-But for **bivariate normal vectors**, however, the correspondence is well-known:
+There is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation.
+For *bivariate normal vectors*, however, the correspondence is well-known:
 
 \begin{equation}
 (\#eq:convertKendall)
@@ -158,10 +158,10 @@ But for **bivariate normal vectors**, however, the correspondence is well-known:
 \rho_P = 2 \times sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
-These facts are also critical in our simulation algorithm to broaden the dependency measures supported by `bigsimr`, in a computationally effective manner.
+These features are critical in our simulation algorithm to broaden the dependency measures supported by `bigsimr`, in a computationally effective manner.
 
 *Discrete marginal considerations*.
-Spearman's correlation for discrete marginal suffers some issues due to the nonzero probability of ties (for example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1; @MB13).
+Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties (for example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1; @MB13).
 One remedy for this issue is to rescale Equation \@ref(eq:spearman). 
 For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
@@ -172,7 +172,7 @@ For two random variables $X,Y$ with probability mass functions (PMFs) or probabi
 
 Note that with continuous marginals the rescaling returns $\rho_S$.
 For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1).
-And further the infinite sums must be approximately for count-valued data and potentially violating desired property SP2.
+Further the infinite sums must be approximated for count-valued data.
 
 Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$.
 Let 
@@ -183,9 +183,9 @@ F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}.
 \end{equation}
 
 *Marginal-dependent bivariate correlation bounds*. 
-Given two marginal distributions, $\rho_P$ is not free to vary the entire range of possible correlations $[-1,1]$.
-The so-called *Frechet-Hoeffding bounds* are well-studied (for example, see @Nelsen2007 and @BF17).
-This situation gives strict restraints on the possible correlations and cannot be overcome through algorithm design.
+Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$.
+The so-called *Frechet-Hoeffding bounds* are well-studied (see @Nelsen2007 and @BF17).
+This gives strict restraints on the possible correlations and cannot be overcome through algorithm design.
 In general, the bounds are given by
 
 \begin{equation}
@@ -193,26 +193,26 @@ In general, the bounds are given by
 \rho_P^{max} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho_P^{min} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
 \end{equation}
 
-\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse CDF of random variables $X_1$ and $X_2$, respectively. 
+\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse CDFs of random variables $X_1$ and $X_2$, respectively. 
 For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
 
 ## Gaussian copulas
 
 There is a strong connection of our simulation strategy to Gaussian **copulas** (see @Nelsen2007 for a technical introduction).
 A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals.
-This definition provides a powerful, natural way characterize joint probability structure.
+This provides a powerful, natural way to characterize joint probability structures.
 Consequently, the study of copulas is an important and active area of statistical theory and practice.
 
 For any random vector ${\bf X}=(X_1, \ldots, X_d)$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function 
-$C(u_1, \ldots, u_d)$ so that 
+$C(u_1, \ldots, u_d)$ satisfying
 
 \[
 F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), \,\,\, x_i\in \mathbb R, i=1,\ldots,d. 
 \]  
 
-A Gaussian copula is the case where all marginal CDFs $F_i$ are the standard normal CDF, $\Phi$. 
+A Gaussian copula has marginal CDFs as the normal CDF, $\Phi$. 
 This representation corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$.
-But since the marginals are standardized to have unit variance, this ${\bf R_P}$ is a Pearson correlation matrix. 
+As the marginals are standardized to have unit variance, however, ${\bf R_P}$ is a Pearson correlation matrix. 
 If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
 
 \begin{equation}

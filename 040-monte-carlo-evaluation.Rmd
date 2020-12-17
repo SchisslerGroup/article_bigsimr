@@ -17,13 +17,13 @@ bookdown::preview_chapter('040-monte-carlo-evaluation.Rmd')
 
 Before applying our methodology to real data simulation, we conduct several Monte Carlo studies to investigate method performance.
 Since marginal parameter matching in our scheme is essentially a sequence of univariate inverse probability transforms, the challenging aspects are the accuracy of dependency matching and computational efficiency at high dimensions.
-To evaluate our methods in those respects, we design the following numerical experiments to first assess accuracy in match dependency parameters in bivariate simulations and then time the procedure in increasingly large dimension $d$.
+To evaluate our methods in those respects, we design the following numerical experiments to first assess accuracy of matching dependency parameters in bivariate simulations and then time the procedure in increasingly large dimension $d$.
 
 ## Bivariate experiments
 
-We select bivariate simulation configurations to ultimately simulate discrete-valued RNA-seq data and, so, proceed in increasing complexity, leading to the model in our motivating application in Section \@ref(examples). 
+We select bivariate simulation configurations to ultimately simulate our motivating discrete-valued RNA-seq example and, so, proceed in increasing complexity, leading to the model in our motivating application in Section \@ref(examples). 
 We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson's, Spearman's, and Kendall's ---- in identical, bivariate marginal configurations.
-For each pair of identical margins, we vary the correlations across the entire possible range of values to evaluate the simulation's ability to obtain the theoretic bounds.
+For each pair of identical margins, we vary the target correlation across $\Omega$, the set of possible admissible values for correlation type, to evaluate the simulation's ability to obtain the theoretic bounds. 
 The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (mimicking RNA-seq counts).
 
 ```{r ch040-biNormal, echo = FALSE, eval = TRUE}
@@ -335,18 +335,20 @@ Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configu
 We increase the simulate replicates $B$ to check that our results converge to the target correlations and gauge statistical efficiency.
 We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types.
 Then, we select a non-symmetric continuous distribution: a standard (rate =1) two-component multivariate gamma (MVG).
-Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [Example applications for our motivating data](examples) for estimation details).
-Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = `r prob`, r_1 = r_2 = 4,\rho$ ).
+Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [Example applications](examples) for estimation details).
+Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = `r prob`, r_1 = r_2 = 4,\rho \in \Omega$.
 
 Table: (\#tab:sims) Identical margin, bivariate simulation configurations to evaluate correlation matching accuracy and efficiency.
 
 | Simulation Reps ($B$) | Correlation Types | Identical-margin 2D distribution |
 |-------------|:--------------:|----------------------:|
-|$1000$ | Pearson ($\rho_P$) | ${ \bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho )$ |
-|$10,000$ | Spearman ($\rho_S$) | ${ \bf Y} \sim MVG( shape = 10, rate = 1, \rho )$ |
-| $100,000$| Kendall ($\tau$)| ${ \bf Y} \sim MVNB(p = `r prob`, r = 4,\rho)$ |
+|$1000$ | Pearson ($\rho_P$) | ${ \bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ |
+|$10,000$ | Spearman ($\rho_S$) | ${ \bf Y} \sim MVG( shape = 10, rate = 1, \rho_i ), i=1,\ldots,100$ |
+| $100,000$| Kendall ($\tau$)| ${ \bf Y} \sim MVNB(p = `r prob`, r = 4,\rho_i), i=1,\ldots,100$ |
 
-For each of the unique 9 simulation configurations above, we estimate the correlation bounds and vary $\rho$ along a sequence of 100 points evenly placed within the bounds (minus an adjustment factor of $\epsilon=0.01$ to handle numeric issues when the bound is specified exactly).
+For each of the unique 9 simulation configurations described above, we estimate the correlation bounds and vary the correlations along a sequence of 100 points evenly placed within the bounds, aiming to explore $\Omega$.
+Specifically, we set correlations $\{ \rho_1 = ( \hat{l} + \epsilon), \rho_2 = (\hat{l} + \epsilon) + \delta, \ldots, \rho_{100} = (\hat{u} - \epsilon) \}$, with $\hat{l}$ and $\hat{u}$ being the estimated lower and upper bounds, respectively, and increment value $\delta$.
+The adjustment factor, $\epsilon=0.01$, is introduced to handle numeric issues when the bound is specified exactly.
 
 <!-- 
 *Bivariate Normal*.
@@ -450,7 +452,7 @@ knitr::kable(tabMSE,
 
 Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results.
 Table \@ref(tab:ch040-biMAEtable) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
-Taken together, the studies show our methodology is generally accuracy across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations.
+Taken together, the studies show that our methodology is generally accurate across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations.
 For the two non-normal bivariate marginals, the Pearson correlation matching is approximate.
 For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, and particularly inaccurate near the lower bound of Pearson correlations.
 
@@ -498,21 +500,24 @@ allDat %>%
 ```
 
 The accuracy appears adequate for many applications.
-In practice, we recommend users to always evaluate the accuracy for their application, using methods similar to those presented above.
+In practice, we recommend evaluating the accuracy in each application setting, using methods similar to those presented above.
+
+<!-- 
 See [Discussion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
+your comment -->
 
 ## Scale up to High Dimensions
 
 With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether the `bigsimr` can scale to larger dimensional problems. 
 Specifically, we seek evidence to determine whether the method can scale to higher dimensions in a practical time.
-Using our motivating RNA-seq data, described in [Background](background), we filtered the original 20,501 genes to the high-expressing genes at increasing percentiles, $1, 5, 10, 15, 20, 25\%$, to obtain $d=\{206, 1026, 2051, 3076, 4101, 5127\}$ marginals and $\binom{d}{2}$ pairwise correlations at each setting.
+Using our motivating RNA-seq data, we filtered the original 20,501 genes to the high-expressing genes at increasing percentiles, $1, 5, 10, 15, 20, 25\%$, to obtain $d=\{206, 1026, 2051, 3076, 4101, 5127\}$ marginals and $\binom{d}{2}$ pairwise correlations at each setting.
 For example, for $d=5127$ there are $13,140,501$ correlation coefficients.
 We estimated the marginal negative binomial parameters and the correlation coefficients from the RNA-seq data to seed our simulations.
-(See [Example applications for our motivating data](examples) for a detailed description of estimation).
+(See [Example applications](examples) for a detailed description of the estimation).
 
 Figure \@ref(fig:ch040-gpuVScpuFig) displays computation times using various high-performance settings (1 central processing unit, CPU-1, versus twenty CPUs, CPU-20; with and without GPU acceleration, GPU-1; GPU-20) to produce $B=10,000$ random vectors.
 The Pearson simulations are much faster since the correlation conversion steps are avoided (pre-processing step; see [Algorithms](algorithms)), but as we know from above the accuracy will suffer slightly, especially near the negative boundary of the possible correlations.
-Matching Spearman's correlation at larger $d$ gets costly if one wants to produce $B=10,000$ random vectors at many different simulation settings, but the conversion steps need only be computed once (see [MC evaluation of correlation estimation efficiency](MC-evaluation-of-correlation-estimation-efficiency) for an example of this strategy).
+Matching Spearman's correlation at larger $d$ becomes costly if one desires to produce $B=10,000$ random vectors at many different simulation settings, but the conversion steps need only be computed once (see [MC evaluation of correlation estimation efficiency](MC-evaluation-of-correlation-estimation-efficiency) for an example of this strategy).
 
 ```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
 knitr::include_graphics("fig/cpu-gpu-times.png")

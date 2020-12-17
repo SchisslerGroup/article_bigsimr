@@ -3,7 +3,7 @@
 The `bigsimr` package is a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate workflows.
 
-This subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the often-used example data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983].
+The subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the readily-available data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983].
 This workflow proceeds from data, to estimation, simulation configuration, random vector generation, and result visualization.
 For this low-dimensional setting, we operate using a single central processing unit (CPU), as the overhead in forking the tasks to multiple cores outweighs the computational gains. 
 Then we transition to advanced use where we briefly describe some of the high-performance features and syntax.
@@ -109,7 +109,6 @@ It allows flexible extensions using other `R` packages that adhere to convention
 Further, by using `alist`, users can specify their own custom distributions (see below in [creating custom margins](#custom-margins)).
 
 It is a bit inconvenient to repeatedly fill in the parameter values manually, so we provide a convenience function `mlist` which behaves similarly to `alist`, except that it evaluates the right side of argument values within the list.
-This is intended to help with scaling up your code to high dimensions when many marginals to specify.
 
 ```{r ch030-margins-mlist, echo=TRUE}
 margins <- mlist(
@@ -125,7 +124,7 @@ For non-normal data and for improved simulation accuracy in our scheme, we advoc
 But we also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance).
 To aid in correlation specification, and estimation in general, we provide a high-performance function `bigsimr::cor_fast` which estimates Pearson, Spearman, or Kendall correlation using the fastest methods available.
 (Anyone who has tried estimating Kendall's $\tau$ using `stats::cor` can attest that the routine does not scale to even moderate dimensions).
-These estimation methods are the standard approaches, not designed specifically designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
+These estimation methods are classical approaches, not designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
 
 ```{r ch030-aq-cor, echo=TRUE}
 type <- 'spearman'
@@ -306,10 +305,7 @@ sjob <- slurm_call(rvec, jobname = 'rvec',
 ```{r ch030-rvecRslurm, echo=TRUE, eval=FALSE}
 library(rslurm)
 sjob <- slurm_call(rvec, jobname = 'rvec',
-                   alist(n=1e6,
-                         rho = rho,
-                        margins = margins,
-                        type = "spearman"),
+                   alist(n=1e6, rho = rho, margins = margins, type = "spearman"),
                    submit = TRUE)
 ```
 
@@ -335,8 +331,8 @@ library(rslurm)
 ## conda env config vars list
 set.seed(06202020)
 simReps <- 100
-rhoList <- replicate( n = simReps, bigsimr::cor_randPSD(d = length(margins)),
-                     simplify=FALSE )
+rhoList <- replicate(n = simReps, bigsimr::cor_randPSD(d = length(margins)),
+                     simplify=FALSE)
 sjob <- slurm_map(x = rhoList,
                   f = rvec,
                   jobname = 'rvecMap',
@@ -352,8 +348,8 @@ sjob <- slurm_map(x = rhoList,
 ```{r ch030-rvecRslurmMap, echo=TRUE, eval=FALSE}
 library(rslurm)
 simReps <- 100
-rhoList <- replicate( n = simReps, bigsimr::cor_randPSD(d = length(margins)),
-                     simplify=FALSE )
+rhoList <- replicate(n = simReps, bigsimr::cor_randPSD(d = length(margins)),
+                     simplify=FALSE)
 sjob <- slurm_map(x = rhoList,
                   f = rvec,
                   jobname = 'rvecMap',

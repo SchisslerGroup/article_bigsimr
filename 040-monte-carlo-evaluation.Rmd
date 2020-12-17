@@ -22,7 +22,7 @@ To evaluate our methods in those respects, we design the following numerical exp
 ## Bivariate experiments
 
 We select bivariate simulation configurations to ultimately simulate our motivating discrete-valued RNA-seq example and, so, proceed in increasing complexity, leading to the model in our motivating application in Section \@ref(examples). 
-We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson's, Spearman's, and Kendall's ---- in identical, bivariate marginal configurations.
+We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson's, Spearman's, and Kendall's --- in identical, bivariate marginal configurations.
 For each pair of identical margins, we vary the target correlation across $\Omega$, the set of possible admissible values for correlation type, to evaluate the simulation's ability to obtain the theoretic bounds. 
 The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (mimicking RNA-seq counts).
 

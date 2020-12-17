@@ -12,7 +12,7 @@ author:
   - Walter W. Piegorsch
   - Duc Tran
 bibliography: ["bigsimr.bib", "packages.bib"]
-abstract:  It is critical to realistically simulate data when conducting Monte Carlo studies and evaluating quantitative methods. But measurements are often correlated and high dimensional in this era of big data, however, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers may resort to simulation designs that posit independence or perform arbitrary data transformations. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This article introduces the `bigsimr` R package that provides a flexible, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation, and find close positive semi-definite matrices. Finally, we demonstrate the power of `bigsimr` by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d =1026$.
+abstract:  It is critical to realistically simulate data when conducting Monte Carlo studies and evaluating quantitative methods. But measurements are often correlated and high dimensional in this era of big data, however, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers may resort to simulation designs that posit independence or perform arbitrary data transformations. This greatly diminishes insights into the empirical operating characteristics of any proposed methodology, such as false positive rates, statistical power, interval coverage, and robustness. This article introduces the `bigsimr` R package that provides a flexible, scaleable procedure to simulate high-dimensional random vectors with given marginal characteristics and dependency measures. We describe the functions included in the package, including multi-core and graphical-processing-unit accelerated algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Finally, we demonstrate the power of `bigsimr` by applying these functions to our motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=1212$ patients and dimension $d =1026$.
 ---
 
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
@@ -81,12 +81,12 @@ Throughout, we focus on matching these nonparametric dependency measures, as our
 
 With all this mind, we present a scaleable, flexible multivariate simulation algorithm. 
 The crux of the method lies in the construction of a Gaussian copula, in the spirit of the NORTA procedure.
-Further, we introduce the `bigsimr` R package that provides parallelized, high-performance software implemented in our NORTA-inspired algorithm.
+Further, we introduce the `bigsimr` R package that provides high-performance software implementing our algorithm.
 The algorithm design leverages useful properties of nonparametric correlation measures, namely invariance under monotone transformation and well-known closed-form relationships between dependency measures for the multivariate normal (MVN) distribution. 
 
 Our study proceeds by providing background information, including a description of our motivating example application --- RNA-sequencing (RNA-seq) breast cancer data.
 Then we describe and justify our simulation methodology and related algorithms.
 Next, we detail an illustrative low-dimensional example of basic and advanced use of the `bigsimr` R package.
-Then we proceed with Monte Carlo studies under various distributional assumptions to assess accuracy and scaleable.
+Then we proceed with Monte Carlo studies under various distributional assumptions to assess accuracy and computation times for increasingly large $d$.
 After the MC evaluations, we revisit our high-dimensional motivating example and employ our methods in commonplace statistical computing tasks.
 Finally, we discuss the method's utility, limitations, and future directions.

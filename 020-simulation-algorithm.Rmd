@@ -7,7 +7,7 @@ bookdown::preview_chapter('020-simulation-algorithm.Rmd')
 This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$.
 Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$.
 To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$.
-The method is best understand as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
+The method can be described as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
 
 ## NORmal To Anything (NORTA)
 
@@ -61,7 +61,7 @@ To overcome this issue, we introduce `bigsimr::nearPSD` --- an implementation of
 We hope that this routine will be useful in many applications aside from our primary goal of random vector generation.
 
 Once the target margins and algorithm inputs are determined, steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
-Specifically, step 2i uses either an efficient multi-core multivariate normal simulator (the `R` package `mvnfast`[@Fasiolo2016]) or Google's JAX python library NumPy for graphical-processing-unit (GPU) acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm from the preceding section).
+Specifically, step 2i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm from the preceding section).
 
 ## A note on NORTA in higher dimensions
 

@@ -5,7 +5,7 @@ The random vector generation method is largely inspired by NORTA (@Cario1997) an
 The major contributions of this work are high-dimensional scaleability, flexible modeling of dependency, and an high-performance implementation with broad potential data analytic applications for modern, big-data statistical computing.
 
 It is customary to compare new tools and algorithms directly to existing competing methods and software.
-In this study, however, we only employ our proposed methodology, as our previous work has show that existing tools are simply not designed nor feasible to meet our high-dimensional goal (see @Li2019gpu for evaluations of the `R` `copula`package and others). 
+In this study, however, we only employ our proposed methodology, as our previous work has shown that existing tools are simply not designed nor feasible to meet our high-dimensional goal (see @Li2019gpu for evaluations of the `R` `copula` package and others). 
 For the bivariate simulations, existing packages such as [`nortaRA`](https://github.com/cran/NORTARA/blob/master/inst/doc/NORTARA.R) work well to match Pearson correlations exactly.
 
 <!-- 

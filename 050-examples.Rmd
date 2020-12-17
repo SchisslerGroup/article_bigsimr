@@ -15,8 +15,8 @@ bookdown::preview_chapter('050-examples.Rmd')
 
 This section demonstrates how to simulate multivariate data using `bigsimr`, aiming to replicate the structure of high-dimensional dependent count data.
 In an illustration of our proposed methodology, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions and with estimated parameters that mimic the observed data and its generating process.
-We seek scaleable realistic multivariate simulation to enable Monte Carlo (MC) methods for these data.
-Modeling RNA-seq using multivariate probabilities distributions is natural as inter-gene correlation is an inherent part of biological processes [@Wang2009b].
+We seek realistic multivariate simulation to enable Monte Carlo (MC) methods for these data.
+Modeling RNA-seq using multivariate probability distributions is natural as inter-gene correlation is an inherent part of biological processes [@Wang2009b].
 Yet many models do not account for this, leading to major disruptions to the operating characteristics of statistical estimation, testing, and prediction.
 See @Efron2012 for a detailed discussion with related methods and @Wu2012b, @Schissler2018, @Schissler2019 for applied examples.
 The following subsections apply `bigsimr`'s methods to real RNA-seq data, including replicating an estimated parametric structure, MC probability estimation, and MC evaluation of correlation estimation efficiency.
@@ -57,12 +57,12 @@ Here we are satisfied with approximate matching of the specified Gamma correlati
 Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
 -->
 
-With this goal in mind, we first estimate the desired correlation matrix using the fast implementation provided by `bigsimr`:
+With this goal in mind, we first estimate the desired correlation matrix using the fast implementation provided by `bigsimr`.:
 
 ```{r ch050-estRhoBRCA, echo=TRUE, eval=TRUE, cache=F}
 ## Estimate Spearman's correlation on the count data
 corType <- 'spearman'
-system.time( nb_Rho <- bigsimr::cor_fast( brca, method = corType ) )
+nb_Rho <- bigsimr::cor_fast(brca, method = corType)
 ```
 
 Next, we estimate the marginal parameters. 
@@ -104,7 +104,7 @@ This gives rise to highly variable counts and, typically, less restriction on po
 Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`:
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache = FALSE}
-## Set the number of random vectors
+## Set the number of random vectors (B in text)
 n <- 10000
 ## construct margins
 nb_margins <- make_nbinom_alist(sizes, probs)
@@ -192,7 +192,7 @@ knitr::include_graphics('fig/ch050-figBRCA.png')
 
 ## Simulation-based joint probability calculations
 
-To conduct statistical inference a critical task is to evaluate the joint probability mass (or density) function:
+Many statistical tasks require evaluation of a joint probability mass (or density) function:
 
 $$
 P( {\bf Y} = {\bf y} ), y_i \in \chi_i.
@@ -206,7 +206,7 @@ In our motivating application, one may ask what is the probability that all gene
 Then we estimate
 
 $$
-\hat{P}( {\bf Y} >= {\bf y_0 } ) = \sum_{b=1}^B I( {\bf Y^{(b) }} > {\bf y_0 } ) / B
+\hat{P}( {\bf Y} >= {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y^{(b) }} >= {\bf y_0 } )
 $$
 
 
@@ -214,9 +214,9 @@ $$
 d <- ncol(sim_nbinom)
 B <- nrow(sim_nbinom)
 threshold <- rep( 1, d)
-pHat <- mean(apply( sim_nbinom,  1,
+pHat <- mean(apply(sim_nbinom,  1,
            function(X, y0=threshold) {
-               all( X >= y0) }
+               all(X >= y0)}
            ))
 ```
 

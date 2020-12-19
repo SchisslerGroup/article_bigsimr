@@ -103,12 +103,12 @@ margins <- alist(
 )
 ```
 
-Notice that we use the *quantile* function for the marginals, as that is how the marginal distributions $F_i$ enter into the `bigsimr::rvec` algorithm.
+Notice that we use the *quantile* function for the marginals, as that is how the marginal distributions $F_i$ are specified the `bigsimr::rvec` algorithm.
 This implementation strategy supports all `R` `base` probability distributions.
 It allows flexible extensions using other `R` packages that adhere to conventions, such as `extraDistr`.
 Further, by using `alist`, users can specify their own custom distributions (see below in [creating custom margins](#custom-margins)).
 
-It is a bit inconvenient to repeatedly fill in the parameter values manually, so we provide a convenience function `mlist` which behaves similarly to `alist`, except that it evaluates the right side of argument values within the list.
+To avoid manual entry, `mlist` presents an alternative to `alist` with on-the-fly evaluation.
 
 ```{r ch030-margins-mlist, echo=TRUE}
 margins <- mlist(
@@ -133,7 +133,7 @@ type <- 'spearman'
 
 *Checking the theoretical correlation bounds*.
 As discussed in Section \@ref(background), given a pair of marginal distributions the possible correlations are not free to vary between $[-1, 1]$. 
-To ensure that the simulation is not configured to impossible settings, the `bigsimr::cor_bounds` function provides MC estimated theoretical lower and upper bounds (using the Generate, Sort, and Correlate algorithm of @DH2011).
+`bigsimr::cor_bounds` estimates the theoretic lower and upper correlation bounds, using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 ```{r ch030-cor-bounds, echo=TRUE}
 cor_bounds(margins = margins, type = type)
@@ -233,7 +233,6 @@ your comment -->
 Because `bigsimr` uses an `alist` to store the margins, any probability distribution with a well-defined inverse CDF can be employed, including custom marginal distributions not provided in base `R`. 
 Therefore, to specify a marginal distribution absent from an existing package, the user must provide a closed-form expression to form the corresponding quantile function.
 
-It is important to follow `R`'s naming convention for probability distributions.
 Users should prefix distributions with `r` and `q` for *random* and *quantile* respectively.
 Only the quantile function is necessary to simulate random vectors, but to compute the theoretical correlation bounds, one must to supply a univariate random number generator as well.
 
@@ -282,8 +281,8 @@ x <- rvec(10, rho, margins)
 ```
 
 *Using `bigsimr` on a computing cluster via `rslurm`*.
-Though `bigsimr` runs quickly, for large $d$ users may wish to run jobs on a shared computing server.
-The R package `rslurm` makes it easy to run embarrassingly large parallel `rvec` calls.
+Although `bigsimr` runs quickly, for large $d$ users may wish to run jobs on a shared computing server.
+The R package `rslurm` enables parallel `rvec` calls.
 This example assumes that `bigsimr` is installed on a system with a slurm scheduler.
 A single run of `bigsimr:rvec` using `rslurm` can be coded as:
 

@@ -17,7 +17,7 @@ The authors report no conflict of interest.
 
 # Funding {.unnumbered #funding}
 
-Research reported in this publication was supported by MW-CTR-IN of the National Institutes of Health under award number NIH 1U54GM104944.
+Research reported in this publication was supported by grants from NV INBRE and the National Institutes of General Medical Sciences (NIH 5U54GM104944, GM103440).
 
 <!-- 
 

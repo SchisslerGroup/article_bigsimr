@@ -68,7 +68,7 @@ nb_Rho <- bigsimr::cor_fast(brca, method = corType)
 Next, we estimate the marginal parameters. 
 We use the method of moments (MoM) to estimate the marginal parameters for the multivariate negative binomial model.
 The marginal distributions are from the same probability family (NB) yet are heterogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$.
-The functions below help achieve this estimation and specifying the inputs for use in `bigsimr::rvec`.
+The functions below support this estimation for later use in `bigsimr::rvec`.
 
 <!-- 
 TYPESTE MoM estimators here.
@@ -240,7 +240,7 @@ m <- 10
 ```
 
 MC methods are routinely used in many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates.
-To conclude the example applications, we demonstrate how `bigsimr` can be used evaluate estimation efficiency.
+To conclude the example applications, we demonstrate how `bigsimr` can be used to evaluate estimation efficiency.
 In particular, we wish to assess the error in our correlation estimation above.
 We used a conventional method, based on classical statistical theory, which unfortunately, was not designed for high-dimensional data.
 Indeed, high-dimensional covariance estimation (and precision matrices) is an active area of statistical science (.e.g., @Won2013g and @VanWieringen2016).

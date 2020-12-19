@@ -11,7 +11,7 @@ The method can be described as a *high-performance Gaussian copula* (Equation \@
 
 ## NORmal To Anything (NORTA)
 
-The well-known NORTA algorithm [@Cario1997] can be used simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$.
+The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$.
 Specifically, NORTA algorithm proceedings as follows:
 
 1. Simulate a random vector $\bf Z$ with $d$ *independent* and *identical* standard normal components.
@@ -20,15 +20,15 @@ Specifically, NORTA algorithm proceedings as follows:
 4. Set $X$ by $X \gets MZ$.
 5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,2,...,d$.
 
-With modern parallelized computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multi-core and/or graphical-processing-unit (GPU) accelerated, algorithms --- providing fast scaleability using readily-available hardware.
+With modern parallelized computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multi-core and/or graphical-processing-unit (GPU) accelerated algorithms --- providing fast scalability using readily-available hardware.
 
 Matching specified Pearson correlation coefficients exactly (step 2 above), however, is problematic.
 In general, there is no closed-form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$.
 Matching the correlations involves evaluating or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,2,\ldots,d, \; i \neq j$.
 For high-dimensional data, these evaluations are often too costly to enable feasible simulation studies.
-For low-dimensional problems, however, methods and tools exist to match Pearson correlations precisely, see @Chen2001; @Xia17; @MB13 and the publicly available `nortaRA` R package.
+For low-dimensional problems, however, methods and tools exist to match Pearson correlations precisely [@Xia17] and the publicly available `nortaRA` R package [@Chen2001].
 
-To maintain scaleability (SP1), our solution is to essentially avoid this complication in Pearson matching.
+To maintain scalability (SP1), our solution is to essentially avoid this complication in Pearson matching.
 Since our goal is to simulate non-normal marginals, we greatly prefer the use of rank-based measures, such as $\rho_S$ and $\tau$, from a modeling standpoint.
 Further, $\rho_S$ and $\tau$'s invariance under monotone transformation (see [Background](#background)), preserves the correlation coefficients through steps 3, 4, and 5 in the NORTA algorithm above.
 This eliminates the need for computing the $\binom{d}{2}$ integrals to match exactly (nothing is for free, however, as discussed below in Section \@ref(rand-vec-gen)).
@@ -37,13 +37,12 @@ Now, if one does desire to characterize dependency using Pearson correlations, s
 The quality of this approximation depends on the setting, but in practice, for high-dimensional count data we find the accuracy to be adequate.
 Later, we study robustness of our method to this limitation in selected [Monte Carlo evaluations]({#simulations}).
 
-## Random vector generation via `bigsimr::rvec` {#rand-vec-gen}
+## `bigsimr::rvec` for random vector generation  {#rand-vec-gen}
 
-We now describe `bigsimr::rvec`, our algorithm to generate random vectors.
-It mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
+We now describe `bigsimr::rvec`, our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
 1. Pre-processing for nonparametric dependency matching.  
-	(i) Convert from either ${\bf R_{Spearman}}$ or ${\bf R_{Kendall}}$ into the corresponding MVN input correlation ${\bf R_{Pearson}}$.
+	(i) Convert ${\bf R_{Kendall}}$ or ${\bf R_{Spearman}}$ to the corresponding MVN correlation ${\bf R_{Pearson}}$.
 	(ii) Check that ${\bf R_{Pearson}}$ is semi-positive definite.  
 	(iii) If not, compute the nearest correlation matrix ${\bf \widetilde{R}_{Pearson}}$ to ${\bf R_{Pearson}}$ in the Frobenius norm.  
 2. Gaussian copula construction.  
@@ -52,16 +51,16 @@ It mirrors the classical NORTA algorithm above with some modifications for rank-
 3. Quantile evaluations.  
 	(i) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
 
-The pre-processing (Step 1) takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertSpearman) or \@ref(eq:convertKendall), respectively (implemented as `bigsimr::cor_covert`).
+The pre-processing (Step 1) takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `bigsimr::cor_covert`).
 
 A complication often arises at this stage: the resultant matrix may become indefinite, either through numerical error or naturally occurring in the correlation conversion.
 Researchers working in multivariate computation frequently encounter such difficulties and need to find a close positive (semi-)definite matrix.
 A widely-available routine for this task in `R` is `matrix::nearPD`, though it is not suitable for high dimensions.
 To overcome this issue, we introduce `bigsimr::nearPSD` --- an implementation of @QS2006's method that computes the nearest correlation matrix to a given symmetric matrix in the Frobenius norm.
-We hope that this routine will be useful in many applications aside from our primary goal of random vector generation.
+This routine as many applications beyond our primary goal of random vector generation.
 
-Once the target margins and algorithm inputs are determined, steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
-Specifically, step 2i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication (steps 3, 4 in the NORTA algorithm from the preceding section).
+Once the target margins and algorithm inputs are determined, Steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
+Specifically, step 2i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication.
 
 ## A note on NORTA in higher dimensions
 
@@ -72,7 +71,7 @@ This occurs when the bivariate transformations are applied to find the input cor
 These situations do occur, even using exact analytic calculations. Such problematic target correlation matrices are termed *NORTA defective*.
 
 @GH02 conducted a Monte Carlo study to estimate the probability of encountering NORTA defective matrices while increasing the dimension $d$. 
-They found at what is now considered low-to-moderate dimensions ($d \approx 20$) that almost *all* feasible matrices are NORTA defective.
+They found for what is now considered low-to-moderate dimensions ($d \approx 20$) that almost *all* feasible matrices are NORTA defective.
 This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
 
 There is hope, however, as @GH02 also showed that replicating an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$.

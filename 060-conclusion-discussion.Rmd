@@ -1,8 +1,8 @@
 # Conclusion and discussion {#discussion}
 
-We have introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a high-performance `R` package named [`bigsimr`](https://schisslergroup.github.io/bigsimr/).
+We have introduced a general-purpose high-dimensional multivariate simulation algorithm and provide a user-friendly, high-performance `R` package named [`bigsimr`](https://schisslergroup.github.io/bigsimr/).
 The random vector generation method is largely inspired by NORTA (@Cario1997) and Gaussian copula-based approaches (@MB13, @BF17, @Xia17).
-The major contributions of this work are high-dimensional scaleability, flexible modeling of dependency, and an high-performance implementation with broad potential data analytic applications for modern, big-data statistical computing.
+The major contributions of this work are high-dimensional scalability, flexible modeling of dependency, and an high-performance implementation with broad potential data analytic applications for modern, big-data statistical computing. 
 
 It is customary to compare new tools and algorithms directly to existing competing methods and software.
 In this study, however, we only employ our proposed methodology, as our previous work has shown that existing tools are simply not designed nor feasible to meet our high-dimensional goal (see @Li2019gpu for evaluations of the `R` `copula` package and others). 

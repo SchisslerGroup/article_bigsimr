@@ -79,7 +79,7 @@ As we will see, however, simulating arbitrary random vectors that match a target
 On the other hand, an analyst might consider use of nonparametric correlation measures to better characterize monotone, non-linear dependency, such as Spearman's $\rho$ and Kendall's $\tau$.
 Throughout, we focus on matching these nonparametric dependency measures, as our aim lies in modeling non-normal data and these rank-based measures possess invariance properties favorable in our proposed methodology.
 
-With all this mind, we present a scaleable, flexible multivariate simulation algorithm. 
+With all this in mind, we present a scaleable, flexible multivariate simulation algorithm. 
 The crux of the method lies in the construction of a Gaussian copula, in the spirit of the NORTA procedure.
 Further, we introduce the `bigsimr` R package that provides high-performance software implementing our algorithm.
 The algorithm design leverages useful properties of nonparametric correlation measures, namely invariance under monotone transformation and well-known closed-form relationships between dependency measures for the multivariate normal (MVN) distribution. 

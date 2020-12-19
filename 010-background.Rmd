@@ -11,9 +11,9 @@ to generate random vectors drawn from multivariate probability distributions wit
 Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful timescale.
 
 When designing this methodology, we developed the following properties to guide our effort.
-We divide the properties into two categories: (1) basic properties (BP) and "scaleability" properties (SP). 
+We divide the properties into two categories: (1) basic properties (BP) and "scalability" properties (SP). 
 The BPs are adapted from an existing criteria due to @Nik13a.
-Our simulation strategy should allow:
+A suitable simulation strategy should possess the following properties:
 
 * BP1: A wide range of dependences, allowing both positive and negative values, and, ideally, admitting the full range of possible values.
 * BP2: Flexible dependence, meaning that the number of bivariate marginals can be equal to the number of dependence parameters.
@@ -24,7 +24,9 @@ Moreover, the simulation method must *scale* to high dimensions:
 * SP1: Procedure must scale to high dimensions with practical computable times.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
 
-To fix ideas and provide example applications enabled via `bigsimr`, the next section describes a motivating data set.
+<!-- 
+The next section describes the motivating data set we use to provide example applications.
+your comment -->
 
 ## Motivating example: RNA-seq data
 
@@ -32,7 +34,7 @@ Simulating high-dimensional, non-normal, correlated data motivates this work ---
 The RNA-seq data-generating process involves counting how often a particular form of human messenger RNA (mRNA) is expressed in a biological sample.
 RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data.
 For human-derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted [@Schissler2019].
-Importantly, due to inherent biological processes, gene expression data exhibits correlation --- co-expression --- across genes [@BE07; @Schissler2018]. 
+Importantly, due to inherent biological processes, gene expression data exhibit correlation --- co-expression --- across genes [@BE07; @Schissler2018]. 
 
 ```{r ch010-myProb, include=FALSE, cache = TRUE}
 myProb <- 0.95
@@ -140,7 +142,7 @@ Kendall's $\tau$, on the other hand, is the difference in probabilities of conco
 By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determined by the ranks of the values, not the values themselves.
 
 Both $\tau$ and $\rho_S$ are *invariant to under monotone transformations* of the underlying random variates.
-As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scaleable match rank-based correlations with speed (SP1) and accuracy (SP2).
+As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scalable match rank-based correlations with speed (SP1) and accuracy (SP2).
 
 *Correspondence among Pearson, Spearman, $\tau$ correlations*.
 There is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation.
@@ -207,12 +209,15 @@ Consequently, the study of copulas is an important and active area of statistica
 For any random vector ${\bf X}=(X_1, \ldots, X_d)$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function 
 $C(u_1, \ldots, u_d)$ satisfying
 
-\[
-F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), \,\,\, x_i\in \mathbb R, i=1,\ldots,d. 
-\]  
+\begin{equation}
+(\#eq:copula)
+F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), 
+\end{equation}
 
-A Gaussian copula has marginal CDFs as the normal CDF, $\Phi$. 
-This representation corresponds to a multivariate normal distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$.
+$x_i \in \mathbb R, i=1,\ldots,d.$
+
+A Gaussian copula has marginal CDFs that are all normal, $F_i = \Phi, \forall \, i$. 
+This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$.
 As the marginals are standardized to have unit variance, however, ${\bf R_P}$ is a Pearson correlation matrix. 
 If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
 

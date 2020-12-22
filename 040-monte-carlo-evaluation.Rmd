@@ -2,7 +2,7 @@
 
 ```{r ch040-LoadLib040, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github("SchisslerGroup/bigsimr", ref = 'develop')
-knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+## knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
 # reticulate::use_condaenv("bigsimr")
 library(bigsimr)
 library(tidyverse)
@@ -424,11 +424,14 @@ allDat$type <- factor(allDat$type, levels = c( 'pearson', 'spearman', 'kendall' 
 allDat$N <- factor(allDat$N, levels = c( 1000, 10000, 100000) )
 ```
 
-```{r ch040-biMAEtable, results='asis', cache=F}
+Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results.
+Table \@ref(tab:ch040-BiError) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
+
+```{r ch040-BiError, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## tabMSE  <- allDat %>%
 ##    group_by( N, margins ) %>%
 ##    summarize( mse = mean( ( rho - rho_hat )^2 ) )
-tabMSE  <- allDat %>%
+tabMAE  <- allDat %>%
     ## filter( N == 100000) %>%
     group_by( N, type, margins ) %>%
 ##     summarize( mse = mean( ( rho - rho_hat )^2 ) ) %>%
@@ -438,20 +441,21 @@ tabMSE  <- allDat %>%
 ## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) )
 ## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) ) / tabMSE$mse
 
-knitr::kable(tabMSE,
-             format = 'latex',
+## AGS 12/22/20: Removing the latex formating fixes the html render.
+## But how to improve latex table formating? Better to use the template
+knitr::kable(tabMAE,
+             ## format = 'latex',
              col.names = c("No. of random vectors",
                            "Correlation type",
                            "Distribution",
                            "Mean abs. error"),
-             booktabs = TRUE,
+             ## booktabs = TRUE,
              caption = 'Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.',
-             linesep = c('', '',  '\\addlinespace')
+             ## linesep = c('', '',  '\\addlinespace')
 )
 ```
 
-Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results.
-Table \@ref(tab:ch040-biMAEtable) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
+
 Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations.
 For the two non-normal bivariate marginals, the Pearson correlation matching is approximate.
 For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, and particularly inaccurate near the lower bound of Pearson correlations.

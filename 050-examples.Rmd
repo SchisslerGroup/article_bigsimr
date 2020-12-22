@@ -206,7 +206,7 @@ In our motivating application, one may ask what is the probability that all gene
 Then we estimate
 
 $$
-\hat{P}( {\bf Y} >= {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y^{(b) }} >= {\bf y_0 } )
+\hat{P}( {\bf Y} \geq {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y^{(b) }} \geq {\bf y_0 } )
 $$
 
 

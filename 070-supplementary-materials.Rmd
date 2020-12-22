@@ -17,7 +17,7 @@ The authors report no conflict of interest.
 
 # Funding {.unnumbered #funding}
 
-Research reported in this publication was supported by grants from NV INBRE and the National Institutes of General Medical Sciences (NIH 5U54GM104944, GM103440).
+Research reported in this publication was supported by grants from the National Institutes of General Medical Sciences (5 U54 GM104944, GM103440) from the National Institutes of Health.
 
 <!-- 
 

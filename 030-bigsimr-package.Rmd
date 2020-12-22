@@ -143,7 +143,7 @@ Since our estimated Spearman correlation $\hat{ \rho}_S$ is within the theoretic
 On the other hand, the bounds on the Pearson correlation coefficient $\rho_P$ between these margins is
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
-cor_bounds(margins = margins, type = 'pearson', reps=1e6)
+cor_bounds(margins = margins, type = 'pearson', reps = 1e6)
 ```
 
 *Simulating random vectors*.
@@ -294,7 +294,7 @@ library(rslurm)
 ## conda activate bigsimr
 ## conda env config vars list
 sjob <- slurm_call(rvec, jobname = 'rvec',
-                   list(n=1e6,
+                   list(n = 1e6,
                         rho = rho,
                         margins = margins,
                         type = "spearman"),
@@ -304,7 +304,10 @@ sjob <- slurm_call(rvec, jobname = 'rvec',
 ```{r ch030-rvecRslurm, echo=TRUE, eval=FALSE}
 library(rslurm)
 sjob <- slurm_call(rvec, jobname = 'rvec',
-                   alist(n=1e6, rho = rho, margins = margins, type = "spearman"),
+                   alist(n = 1e6, 
+                         rho = rho, 
+                         margins = margins, 
+                         type = "spearman"),
                    submit = TRUE)
 ```
 
@@ -335,7 +338,7 @@ rhoList <- replicate(n = simReps, bigsimr::cor_randPSD(d = length(margins)),
 sjob <- slurm_map(x = rhoList,
                   f = rvec,
                   jobname = 'rvecMap',
-                  n=1e6,
+                  n = 1e6,
                   margins = margins,
                   type = "spearman",
                   nodes = 4,
@@ -352,7 +355,7 @@ rhoList <- replicate(n = simReps, bigsimr::cor_randPSD(d = length(margins)),
 sjob <- slurm_map(x = rhoList,
                   f = rvec,
                   jobname = 'rvecMap',
-                  n=1e6,
+                  n = 1e6,
                   margins = margins,
                   type = "spearman",
                   nodes = 4,
@@ -371,7 +374,7 @@ your comment -->
 ```{r ch030-rvecRslurmMapRes, echo=FALSE, eval=FALSE}
 list.files('_rslurm_rvecMap', 'results')
 res <- rslurm::get_slurm_out(sjob, outtype = 'raw')
-rhoHats <- lapply( res, bigsimr::fastCor, method = 'spearman' )
+rhoHats <- lapply(res, bigsimr::fastCor, method = 'spearman')
 resData <- NULL
 simreps <- length(rhoHats)
 for (i in 1:simreps){
@@ -379,15 +382,22 @@ for (i in 1:simreps){
     ## average together
     margins
     avgRhoHat <- tmpRhoHat[lower.tri(tmpRhoHat)]
-    tmpPair <- paste0( "pair", apply( combn(x = length(margins), 2), 2, paste, collapse = "_" ) )
-    tmpResData <- data.frame( simNum=i, rho=rhoList[[i]][1,2], rhoHat=tmpRhoHat[lower.tri(tmpRhoHat)], pair=tmpPair )
+    tmpPair <- paste0(
+      "pair", apply(combn(x = length(margins), 2), 2, paste, collapse = "_")
+    )
+    tmpResData <- data.frame(
+      simNum = i,
+      rho    = rhoList[[i]][1,2], 
+      rhoHat = tmpRhoHat[lower.tri(tmpRhoHat)], 
+      pair   = tmpPair
+    )
     resData <- rbind(resData, tmpResData)
 }
 ## "wrangle" into a tibble
 library(tidyverse)
 res <- as_tibble(resData)
 ## save for viz
-saveRDS( res, file = 'data/rvecRslurmMapRes.rds' )
+saveRDS(res, file = 'data/rvecRslurmMapRes.rds')
 ## cleanup careful this deletes output also
 ## cleanup_files(sjob) 
 ```

@@ -133,7 +133,7 @@ type <- 'spearman'
 
 *Checking the theoretical correlation bounds*.
 As discussed in Section \@ref(background), given a pair of marginal distributions the possible correlations are not free to vary between $[-1, 1]$. 
-`bigsimr::cor_bounds` estimates the theoretic lower and upper correlation bounds, using the Generate, Sort, and Correlate algorithm of @DH2011.
+`bigsimr::cor_bounds` estimates the pairwise lower and upper correlation bounds, using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 ```{r ch030-cor-bounds, echo=TRUE}
 cor_bounds(margins = margins, type = type)

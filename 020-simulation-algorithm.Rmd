@@ -37,32 +37,7 @@ Now, if one does desire to characterize dependency using Pearson correlations, s
 The quality of this approximation depends on the setting, but in practice, for high-dimensional count data we find the accuracy to be adequate.
 Later, we study robustness of our method to this limitation in selected [Monte Carlo evaluations]({#simulations}).
 
-## `bigsimr::rvec` for random vector generation  {#rand-vec-gen}
-
-We now describe `bigsimr::rvec`, our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
-
-1. Pre-processing for nonparametric dependency matching.  
-	(i) Convert ${\bf R_{Kendall}}$ or ${\bf R_{Spearman}}$ to the corresponding MVN correlation ${\bf R_{Pearson}}$.
-	(ii) Check that ${\bf R_{Pearson}}$ is semi-positive definite.  
-	(iii) If not, compute the nearest correlation matrix ${\bf \widetilde{R}_{Pearson}}$ to ${\bf R_{Pearson}}$ in the Frobenius norm.  
-2. Gaussian copula construction.  
-	(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_{Pearson}})$.  
-	(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
-3. Quantile evaluations.  
-	(i) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
-
-The pre-processing (Step 1) takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `bigsimr::cor_covert`).
-
-A complication often arises at this stage: the resultant matrix may become indefinite, either through numerical error or naturally occurring in the correlation conversion.
-Researchers working in multivariate computation frequently encounter such difficulties and need to find a close positive (semi-)definite matrix.
-A widely-available routine for this task in `R` is `matrix::nearPD`, though it is not suitable for high dimensions.
-To overcome this issue, we introduce `bigsimr::nearPSD` --- an implementation of @QS2006's method that computes the nearest correlation matrix to a given symmetric matrix in the Frobenius norm.
-This routine as many applications beyond our primary goal of random vector generation.
-
-Once the target margins and algorithm inputs are determined, Steps 2 and 3 are essentially a NORTA algorithm with modern high-performance computing implementations.
-Specifically, step 2i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication.
-
-## A note on NORTA in higher dimensions
+## NORTA in higher dimensions
 
 Sklar's theorem provides a useful characterization of multivariate distributions through copulas.
 Yet the choice of copula-based simulation algorithm affects which joint distributions may be simulated.
@@ -76,6 +51,41 @@ This stems from the concentration of measure near the boundary of the space of a
 
 There is hope, however, as @GH02 also showed that replicating an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$.
 This provides evidence that our nearest positive semi-definite (PSD) augmented approach will maintain reasonable accuracy if our input matching scheme returns an indefinite matrix, at least for the rank-based matching scheme described above.
+
+## `bigsimr::rvec` for random vector generation  {#rand-vec-gen}
+
+- Discuss how the HD NORTA defective problem and the scalability issues lead to our algorithm
+We now describe `bigsimr::rvec`, our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
+
+1. Mapping step  
+   i. Convert the target Spearman correlation matrix ${\bf R_{Spearman}}$ to the corresponding MVN Pearson correlation ${\bf R_X}$.   
+   or  
+i$^\prime$. Convert the target Kendall $\tau$ matrix ${\bf R_{Kendall}}$ to the corresponding MVN Pearson correlation ${\bf R_X}$.
+2. Checking admissibility and nearest correlation computation
+    (i) Check that ${\bf R_{X}}$ is a correlation matrix, a PSD matrix with 1's along the diagonal.   
+	(ii) If ${\bf R_{X}}$ is a correlation matrix, the input matrix is *admissible* in this scheme.  
+	Otherwise,  
+(ii$^\prime$) Replace ${\bf R_{X}}$ with the nearest correlation matrix ${\bf \widetilde{R}_{X}}$, in the Frobenius norm.
+3. NORTA step
+	(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_{X}})$.  
+	(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
+	(iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+The *Mapping step* takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `bigsimr::cor_covert`).
+
+
+Our algorithm allows the generation high-dimensional data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall tau matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix. In particular, if we let X be MVN with N components and set
+
+$S_P = \{ R_p : R_p is a correlation matrix for X \}$
+$S_K = \{R_K : R_K is a Kendall tau matrix for a MVN \}$
+$S_S = \{R_s : R_s is a Spearman correlation matrix for a MVN\}$ 
+
+then there are 1-1 mappings between these sets. 
+
+So if a user of your package says "I want a 100 dimensional RV with NB marginals where R_s is the target Spearman correlation matrix", you can easily check whether R_S is an element of the "admissible set" S_S. The same if they say they want the same marginals but a Kendall matrix R_K. As is, you check (at least based on paper) whether the Spearman satisfies 2-D bounds which is ok for 2-D problems. So you can provide higher dimensional information about whether something can be done using your algorithm. Furthermore, I would guess that these sets of admissible S_K and S_S are not that restrictive - In particular R_p approx R_s for a MVN so that would suggest the admissible set S_S is not very restrictive because R_p can be any psd matrix with 1's on diagonal.
+
+The final step implements a high-performance NORTA algorithm.
+Specifically, step 3i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication and steps 3ii, 3iii are parallelized over CPU cores.
 
 <!-- 
 ## Other high-performance `bigsimr` algorithms

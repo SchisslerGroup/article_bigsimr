@@ -441,8 +441,8 @@ tabMAE  <- allDat %>%
 ## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) )
 ## ( tabMSE$mse - as.numeric( tabMSE[ tabMSE$margins == 'norm', 'mse' ]) ) / tabMSE$mse
 
-## AGS 12/22/20: Removing the latex formating fixes the html render.
-## But how to improve latex table formating? Better to use the template
+## AGS 12/22/20: Removing the latex formatting fixes the html render.
+## But how to improve latex table formatting? Better to use the template
 knitr::kable(tabMAE,
              ## format = 'latex',
              col.names = c("No. of random vectors",

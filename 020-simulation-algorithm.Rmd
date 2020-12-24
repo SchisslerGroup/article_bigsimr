@@ -37,9 +37,7 @@ Now, if one does desire to characterize dependency using Pearson correlations, s
 The quality of this approximation depends on the setting, but in practice, for high-dimensional count data we find the accuracy to be adequate.
 Later, we study robustness of our method to this limitation in selected [Monte Carlo evaluations]({#simulations}).
 
-## NORTA in higher dimensions
-
-Sklar's theorem provides a useful characterization of multivariate distributions through copulas.
+*NORTA in higher dimensions*. Sklar's theorem provides a useful characterization of multivariate distributions through copulas.
 Yet the choice of copula-based simulation algorithm affects which joint distributions may be simulated.
 Even in low-dimensional spaces (e.g., $d=3$), there exist valid multivariate distributions with *feasible* Pearson correlation matrices that NORTA cannot match exactly [@LH75].
 This occurs when the bivariate transformations are applied to find the input correlation matrix, yet when combined the resultant matrix is indefinite.
@@ -71,18 +69,29 @@ i$^\prime$. Convert the target Kendall $\tau$ matrix ${\bf R_{Kendall}}$ to the 
 	(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
 	(iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
 
-The *Mapping step* takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `bigsimr::cor_covert`).
+The "mapping step" takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `bigsimr::cor_covert`).
 
+Our algorithm allows the generation of high-dimensional multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices.
+The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN.
 
-Our algorithm allows the generation high-dimensional data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall tau matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix. In particular, if we let X be MVN with N components and set
+In particular, if we let $X$ be MVN with $d$ components and set
 
-$S_P = \{ R_p : R_p is a correlation matrix for X \}$
-$S_K = \{R_K : R_K is a Kendall tau matrix for a MVN \}$
-$S_S = \{R_s : R_s is a Spearman correlation matrix for a MVN\}$ 
+$$
+\begin{aligned}
+\Omega_P &= \{ R_P : R_P \,  is \, a \,  correlation \,  matrix \,  for \,  X \} \\
+\Omega_K &= \{ R_K : R_K \,  is \,  a \,  Kendall \,  \tau  \, matrix \,  for \,  X \} \\
+\Omega_S &= \{ R_S : R_S \,  is \,  a \,  Spearman \,  correlation \,  matrix \,  for \,  X\} \\
+\end{aligned}
+$$
 
-then there are 1-1 mappings between these sets. 
+then there are 1-1 mappings between these sets.
+We conjecture informally that the sets of admissible $R_S$ and $R_K$ are not highly restrictive.
+In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PSD matrix with 1's along the diagonal. 
+We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$ (and similarly for $R_K$) and also for checking that each pairwise correlation value is admissible (via the MC estimation of the 2-dimensional Frechet bounds). 
 
-So if a user of your package says "I want a 100 dimensional RV with NB marginals where R_s is the target Spearman correlation matrix", you can easily check whether R_S is an element of the "admissible set" S_S. The same if they say they want the same marginals but a Kendall matrix R_K. As is, you check (at least based on paper) whether the Spearman satisfies 2-D bounds which is ok for 2-D problems. So you can provide higher dimensional information about whether something can be done using your algorithm. Furthermore, I would guess that these sets of admissible S_K and S_S are not that restrictive - In particular R_p approx R_s for a MVN so that would suggest the admissible set S_S is not very restrictive because R_p can be any psd matrix with 1's on diagonal.
+Yet this scheme still suffers similar issues as the original Pearson-matching NORTA algorithm regarding the increasing probability of encountering a non-admissible correlation matrix as dimension increases.
+In our experience, the *mapping step* for large $d$ almost always produces a $R_X$ that is not in $\Omega_P$ (or even a correlation matrix). The second step handles this issue by computing the nearest correlation matrix to $R_X$.
+In the RNA-seq example (Section \@ref(examples)), we demonstrate this and show how to quantify and control the approximation error.
 
 The final step implements a high-performance NORTA algorithm.
 Specifically, step 3i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication and steps 3ii, 3iii are parallelized over CPU cores.

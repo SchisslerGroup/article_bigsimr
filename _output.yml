@@ -1,11 +1,15 @@
-bookdown::pdf_book:
+# bookdown::pdf_book:
+bookdown::pdf_document2:
+# rmarkdown::pdf_document:
+  toc: false
+  latex_engine:  xelatex
   includes:
-    in_header: latex/preamble.tex
-  latex_engine: xelatex
+    in_header:  latex/preamble.tex
   citation_package: natbib
   keep_tex: yes
-  fontsize: 12pt
-  toc: false
+  header-includes:
+    - \usepackage[fontsize=20pt]{scrextend}
+#  template: latex/article-template.tex
 bookdown::gitbook:
   config:
     toc:

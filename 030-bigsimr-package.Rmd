@@ -1,4 +1,4 @@
-# The `bigsimr` R package
+# The `bigsimr` R package {#package}
 
 The `bigsimr` package is a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate workflows.
@@ -70,7 +70,7 @@ pTemp + plot_spacer() + p0 + pOzone +
 
 Next, we specify the marginal distributions and correlation coefficient (both type and magnitude).
 Here the analyst is free to be creative.
-For this example, we do not take up goodness-of-fit considerations to determine the marginal distributions.
+For this example, we avoid goodness-of-fit considerations to determine the marginal distributions.
 But it seems sensible without domain knowledge to estimate these quantities from the data and `bigsimr` contains fast functions designed for this task.
 
 *Specifying marginal distributions*.
@@ -108,7 +108,7 @@ This implementation strategy supports all `R` `base` probability distributions.
 It allows flexible extensions using other `R` packages that adhere to conventions, such as `extraDistr`.
 Further, by using `alist`, users can specify their own custom distributions (see below in [creating custom margins](#custom-margins)).
 
-To avoid manual entry, `mlist` presents an alternative to `alist` with on-the-fly evaluation.
+To circumvent manual entry, `mlist` presents an alternative to `alist` with on-the-fly evaluation.
 
 ```{r ch030-margins-mlist, echo=TRUE}
 margins <- mlist(
@@ -120,30 +120,48 @@ margins
 
 *Specifying correlation*.
 As mentioned, the user must decide how to describe correlation, based on the particulars of the problem.
-For non-normal data and for improved simulation accuracy in our scheme, we advocate the use of rank-based correlations Spearman's $\rho_S$ and Kendall's $\tau$.
-But we also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance).
-To aid in correlation specification, and estimation in general, we provide a high-performance function `bigsimr::cor_fast` which estimates Pearson, Spearman, or Kendall correlation using the fastest methods available.
+For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman correlation matrix $R_S$ and Kendall $\tau$ matrix $R_K$.
+We also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance).
+To aid in correlation specification, and estimation in general, we provide a high-performance function `bigsimr::cor_fast` which estimates Spearman, Kendall, or Pearson correlation using the fastest methods available.
 (Anyone who has tried estimating Kendall's $\tau$ using `stats::cor` can attest that the routine does not scale to even moderate dimensions).
 These estimation methods are classical approaches, not designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
 
 ```{r ch030-aq-cor, echo=TRUE}
 type <- 'spearman'
-(rho <- cor_fast(df, method = "spearman"))
+(R_S <- cor_fast(df, method = "spearman"))
 ```
 
-*Checking the theoretical correlation bounds*.
-As discussed in Section \@ref(background), given a pair of marginal distributions the possible correlations are not free to vary between $[-1, 1]$. 
-`bigsimr::cor_bounds` estimates the pairwise lower and upper correlation bounds, using the Generate, Sort, and Correlate algorithm of @DH2011.
+*Checking target correlation matrix admissibility*. First we use `bigsimr::cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)).
+`cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 ```{r ch030-cor-bounds, echo=TRUE}
 cor_bounds(margins = margins, type = type)
 ```
 
-Since our estimated Spearman correlation $\hat{ \rho}_S$ is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
-On the other hand, the bounds on the Pearson correlation coefficient $\rho_P$ between these margins is
+Since our our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
+But even if the 2-dimensional bounds are satified for each pair of margins, this does not guarantee the feasibility of a $d-$variate distribution [@BF17].
+
+To provide higher dimensional feasibility/admissibility checking, we begin by mapping using `bigsimr::cor_convert` and check admissibility.
+
+```{r ch030-cor-convert, echo=TRUE}
+## Step 1. Mapping
+(R_X <- cor_convert(rho = R_S, from = type, to = 'pearson'))
+## Step 2. Check admissibily
+is_valid_correlation <- function(rho) {
+  all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
+}
+is_valid_correlation( R_X )
+matrixcalc::is.symmetric.matrix( R_X )
+all(diag(R_X) == 1)
+cor_nearPSD( G = R_X )
+```
+
+
+
+We note that the bounds on the Pearson correlation coefficient $R_P$ between these margins is restricted as seen below:
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
-cor_bounds(margins = margins, type = 'pearson', reps = 1e6)
+cor_bounds(margins = margins, type = 'pearson', reps = 1e5)
 ```
 
 *Simulating random vectors*.
@@ -151,7 +169,7 @@ Finally, we arrive at the main function of `bigsimr`, `rvec`.
 We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
 
 ```{r ch030-sim-margins, echo=TRUE}
-x <- rvec(10000, rho, margins, type)
+x <- rvec(10000, R_S, margins, type)
 df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```

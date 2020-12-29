@@ -1,38 +1,35 @@
-# bookdown::pdf_book:
-bookdown::pdf_document2:
-# rmarkdown::pdf_document:
-  toc: false
-  latex_engine:  xelatex
+bookdown::pdf_book:
+  documentclass: book
   includes:
     in_header:  latex/preamble.tex
   citation_package: natbib
   keep_tex: yes
-  header-includes:
-    - \usepackage[fontsize=20pt]{scrextend}
-#  template: latex/article-template.tex
-bookdown::gitbook:
-  config:
-    toc:
-      collapse: subsection
-      scroll_highlight: yes
-      before: null
-      after: null
-    toolbar:
-      position: fixed
-    edit : null
-    download: null
-    search: yes
-    fontsettings:
-      theme: white
-      family: sans
-      size: 2
-    sharing:
-      facebook: yes
-      github: no
-      twitter: yes
-      linkedin: no
-      weibo: no
-      instapaper: no
-      vk: no
-      all: ['facebook', 'twitter', 'linkedin', 'weibo', 'instapaper']
-    info: yes
+  toc: false
+  biblio-style: apalike
+  link-citations: yes
+# bookdown::gitbook:
+#   config:
+#     toc:
+#       collapse: subsection
+#       scroll_highlight: yes
+#       before: null
+#       after: null
+#     toolbar:
+#       position: fixed
+#     edit : null
+#     download: null
+#     search: yes
+#     fontsettings:
+#       theme: white
+#       family: sans
+#       size: 2
+#     sharing:
+#       facebook: yes
+#       github: no
+#       twitter: yes
+#       linkedin: no
+#       weibo: no
+#       instapaper: no
+#       vk: no
+#       all: ['facebook', 'twitter', 'linkedin', 'weibo', 'instapaper']
+#     info: yes

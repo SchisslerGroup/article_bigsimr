@@ -135,7 +135,7 @@ type <- 'spearman'
 `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 ```{r ch030-cor-bounds, echo=TRUE}
-cor_bounds(margins = margins, type = type)
+cor_bounds(margins = margins, method = type)
 ```
 
 Since our our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
@@ -156,7 +156,8 @@ is_valid_correlation( R_X )
 We note that the bounds on the Pearson correlation coefficient $R_P$ between these margins is restricted as seen below:
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
-cor_bounds(margins = margins, method = 'pearson', reps = 1e5)
+cor_bounds(margins = margins, method = 'pearson', reps = 1e6)
+
 ```
 
 *Simulating random vectors*.
@@ -164,7 +165,7 @@ Finally, we arrive at the main function of `bigsimr`, `rvec`.
 We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
 
 ```{r ch030-sim-margins, echo=TRUE}
-x <- rvec(n = 10000, rho = R_X, margins)
+x <- rvec(10000, rho, margins)
 df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```

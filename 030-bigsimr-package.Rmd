@@ -165,7 +165,7 @@ Finally, we arrive at the main function of `bigsimr`, `rvec`.
 We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
 
 ```{r ch030-sim-margins, echo=TRUE}
-x <- rvec(10000, rho, margins)
+x <- rvec(10000, R_X, margins)
 df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```

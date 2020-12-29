@@ -45,6 +45,7 @@ knitr::write_bib(c(
 ## library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
 ## bookdown::render_book("index.Rmd", "bookdown::pdf_book", output_dir = "pdf")
 ## bookdown::preview_chapter("index.Rmd")
+rmarkdown::render_site(encoding = 'UTF-8')
 bookdown::serve_book()
 ```
 

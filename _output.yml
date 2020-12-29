@@ -1,8 +1,7 @@
 bookdown::pdf_book:
   documentclass: book
   includes:
-    in_header: latex/preamble.tex
-  latex_engine: xelatex
+    in_header:  latex/preamble.tex
   citation_package: natbib
   keep_tex: yes
   toc: false

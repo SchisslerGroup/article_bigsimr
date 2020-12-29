@@ -56,16 +56,16 @@ This provides evidence that our nearest positive semi-definite (PSD) augmented a
 We now describe `bigsimr::rvec`, our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
 1. Mapping step  
-   i. Convert the target Spearman correlation matrix ${\bf R_{Spearman}}$ to the corresponding MVN Pearson correlation ${\bf R_X}$.   
+   i. Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$.   
    or  
-i$^\prime$. Convert the target Kendall $\tau$ matrix ${\bf R_{Kendall}}$ to the corresponding MVN Pearson correlation ${\bf R_X}$.
+i$^\prime$. Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
 2. Checking admissibility and nearest correlation computation
-    (i) Check that ${\bf R_{X}}$ is a correlation matrix, a PSD matrix with 1's along the diagonal.   
-	(ii) If ${\bf R_{X}}$ is a correlation matrix, the input matrix is *admissible* in this scheme.  
+    (i) Check that $R_X$ is a correlation matrix, a PSD matrix with 1's along the diagonal.   
+	(ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme.  
 	Otherwise,  
-(ii$^\prime$) Replace ${\bf R_{X}}$ with the nearest correlation matrix ${\bf \widetilde{R}_{X}}$, in the Frobenius norm.
+(ii$^\prime$) Replace $R_X$ with the nearest correlation matrix $R_X$, in the Frobenius norm.
 3. NORTA step
-	(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_{X}})$.  
+	(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.  
 	(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
 	(iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
 
@@ -91,7 +91,8 @@ We provide methods to check whether a target $R_S$ is an element of the *admissi
 
 Yet this scheme still suffers similar issues as the original Pearson-matching NORTA algorithm regarding the increasing probability of encountering a non-admissible correlation matrix as dimension increases.
 In our experience, the *mapping step* for large $d$ almost always produces a $R_X$ that is not in $\Omega_P$ (or even a correlation matrix). The second step handles this issue by computing the nearest correlation matrix to $R_X$.
-In the RNA-seq example (Section \@ref(examples)), we demonstrate this and show how to quantify and control the approximation error.
+In Section \@ref(package) we provide a basic description of how to quantify and potentially control the approximation error.
+Further, the RNA-seq example in Section \@ref(examples) provides an illustration of this in practice.
 
 The final step implements a high-performance NORTA algorithm.
 Specifically, step 3i uses either the efficient multi-core multivariate normal simulator `mvnfast`[@Fasiolo2016] or Google's JAX python library for GPU acceleration of the Cholesky factorization and matrix multiplication and steps 3ii, 3iii are parallelized over CPU cores.

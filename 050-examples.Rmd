@@ -61,8 +61,8 @@ With this goal in mind, we first estimate the desired correlation matrix using t
 
 ```{r ch050-estRhoBRCA, echo=TRUE, eval=TRUE, cache=F}
 ## Estimate Spearman's correlation on the count data
-corType <- 'spearman'
-nb_Rho <- bigsimr::cor_fast(brca, method = corType)
+type <- 'spearman'
+R_S <- bigsimr::cor_fast(brca, method = type)
 ```
 
 Next, we estimate the marginal parameters. 
@@ -102,6 +102,29 @@ probs <- apply( unname(as.matrix(brca)), 2, nbinom_mom )[2, ]
 Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$.
 This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs.
 Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`:
+
+```{r ch050-cor-check, echo=TRUE, eval=FALSE, cache = FALSE}
+## 1. Check 2D bounds
+## OUR CODE HERE
+
+## 2. Check admissibility
+R_X <- cor_convert(rho = R_S, from = type, to = 'pearson')
+## diag(R_X) <- 1
+is_valid_correlation <- function(rho) {
+  all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
+}
+is_valid_correlation( R_X )
+
+system.time( R_Xtilde <- cor_nearPSD( G = R_X ) )
+## diag(R_X) <- 1
+is_valid_correlation( R_X )
+
+norm( x = R_X, type = "F" )
+norm( x = R_Xtilde, type = "F" )
+norm( x = R_X - R_Xtilde, type = "F" )
+
+```
+
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache = FALSE}
 ## Set the number of random vectors (B in text)

@@ -59,7 +59,7 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
         cores <- sim_pars$cores[i]
         n <- sim_pars$n[i]
         adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
-        tmp_bounds <- cor_bounds(margins, type = type)
+        tmp_bounds <- cor_bounds(margins, method = type)
         cor_lo <- tmp_bounds$lower[1,2] + eps
         cor_hi <- tmp_bounds$upper[1,2] - eps
         cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
@@ -160,7 +160,7 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
         n <- sim_pars$n[i]
         adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
 
-        tmp_bounds <- cor_bounds(margins, type = type)
+        tmp_bounds <- cor_bounds(margins, method = type)
         cor_lo <- tmp_bounds$lower[1,2] + eps
         cor_hi <- tmp_bounds$upper[1,2] - eps
         cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
@@ -264,7 +264,7 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
         ## I'll create a minimal working example and open an issue
         ## work around for now
         if ( type == 'pearson' ) {
-            tmp_bounds <- cor_bounds(margins, type = type)
+            tmp_bounds <- cor_bounds(margins, method = type)
             cor_lo <- tmp_bounds$lower[1,2] + eps
             cor_hi <- tmp_bounds$upper[1,2] - eps
         } else {

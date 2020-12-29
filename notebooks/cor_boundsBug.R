@@ -9,4 +9,4 @@ margins <- alist(
         qnbinom(size = size, prob = prob)
 )
 
-tmp_bounds <- cor_bounds(margins, type = type)
+tmp_bounds <- cor_bounds(margins, method = type)

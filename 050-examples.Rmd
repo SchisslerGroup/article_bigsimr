@@ -300,7 +300,7 @@ if ( !file.exists( quadLossRDS) )  {
     ## create m random vectors and estimate correlation
     simRho <- replicate(n = m,
         expr = { tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
-          type = 'pearson', ensure_PSD = FALSE, cores = cores);
+          ensure_PSD = FALSE, cores = cores);
           bigsimr::cor_fast( x = tmpSim, method = corType )} ,
      simplify = FALSE)
     ## find quadratic loss at each rep

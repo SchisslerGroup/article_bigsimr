@@ -18,6 +18,7 @@ abstract:  It is critical to realistically simulate data when conducting Monte C
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
 
 ```{r indexSetup, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide", cache=F}
+library(bigsimr)
 library(tidyverse)
 library(knitr)
 knitr::opts_chunk$set(eval = TRUE, echo = FALSE, cache = TRUE)

@@ -151,17 +151,12 @@ is_valid_correlation <- function(rho) {
   all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
 }
 is_valid_correlation( R_X )
-matrixcalc::is.symmetric.matrix( R_X )
-all(diag(R_X) == 1)
-cor_nearPSD( G = R_X )
 ```
-
-
 
 We note that the bounds on the Pearson correlation coefficient $R_P$ between these margins is restricted as seen below:
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
-cor_bounds(margins = margins, type = 'pearson', reps = 1e5)
+cor_bounds(margins = margins, method = 'pearson', reps = 1e5)
 ```
 
 *Simulating random vectors*.
@@ -169,7 +164,7 @@ Finally, we arrive at the main function of `bigsimr`, `rvec`.
 We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
 
 ```{r ch030-sim-margins, echo=TRUE}
-x <- rvec(10000, R_S, margins, type)
+x <- rvec(n = 10000, rho = R_X, margins)
 df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```

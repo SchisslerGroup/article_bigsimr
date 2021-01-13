@@ -59,7 +59,7 @@ We now describe `bigsimr::rvec`, our algorithm to generate random vectors, which
    i. Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$.   
    or  
 i$^\prime$. Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
-2. Checking admissibility and nearest correlation computation
+2. Checking admissibility and, if needed, nearest correlation computation
     (i) Check that $R_X$ is a correlation matrix, a PSD matrix with 1's along the diagonal.   
 	(ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme.  
 	Otherwise,  

@@ -65,7 +65,7 @@ Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected hi
 ```{r ch010-realDataTab, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 ## Describe and plot real data
 if ( !file.exists( './data/exampleGenes.rds' ) )  {
-    set.seed(01112021)
+    set.seed(01122021)
     exampleGenes <- colnames(brca)[sort(sample(ncol(brca), 3))]
     saveRDS(exampleGenes, file = './data/exampleGenes.rds')
 }

@@ -132,7 +132,7 @@ if ( ! is_valid_correlation( R_X ) ) {
 summary(targets - approximates)
 ```
 
-While the exact dxd Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-PSD result above), the approximation is of sufficient quality for most applications with a maximum pairwise of `r max( targets - approximations)` and average error of `r mean( targets - approximations)`.
+While the exact dxd Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-PSD result above), the approximation is of sufficient quality for most applications with a maximum pairwise of `r max( targets - approximates)` and average error of `r mean( targets - approximates)`.
 
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache = FALSE}
@@ -272,90 +272,40 @@ At each iteration, we estimate the quadratic loss from the specified ${\bf R}_{S
 
 ```{r ch050-quadlossECHO, echo=T, eval=F, cache=FALSE}
 ## Simulate random vectors equal to the sample size
-n <- nrow(brca)
-## convert outside for faster simulation
-nb_Rho_p <- bigsimr::cor_convert( rho = nb_Rho,
-                                 from = corType, to = "pearson" )
-## ensure PSD
-nb_Rho_p <- bigsimr::cor_nearPSD( G = nb_Rho_p )
+N <- nrow(brca)
 ## create m random vectors and estimate correlation
 simRho <- replicate(n = m, expr = {
-  tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
-                 type = 'pearson', ensure_PSD = FALSE, cores = cores)
-  bigsimr::cor_fast(x = tmpSim, method = corType)
+  tmpSim <- rvec(n = N , R_X, nb_margins, cores = cores)
+  bigsimr::cor_fast(x = tmpSim, method = type)
 }, simplify = FALSE)
 ## find quadratic loss at each rep
-quadLoss <- sapply(simRho, rags2ridges::loss, T = nb_Rho, type = "quadratic")
+quadLoss <- sapply(simRho, rags2ridges::loss, T = R_S, type = "quadratic")
 ```
 
-```{r ch050-quadloss, echo=F, eval=T, cache=FALSE}
-quadLossRDS <- paste0( "results/brca", round(myProb*100), "quadLoss.rds" )
-if ( !file.exists( quadLossRDS) )  {
-    n <- nrow(brca)
-    ## convert outside for faster simulation
-    nb_Rho_p <- bigsimr::cor_convert( rho = nb_Rho,
-                                     from = corType, to = "pearson" )
-    ## ensure PSD
-    nb_Rho_p <- bigsimr::cor_nearPSD( G = nb_Rho_p )
+```{r ch050-lossResults, echo=F, eval=T, cache=FALSE}
+## quadLossRDS <- paste0( "results/brca", d, "_quadLoss.rds" )
+frobeniusRDS <- paste0( "results/brca", d, "_frobenius.rds" )
+if ( !file.exists( frobeniusRDS) )  {
+    N <- nrow(brca)
     ## create m random vectors and estimate correlation
-    simRho <- replicate(n = m,
-        expr = { tmpSim <- rvec(n = n , nb_Rho_p, nb_margins,
-          ensure_PSD = FALSE, cores = cores);
-          bigsimr::cor_fast( x = tmpSim, method = corType )} ,
-     simplify = FALSE)
+    simRho <- replicate(n = m, expr = {
+        tmpSim <- rvec(n = N , R_X, nb_margins, cores = cores)
+        bigsimr::cor_fast(x = tmpSim, method = type)
+    }, simplify = FALSE)
     ## find quadratic loss at each rep
-    quadLoss <- unlist( lapply( simRho, rags2ridges::loss,
-                               T = nb_Rho, type = "quadratic"))
-    saveRDS(quadLoss, quadLossRDS)
+    ## simRho[[1]][1:5,1:5]
+    ## R_S[1:5,1:5]
+    ## rags2ridges::loss(simRho[[1]], R_S, type = 'frobenius')
+    frobenius <- sapply(simRho, rags2ridges::loss, T = R_S, type = "frobenius")
+    saveRDS(frobenius, frobeniusRDS)
 }
-quadLoss <- readRDS( quadLossRDS )
+frobenius <- readRDS( frobeniusRDS )
 ```
 
 The `R` summary function supplies the mean-augmented five-number summary of the quadratic loss distribution computed above.
 
-```{r ch050-quadloss-summary, echo=TRUE, eval=T, cache=FALSE}
-summary(quadLoss)
+```{r ch050-loss-summary, echo=TRUE, eval=T, cache=FALSE}
+summary(frobenius)
 ```
 
 This distribution could be compared to high-dimensional designed covariance estimators for guidance on whether the additional complexity and computation time are warranted.
-
-<!-- 
-## Monte Carlo estimation of MSE 
-
-Monte Carlo (MC) methods offer flexible and straightfoward statistical inferenec in this typically difficult analytic setting.
-MC methods are routinely used many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates.
-For an concise introduction to these Methos, see, for example @Rizzo2007, Ch. 6.
-As a simple example, let's now employ `bigsimr` to estimate the mean squared error (MSE) of the method of moments estimators we used in section X.
-
-Specifically, 
-TYPESET THE MATH HERE. REF to MoM above.
-
-```{r ch050-mom-mse, echo=TRUE, eval=FALSE, cache=FALSE}
-## system( "rm results/mseSizes.rds")
-brcaSimMSEsizesRDS <- paste0( "results/brca", round(myProb*100), "simMSEsizes.rds" )
-if ( !file.exists( brcaSimMSEsizesRDS) )  {
-    n <- nrow(brca)
-    m <- 100
-    momSizes <- replicate(n = m, expr =
-                                     { tmpSim <- rvec(n, nb_Rho, brcaMargins, type = corType, ensure_PSD = TRUE, cores = cores)
-                                         tmpMom <- apply( unname(as.matrix(tmpSim)), 2, estimateNegBinMoM )
-                                         tmpSizes <- unlist( lapply( X = tmpMom, function(x) x$size ) )
-                                     }
-                          )
-    sqDiffSizes <- apply( momSizes, 2, function(x) { (x  - sizes)^2 } )
-    mseSizes <- rowMeans( sqDiffSizes )
-    saveRDS(mseSizes, brcaSimMSEsizesRDS)
-}
-mseSizes <- readRDS( brcaSimMSEsizesRDS )
-```
-
-Figure X.
-
-```{r ch050-fig-mseSizes, echo = FALSE, eval=FALSE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Real data for the 3 selected high-expressing genes'}
-mseSizes <- readRDS(file = brcaSimMSEsizesRDS)
-qplot(mseSizes, bins = 20) + theme_bw()
-```
-
-One could then compare the MSE of the baisc MoM estimation scheme to other strategies ( such as MLE, trimmed approaches, etc.) and decide whether a more computational costly approach is warrented or if the MoM will suffice.
-
-your comment -->

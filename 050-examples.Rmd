@@ -107,7 +107,7 @@ Now we check admissibility of specified correlation matrix.
 We begin with the pairwise, 2D MC estimated bounds.
 And then follow the `r d`D bounds.
 
-```{r ch050-cor-check, echo=TRUE, eval=TRUE, cache = FALSE}
+```{r ch050-cor-check, echo=TRUE, eval=TRUE, cache = TRUE}
 ## 1. Mapping step first
 R_X <- cor_convert(rho = R_S, from = type, to = 'pearson')
 ## 2a. Check admissibility

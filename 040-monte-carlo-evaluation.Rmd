@@ -1,10 +1,12 @@
 # Monte Carlo evaluations {#simulations}
 
-```{r ch040-LoadLib040, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
-## devtools::install_github("SchisslerGroup/bigsimr", ref = 'develop')
-## knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
-# reticulate::use_condaenv("bigsimr")
+```{r ch040-LoadLib040, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
+## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
 library(bigsimr)
+Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
+## Either let JuliaCall find your installation of Julia or set manually
+bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+dist <- distributions_setup() # Julia distributions
 library(tidyverse)
 cores <- as.integer( parallel::detectCores() - 1 )
 ## cores <- as.integer( 1 )
@@ -526,3 +528,11 @@ Matching Spearman's correlation at larger $d$ becomes costly if one desires to p
 ```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
 knitr::include_graphics("fig/cpu-gpu-times.png")
 ```
+
+*Limitations, conclusions, and recommendations.*
+In the bivariate studies, we chose arbitrary simulation parameters for three distributions, moving from the Gaussian to the discrete and non-normal, multivariate negative binomial.
+Under these conditions, the simulated random vectors sample the desired bivariate distribution across the entire range of pairwise correlations for the three dependency measures.
+The simulation results could differ for other choices of simulation settings.
+Specifying extreme correlations near the boundary or Frechet bounds could result in poor simulation performance.
+Fortunately, it is straightforward to evaluate simulation performance by using strategies similar to those completed above.
+We expect our random vector generation to perform well for the vast majority of NORTA-feasible correlation matrices, but advise to check the performance before making inferences/further analyses.

@@ -78,8 +78,9 @@ smallForTable$PatientID <- head( readLines('./data/examplePatients.txt'), n = nu
 smallForTable <- smallForTable[ , c(4, 1:3 ) ]
 smallForTable[ , 2:4 ] <- round( smallForTable[ , 2:4 ] )
 knitr::kable(smallForTable ,
-      booktabs = TRUE,
-      caption = "mRNA expression for three selected high-expressing genes (*RPL5*, *TKNIP*, and *VIM*) for the first five patients in the TCGA BRCA data set."
+             booktabs = TRUE,
+             row.names = F,
+      caption = paste0( "mRNA expression for three selected high-expressing genes, ", paste( names(smallForTable)[-1], collapse = ", " ), ", for the first five patients in the TCGA BRCA data set.")
 )
 ```
 

@@ -19,9 +19,15 @@ abstract:  It is critical to realistically simulate data when conducting Monte C
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
 
 ```{r indexSetup, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide", cache=F}
-library(bigsimr)
+## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
+## library(bigsimr)
+## Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
+## Either let JuliaCall find your installation of Julia or set manually
+## bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+## dist <- distributions_setup() # Julia distributions
 library(tidyverse)
 library(knitr)
+library(printr)
 knitr::opts_chunk$set(eval = TRUE, echo = FALSE, cache = TRUE)
 library(rmarkdown)
 library(bookdown)

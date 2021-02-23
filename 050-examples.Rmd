@@ -213,6 +213,12 @@ if( !file.exists("fig/ch050-figBRCA.png") ) {
 knitr::include_graphics('fig/ch050-figBRCA.png')
 ```
 
+*Limitations, conclusions, and recommendations.*
+The results show good simulation performance for our choice of parameters settings.
+Our settings were motivated by modeling high-expressing genes from TCGA BRCA data set.
+In general, the ability to match marginal and dependence parameters depends on the particular joint probability model.
+We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
+
 ## Simulation-based joint probability calculations
 
 Many statistical tasks require evaluation of a joint probability mass (or density) function:

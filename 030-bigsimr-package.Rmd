@@ -1,6 +1,9 @@
 # The `bigsimr` R package {#package}
 
-The `bigsimr` package is a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
+The following descrption is directed towards towards `R` users via `bigsimr` R package.
+This package provides an interface to the native code written in Julia, registered as the `Bigsimr`Julia package PROVIDE LINK.
+In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `PyBigsimr` at URL that interfaces with the Julia `Bigsimr` package.
+The Julia implementation provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate workflows.
 
 The subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the readily-available data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983].
@@ -21,7 +24,12 @@ We demonstrate the basic use and syntax of `bigsimr` through an example workflow
 First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages.
 
 ```{r ch030-basic-example-setup, echo=TRUE, message=FALSE, cache=F}
+## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
 library(bigsimr)
+Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
+## Either let JuliaCall find your installation of Julia or set manually
+bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+dist <- distributions_setup() # Julia distributions
 library(tidyverse)
 library(patchwork)
 ```
@@ -127,14 +135,15 @@ These estimation methods are classical approaches, not designed for high-dimensi
 
 ```{r ch030-aq-cor, echo=TRUE}
 type <- 'spearman'
-(R_S <- cor_fast(df, method = "spearman"))
+(R_S <- bs$cor(as.matrix(df), bs$Spearman))
 ```
 
 *Checking target correlation matrix admissibility*. First we use `bigsimr::cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)).
 `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 ```{r ch030-cor-bounds, echo=TRUE}
-cor_bounds(margins = margins, method = type)
+bounds <- bs$cor_bounds(D)
+bounds$lower
 ```
 
 Since our our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.

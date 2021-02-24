@@ -1,0 +1,29 @@
+Package: article_bigsimr
+Title: Bigsimr Article Package
+Version: 0.0.1
+Authors@R: 
+    person(given = "Alfred G.",
+           family = "Schissler",
+           role = c("aut", "cre"),
+           email = "aschissler@unr.edu")
+Description: Rmarkdown article related to the bigsimr package.
+Encoding: UTF-8
+LazyData: true
+biocViews:
+Depends: 
+    tidyverse
+Imports:
+    BiocManager,
+    CNTools,
+    graph,
+    RBGL,
+    Rgraphviz,
+    knitr,
+    printr,
+    rmarkdown,
+    bookdown,
+    rslurm,
+    GGally,
+    patchwork,
+    rags2ridges,
+    matrixcalc

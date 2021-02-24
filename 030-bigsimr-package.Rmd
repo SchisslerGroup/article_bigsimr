@@ -1,3 +1,15 @@
+```{r ch030-basic-example-setup, echo=TRUE, message=FALSE, cache=F}
+## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
+library(bigsimr)
+Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
+## Either let JuliaCall find your installation of Julia or set manually
+# bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+bs <- bigsimr_setup(JULIA_HOME = "/home/alex/julia-1.5.3/bin/", pkg_check = FALSE)
+dist <- distributions_setup() # Julia distributions
+library(tidyverse)
+library(patchwork)
+```
+
 # The `bigsimr` R package {#package}
 
 The following descrption is directed towards towards `R` users via `bigsimr` R package.
@@ -22,17 +34,6 @@ The next computational step after obtaining the correlated uniform marginals is 
 
 We demonstrate the basic use and syntax of `bigsimr` through an example workflow applied to the New York air quality data set (`airquality`) included in the R `datasets` package.
 First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages.
-
-```{r ch030-basic-example-setup, echo=TRUE, message=FALSE, cache=F}
-## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
-library(bigsimr)
-Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
-## Either let JuliaCall find your installation of Julia or set manually
-bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
-dist <- distributions_setup() # Julia distributions
-library(tidyverse)
-library(patchwork)
-```
 
 For simplicity and to provide a minimal working example, we consider bivariate simulation of the two `airquality` variables `Temperature`, in degrees Fahrenheit, and `Ozone` level, in parts per billion.
 
@@ -100,71 +101,57 @@ df %>%
   summarise_all(.funs = c(meanlog = mle_mean, sdlog = mle_sd))
 ```
 
-Next, we configure the input marginals for later input into `bigsimr::rvec`.
-The marginal distributions are specified using `R`'s special `alist` function.
-This allows one to enter the distributions without evaluating anything (yet).
+Next, we configure the input marginals for later input into `rvec`.
+The marginal distributions are specified using `Julias`'s `Distributions.jl` package and stored in an `R` vector.
 
 ```{r ch030-margins-alist, echo=TRUE, cache=T}
-margins <- alist(
-    qnorm(mean = 77.871, sd = 9.4855),
-    qlnorm(meanlog = 3.419, sdlog = 0.6967)
+margins <- c(
+    dist$Normal(mean(df$Temp), sd(df$Temp)),
+    dist$LogNormal(mle_mean(df$Ozone), mle_sd(df$Ozone))
 )
 ```
 
-Notice that we use the *quantile* function for the marginals, as that is how the marginal distributions $F_i$ are specified the `bigsimr::rvec` algorithm.
-This implementation strategy supports all `R` `base` probability distributions.
-It allows flexible extensions using other `R` packages that adhere to conventions, such as `extraDistr`.
-Further, by using `alist`, users can specify their own custom distributions (see below in [creating custom margins](#custom-margins)).
-
-To circumvent manual entry, `mlist` presents an alternative to `alist` with on-the-fly evaluation.
-
-```{r ch030-margins-mlist, echo=TRUE}
-mlist(
-  qnorm(mean = mean(df$Temp), sd = sd(df$Temp)),
-  qlnorm(meanlog = mle_mean(df$Ozone), sdlog = mle_sd(df$Ozone))
-)
-```
 
 *Specifying correlation*.
 As mentioned, the user must decide how to describe correlation, based on the particulars of the problem.
-For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman correlation matrix $R_S$ and Kendall $\tau$ matrix $R_K$.
+For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ and Kendall's $\tau$ correlation matrix $R_K$.
 We also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance).
-To aid in correlation specification, and estimation in general, we provide a high-performance function `bigsimr::cor_fast` which estimates Spearman, Kendall, or Pearson correlation using the fastest methods available.
+To aid in correlation specification, and estimation in general, we provide a high-performance function `cor_fast` which estimates Spearman, Kendall, or Pearson correlation of large data sets by computing pairwise correlations in parallel.
 (Anyone who has tried estimating Kendall's $\tau$ using `stats::cor` can attest that the routine does not scale to even moderate dimensions).
 These estimation methods are classical approaches, not designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
 
 ```{r ch030-aq-cor, echo=TRUE}
-type <- 'spearman'
 (R_S <- bs$cor(as.matrix(df), bs$Spearman))
 ```
 
-*Checking target correlation matrix admissibility*. First we use `bigsimr::cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)).
+*Checking target correlation matrix admissibility*.
+First we use `cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)).
 `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 ```{r ch030-cor-bounds, echo=TRUE}
-bounds <- bs$cor_bounds(D)
+bounds <- bs$cor_bounds(margins)
 bounds$lower
 ```
 
-Since our our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `bigsimr:rvec`.
-But even if the 2-dimensional bounds are satified for each pair of margins, this does not guarantee the feasibility of a $d-$variate distribution [@BF17].
+Since our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `rvec`.
+But even if the 2-dimensional bounds are satisfied for each pair of margins, this does not guarantee the feasibility of a $d-$variate distribution [@BF17].
 
-To provide higher dimensional feasibility/admissibility checking, we begin by mapping using `bigsimr::cor_convert` and check admissibility.
+To provide higher dimensional feasibility/admissibility checking, we begin by mapping using `cor_convert` and check admissibility.
 
 ```{r ch030-cor-convert, echo=TRUE}
 ## Step 1. Mapping
-(R_X <- cor_convert(rho = R_S, from = type, to = 'pearson'))
+(R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson))
 ## Step 2. Check admissibily
 is_valid_correlation <- function(rho) {
   all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
 }
-is_valid_correlation( R_X )
+is_valid_correlation(R_X)
 ```
 
 The bounds on the Pearson correlation coefficient $R_P$ between these margins is restricted as seen below in our MC estimated correlation bounds:
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
-cor_bounds(margins = margins, method = 'pearson', reps = 1e6)
+bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 ```
 
 Our MC estimate of the bounds slightly underestimates the theoretic bounds of $(-0.881, 0.881)$. An analytic derivation is presented as an Appendix.
@@ -174,7 +161,7 @@ Finally, we arrive at the main function of `bigsimr`, `rvec`.
 We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
 
 ```{r ch030-sim-margins, echo=TRUE}
-x <- rvec(10000, R_X, margins)
+x <- bs$rvec(10000, R_X, margins)
 df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```
@@ -252,57 +239,6 @@ your comment -->
 
 ## Advanced use {#advanced-use}
 
-*Creating a custom marginal distribution*.
-Because `bigsimr` uses an `alist` to store the margins, any probability distribution with a well-defined inverse CDF can be employed, including custom marginal distributions not provided in base `R`. 
-Therefore, to specify a marginal distribution absent from an existing package, the user must provide a closed-form expression to form the corresponding quantile function.
-
-Users should prefix distributions with `r` and `q` for *random* and *quantile* respectively.
-Only the quantile function is necessary to simulate random vectors, but to compute the theoretical correlation bounds, one must to supply a univariate random number generator as well.
-
-For an example, consider a custom *Pareto* distribution for use with `bigsimr`.
-The Pareto CDF is 
-
-$$
-F(x) = 1 - \left(\frac{x_m}{x}\right)^\alpha
-$$
-
-for scale $x_m > 0$ and shape $\alpha > 0$, with support $x \in \left[x_m, \infty\right)$.
-From the CDF, we compute the inverse CDF
-
-$$
-F^{-1}(p) = \frac{x_m}{\left(1 - p\right)^{1/\alpha}}
-$$
-
-Next we define the Pareto quantile function in R:
-
-```{r ch030-define-qpareto, echo=TRUE}
-qpareto <- function(p, scale, shape) {
-  scale / (1 - p)^(1/shape)
-}
-```
-
-Writing random number generating function for our target marginal can be accomplished by calling the quantile function on a uniformly distributed random variable (the inverse transform method @Rizzo2007).
-
-```{r ch030-define-rpareto, echo=TRUE}
-rpareto <- function(n, scale, shape) {
-  qpareto(runif(n), scale, shape)
-}
-```
-
-Now with the `qpareto` and `rpareto` functions, we can use the distribution in `bigsimr` similar to the other built-in distributions.
-
-```{r ch030-cust-dist-example, echo=TRUE, eval=FALSE}
-margins <- alist(
-  qnorm(mean = 3.14, sd = 0.1),
-  qbeta(shape1 = 1, shape2 = 4),
-  qnbinom(size = 10, prob = 0.75),
-  qpareto(scale = 1.11, shape = 5.55)
-)
-cor_bounds(margins, "pearson")
-rho <- cor_randPD(4)
-x <- rvec(10, rho, margins)
-```
-
 *Using `bigsimr` on a computing cluster via `rslurm`*.
 Although `bigsimr` runs quickly, for large $d$ users may wish to run jobs on a shared computing server.
 The R package `rslurm` enables parallel `rvec` calls.
@@ -316,21 +252,19 @@ library(rslurm)
 ## source ~/.bashrc
 ## conda activate bigsimr
 ## conda env config vars list
-sjob <- slurm_call(rvec, jobname = 'rvec',
-                   list(n = 1e6,
-                        rho = rho,
-                        margins = margins,
-                        type = "spearman"),
+sjob <- slurm_call(bs$rvec, jobname = 'rvec',
+                   list(1e6,
+                        rho,
+                        margins),
                    submit = TRUE)
 ```
 
 ```{r ch030-rvecRslurm, echo=TRUE, eval=FALSE}
 library(rslurm)
-sjob <- slurm_call(rvec, jobname = 'rvec',
-                   alist(n = 1e6, 
-                         rho = rho, 
-                         margins = margins, 
-                         type = "spearman"),
+sjob <- slurm_call(bs$rvec, jobname = 'rvec',
+                   list(1e6, 
+                        rho, 
+                        margins),
                    submit = TRUE)
 ```
 
@@ -356,31 +290,28 @@ library(rslurm)
 ## conda env config vars list
 set.seed(06202020)
 simReps <- 100
-rhoList <- replicate(n = simReps, bigsimr::cor_randPSD(d = length(margins)),
+rhoList <- replicate(n = simReps, bs::cor_randPSD(length(margins)),
                      simplify=FALSE)
 sjob <- slurm_map(x = rhoList,
-                  f = rvec,
+                  f = bs$rvec,
                   jobname = 'rvecMap',
-                  n = 1e6,
-                  margins = margins,
-                  type = "spearman",
+                  1e6,
+                  margins,
                   nodes = 4,
                   cpus_per_node = 4,
                   submit = TRUE)
-
 ```
 
 ```{r ch030-rvecRslurmMap, echo=TRUE, eval=FALSE}
 library(rslurm)
 simReps <- 100
-rhoList <- replicate(n = simReps, bigsimr::cor_randPSD(d = length(margins)),
+rhoList <- replicate(n = simReps, bs::cor_randPSD(length(margins)),
                      simplify=FALSE)
 sjob <- slurm_map(x = rhoList,
-                  f = rvec,
+                  f = bs$rvec,
                   jobname = 'rvecMap',
-                  n = 1e6,
-                  margins = margins,
-                  type = "spearman",
+                  1e6,
+                  margins,
                   nodes = 4,
                   cpus_per_node = 4,
                   cores = 4,

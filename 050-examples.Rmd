@@ -4,6 +4,9 @@
 ## knitr::opts_chunk$set(echo = FALSE, cache = FALSE)
 # reticulate::use_condaenv("bigsimr")
 library(bigsimr)
+# bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+bs <- bigsimr_setup()
+dist <- distributions_setup() # Julia distributions
 library(tidyverse)
 cores <- as.integer( parallel::detectCores() - 1 )
 set.seed(10142020)

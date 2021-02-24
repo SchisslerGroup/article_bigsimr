@@ -1,17 +1,18 @@
-# Monte Carlo evaluations {#simulations}
-
 ```{r ch040-LoadLib040, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
 ## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
 library(bigsimr)
 Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
 ## Either let JuliaCall find your installation of Julia or set manually
-bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+# bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+bs <- bigsimr_setup(JULIA_HOME = "/home/alex/julia-1.5.3/bin/", pkg_check = FALSE)
 dist <- distributions_setup() # Julia distributions
 library(tidyverse)
 cores <- as.integer( parallel::detectCores() - 1 )
 ## cores <- as.integer( 1 )
 set.seed(10162020)
 ```
+
+# Monte Carlo evaluations {#simulations}
 
 ```{r ch040-preview, echo = FALSE, eval = FALSE}
 bookdown::preview_chapter('040-monte-carlo-evaluation.Rmd')
@@ -31,7 +32,7 @@ The simulations progress from bivariate normal, to bivariate gamma (non-normal y
 ```{r ch040-biNormal, echo = FALSE, eval = TRUE}
 mu <- 0
 sigma <- 1
-if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
+if (!file.exists( 'results/biNorm_sims.rds'))  {
     mom_norm <- function(x) {
         m <- mean(x)
         s <- sd(x)
@@ -39,29 +40,25 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
     }
     mu <- 0
     sigma <- 1
-    margins <- alist(
-        qnorm(mean = mu, sd = sigma),
-        qnorm(mean = mu, sd = sigma)
+    margins <- c(
+        dist$Normal(mu, sigma),
+        dist$Normal(mu, sigma)
     )
-    type <- c("pearson", "spearman", "kendall")
+    types <- c("Pearson", "Spearman", "Kendall")
     cores <- as.integer( parallel::detectCores() - 1 )
     n <- c(1e3, 1e4, 1e5)
     ## n <- c(1e1, 1e2, 1e3)
-    adjustForDiscrete <- c(FALSE)
     eps <- 1e-2
     grid_steps <- 100
     ## grid_steps <- 10
-    sim_pars <- expand.grid(type = type, cores = cores, n = n,
-                            stringsAsFactors = FALSE,
-                            adjustForDiscrete = adjustForDiscrete)
+    sim_pars <- expand.grid(type = types, cores = cores, n = n, stringsAsFactors = FALSE)
     res <- data.frame()
     dir.create("./results/biNorm_sims", showWarnings = TRUE, recursive = TRUE)
     for (i in 1:nrow(sim_pars)) {
         type <- sim_pars$type[i]
         cores <- sim_pars$cores[i]
         n <- sim_pars$n[i]
-        adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
-        tmp_bounds <- cor_bounds(margins, method = type)
+        tmp_bounds <- bs$cor_bounds(margins, bs[[type]])
         cor_lo <- tmp_bounds$lower[1,2] + eps
         cor_hi <- tmp_bounds$upper[1,2] - eps
         cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
@@ -69,15 +66,11 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
         for (rho in cor_seq) {
             Rho <- matrix(rho, 2, 2)
             diag(Rho) <- 1.0
-            ## Rho <- convertCor( rho = Rho, from = type, to = 'pearson' )
+            Rho <- bs$cor_convert(Rho, bs[[type]], bs$Pearson)
             time_data <- system.time({
                 ## x <- rmvn(n = n, mu = rep( mu, 2 ), sigma = Rho)
                 ## use rvec to test our software
-                x <- rvec(n = n,
-                          rho = Rho,
-                          margins = margins,
-                          type = type,
-                          cores = cores)
+                x <- bs$rvec(n, Rho, margins)
             })
             ## Save the sims in case
             id <- paste0(
@@ -86,14 +79,13 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
                 "-c", cores,
                 "-r", rho,
                 "-Cor", type,
-                "-adj", as.character(adjustForDiscrete),
                 "-dev", "1CORE",
                 "-lib", "bigsimr"
             )
             ## save sims in their own subdirectory
             saveRDS(x, file = paste0("./results/biNorm_sims/", id, ".rds"))
             ## Estimate statistics
-            Rho_hat <- cor_fast(x, method = type)
+            Rho_hat <- bs$cor_fast(x, bs[[type]])
             rho_hat <- Rho_hat[1, 2]
             norm_args_hat <- mom_norm(x[,1])
             mu_hat <- norm_args_hat$mean
@@ -105,7 +97,6 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
                                   type = type,
                                   cores = cores,
                                   margins = "norm",
-                                  adjustForDiscrete = adjustForDiscrete,
                                   d = 2,
                                   N = n,
                                   rho = rho,
@@ -127,30 +118,28 @@ if ( !file.exists( 'results/biNorm_sims.rds' ) )  {
 ```{r ch040-biGamma, echo = FALSE, eval = TRUE}
 shape <- 10
 rate <- 1
-if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
+if (!file.exists( 'results/biGamma_sims.rds'))  {
     mom_gamma <- function(x) {
         m <- mean(x)
         s <- sd(x)
         list(shape = m^2 / s^2, rate = m / s^2)
     }
-    margins <- alist(
-        qgamma(shape = shape, rate = rate),
-        qgamma(shape = shape, rate = rate)
+    margins <- c(
+        dist$Gamma(shape, rate),
+        dist$Gamma(shape, rate)
     )
 
-    type <- c("pearson", "spearman", "kendall")
+    types <- c("Pearson", "Spearman", "Kendall")
     ## cores <- c(1L)
     cores <- as.integer( parallel::detectCores() - 1 )
     n <- c(1e3, 1e4, 1e5)
     ## n <- c(1e1, 1e2, 1e3)
-    adjustForDiscrete <- c(FALSE)
 
     eps <- 1e-2
     grid_steps <- 100
     ## grid_steps <- 10
-    sim_pars <- expand.grid(type = type, cores = cores, n = n,
-                            stringsAsFactors = FALSE,
-                            adjustForDiscrete = adjustForDiscrete)
+    sim_pars <- expand.grid(type = types, cores = cores, n = n,
+                            stringsAsFactors = FALSE)
 
 
     dir.create("./results/biGamma_sims", showWarnings = TRUE, recursive = TRUE)
@@ -160,9 +149,8 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
         type <- sim_pars$type[i]
         cores <- sim_pars$cores[i]
         n <- sim_pars$n[i]
-        adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
 
-        tmp_bounds <- cor_bounds(margins, method = type)
+        tmp_bounds <- bs$cor_bounds(margins, bs[[type]])
         cor_lo <- tmp_bounds$lower[1,2] + eps
         cor_hi <- tmp_bounds$upper[1,2] - eps
         cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
@@ -171,14 +159,10 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
         for (rho in cor_seq) {
             Rho <- matrix(rho, 2, 2)
             diag(Rho) <- 1.0
+            Rho <- bs$cor_convert(Rho, bs[[type]], bs$Pearson)
 
             time_data <- system.time({
-                x <- rvec(n = n,
-                          rho = Rho,
-                          margins = margins,
-                          cores = cores,
-                          type = type,
-                          ensure_PSD = TRUE)
+                x <- bs$rvec(n, Rho, margins)
             })
 
             ## Save the sims in case
@@ -188,14 +172,13 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
                 "-c", cores,
                 "-r", rho,
                 "-Cor", type,
-                "-adj", as.character(adjustForDiscrete),
                 "-dev", "CPU",
                 "-lib", "bigsimr"
             )
             saveRDS(x, file = paste0("./results/biGamma_sims/", id, ".rds"))
 
             ## Estimate statistics
-            Rho_hat <- cor_fast(x, method = type)
+            Rho_hat <- bs$cor_fast(x, bs[[type]])
             rho_hat <- Rho_hat[1, 2]
             gamma_args_hat <- mom_gamma(x[,1])
             shape_hat <- gamma_args_hat$shape
@@ -208,7 +191,6 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
                                   type = type,
                                   cores = cores,
                                   margins = "gamma",
-                                  adjustForDiscrete = adjustForDiscrete,
                                   d = 2,
                                   N = n,
                                   rho = rho,
@@ -229,31 +211,29 @@ if ( !file.exists( 'results/biGamma_sims.rds' ) )  {
 ```{r ch040-biNegBin, echo = FALSE, eval = TRUE}
 size <- 4
 prob <- 3e-04
-if ( !file.exists( 'results/biNB_sims.rds' ) )  {
+if (!file.exists( 'results/biNB_sims.rds'))  {
     mom_nbinom <- function(x) {
         m <- mean(x)
         s <- sd(x)
         list(size = m^2 / (s^2 - m), prob = m / s^2)
     }
 
-    margins <- alist(
-        qnbinom(size = size, prob = prob),
-        qnbinom(size = size, prob = prob)
+    margins <- c(
+        dist$NegativeBinomial(size, prob),
+        dist$NegativeBinomial(size, prob)
     )
 
-    type <- c("pearson", "spearman", "kendall")
+    types <- c("Pearson", "Spearman", "Kendall")
     cores <- as.integer( parallel::detectCores() - 1 )
     ## cores <- cores
     n <- c(1e3, 1e4, 1e5)
     ## n <- c(1e1, 1e2, 1e3)
-    adjustForDiscrete <- c(FALSE)
 
     eps <- 1e-2
     grid_steps <- 100
     ## grid_steps <- 10
-    sim_pars <- expand.grid(type = type, cores = cores, n = n,
-                            stringsAsFactors = FALSE,
-                            adjustForDiscrete = adjustForDiscrete)
+    sim_pars <- expand.grid(type = types, cores = cores, n = n,
+                            stringsAsFactors = FALSE)
 
     dir.create("./results/biNB_sims", showWarnings = TRUE, recursive = TRUE)
     res <- data.frame()
@@ -261,31 +241,19 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
         type <- sim_pars$type[i]
         cores <- sim_pars$cores[i]
         n <- sim_pars$n[i]
-        adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
-        ## AGS. 17 Oct 2020. cor_bounds failed.
-        ## I'll create a minimal working example and open an issue
-        ## work around for now
-        if ( type == 'pearson' ) {
-            tmp_bounds <- cor_bounds(margins, method = type)
-            cor_lo <- tmp_bounds$lower[1,2] + eps
-            cor_hi <- tmp_bounds$upper[1,2] - eps
-        } else {
-            cor_lo <- -1 + eps
-            cor_hi <- 1 - eps
-        }
+        
+        tmp_bounds <- bs$cor_bounds(margins, bs[[type]])
+        cor_lo <- tmp_bounds$lower[1,2] + eps
+        cor_hi <- tmp_bounds$upper[1,2] - eps
         cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
 
         for (rho in cor_seq) {
             Rho <- matrix(rho, 2, 2)
             diag(Rho) <- 1.0
+            Rho <- bs$cor_convert(Rho, bs[[type]], bs$Pearson)
 
             time_data <- system.time({
-                x <- rvec(n = n,
-                          rho = Rho,
-                          margins = margins,
-                          cores = cores,
-                          type = type,
-                          ensure_PSD = TRUE)
+                x <- bs$rvec(n, Rho, margins)
             })
 
             ## Save the sims in case
@@ -295,14 +263,13 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
                 "-c", cores,
                 "-r", rho,
                 "-Cor", type,
-                "-adj", as.character(adjustForDiscrete),
                 "-dev", "CPU",
                 "-lib", "bigsimr"
             )
             saveRDS(x, file = paste0("./results/biNB_sims/", id, ".rds"))
 
             ## Estimate statistics
-            Rho_hat <- cor_fast(x, method = type)
+            Rho_hat <- bs$cor_fast(x, bs[[type]])
             rho_hat <- Rho_hat[1, 2]
             nbinom_args_hat <- mom_nbinom(x[,1])
             size_hat <- nbinom_args_hat$size
@@ -315,7 +282,6 @@ if ( !file.exists( 'results/biNB_sims.rds' ) )  {
                                   type = type,
                                   cores = cores,
                                   margins = "nbinom",
-                                  adjustForDiscrete = adjustForDiscrete,
                                   d = 2,
                                   N = n,
                                   rho = rho,

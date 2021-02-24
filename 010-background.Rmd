@@ -44,13 +44,12 @@ d <- 1000
 brcaRDS <- paste0( "data/brca", d, ".rds" )
 if ( !file.exists( brcaRDS ) | !file.exists( './data/examplePatients.txt' ) )  {
     brca0 <- TCGA2STAT::getTCGA(disease = "BRCA",
-                            data.type = "RNASeq",
-                            p = 6L)
+                                data.type = "RNASeq")
     brca1 <- as.data.frame(t(brca0$dat))
     gene_median <- apply(brca1, 2, median)
     gene_median_order <- order(gene_median, decreasing = TRUE)
-    brca  <- brca1[,head(gene_median_order, d)]
-    writeLines( substring( row.names( brca ), first=1, last= 12 ), './data/examplePatients.txt' ) 
+    brca  <- brca1[, head(gene_median_order, d)]
+    writeLines(substring(row.names(brca), first = 1, last = 12), './data/examplePatients.txt') 
     saveRDS(brca, brcaRDS)
 }
 brca <- readRDS(file = brcaRDS)

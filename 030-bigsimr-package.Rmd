@@ -1,28 +1,22 @@
-```{r ch030-basic-example-setup, echo=TRUE, message=FALSE, cache=F}
-## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
-library(bigsimr)
-Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
-## Either let JuliaCall find your installation of Julia or set manually
-# bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
-bs <- bigsimr_setup(JULIA_HOME = "/home/alex/julia-1.5.3/bin/", pkg_check = FALSE)
-dist <- distributions_setup() # Julia distributions
-library(tidyverse)
-library(patchwork)
-```
-
 # The `bigsimr` R package {#package}
 
-The following descrption is directed towards towards `R` users via `bigsimr` R package.
-This package provides an interface to the native code written in Julia, registered as the `Bigsimr`Julia package PROVIDE LINK.
-In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `PyBigsimr` at URL that interfaces with the Julia `Bigsimr` package.
-The Julia implementation provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
-When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate workflows.
 
-The subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the readily-available data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983].
-This workflow proceeds from data, to estimation, simulation configuration, random vector generation, and result visualization.
-For this low-dimensional setting, we operate using a single central processing unit (CPU), as the overhead in forking the tasks to multiple cores outweighs the computational gains. 
-Then we transition to advanced use where we briefly describe some of the high-performance features and syntax.
-The section concludes with a short description of how to use `bigsimr` on a computer clusters through slurm scheduling via the `rslurm` package [@R-rslurm].
+```{r ch030-basic-example-setup, echo=TRUE, cache=FALSE}
+library(tidyverse)
+library(patchwork)
+library(bigsimr)
+
+Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
+bs <- bigsimr_setup()
+dist <- distributions_setup()
+```
+
+
+The following description is directed towards towards `R` users via the `bigsimr` `R` package. This package provides an interface to the native code written in Julia, registered as the `Bigsimr` Julia package PROVIDE URL In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` at PROVIDE URL that interfaces with the Julia `Bigsimr` package. The Julia implementation provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)). When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize and automate workflows.
+
+
+The subsections below describe the basic use of `bigsimr`, by stepping through a low-dimensional (2D) simulation workflow for the readily-available data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from data, to estimation, simulation configuration, random vector generation, and result visualization. For this low-dimensional setting, we operate using a single central processing unit (CPU), as the overhead in forking the tasks to multiple cores outweighs the computational gains. Then we transition to advanced use where we briefly describe some of the high-performance features and syntax. The section concludes with a short description of how to use `bigsimr` on a computer clusters through slurm scheduling via the `rslurm` package [@R-rslurm].
+
 
 <!-- 
 `bigsimr` is an R package for simulating high-dimensional multivariate data with arbitrary marginal distributions. The efficiency behind generating multivariate samples comes from the ability to utilize a GPU during the generation of multivariate normal samples and the subsequent transformation to uniform samples (see section \@ref(rand-vec-gen)). A GPU is not necessary in order to use `bigsimr`, and the speed benefits generally only come when simulating very high dimensional data ($d > 10000$).
@@ -30,12 +24,15 @@ The section concludes with a short description of how to use `bigsimr` on a comp
 The next computational step after obtaining the correlated uniform marginals is the inverse transform into the target marginal distributions. Since this consists of $d$ independent transformations, we utilize parallelization to achieve higher throughput. As with many parallel algorithms, there is overhead associated with forking the task to utilize multiple cores, however cost is negligible compared to the total run-time.
 -->
 
+
 ## Bivariate example of basic use
 
-We demonstrate the basic use and syntax of `bigsimr` through an example workflow applied to the New York air quality data set (`airquality`) included in the R `datasets` package.
-First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages.
+
+We demonstrate the basic use and syntax of `bigsimr` through an example workflow applied to the New York air quality data set (`airquality`) included in the R `datasets` package. First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages.
+
 
 For simplicity and to provide a minimal working example, we consider bivariate simulation of the two `airquality` variables `Temperature`, in degrees Fahrenheit, and `Ozone` level, in parts per billion.
+
 
 ```{r ch030-air-quality-data, echo=TRUE}
 df <- airquality %>%
@@ -43,16 +40,16 @@ df <- airquality %>%
   drop_na()
 ```
 
+
 ```{r ch030-aq-glimpse}
 glimpse(df)
 ```
 
-Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between Ozone and Temperature.
-We aim to simulate random two-component vectors mimicking this structure. 
-The margins are not normally distributed; particularly the Ozone level exhibits a strong positive skew.
 
-```{r ch030-aq-joint-dist, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap="Bivariate scatterplot of Ozone vs. Temp with estimated marginal densities. We model the Ozone data as marginally log-normal and the Temperature data as normal.", cache=F}
+Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between Ozone and Temperature. We aim to simulate random two-component vectors mimicking this structure. The margins are not normally distributed; particularly the Ozone level exhibits a strong positive skew.
 
+
+```{r ch030-aq-joint-dist, cache=FALSE, fig.width= 8, fig.cap="Bivariate scatterplot of Ozone vs. Temp with estimated marginal densities. We model the Ozone data as marginally log-normal and the Temperature data as normal."}
 p0 <- ggplot(df, aes(Temp, Ozone)) +
   geom_point(size = 1) +
   theme(legend.position = "none") + 
@@ -77,20 +74,20 @@ pTemp + plot_spacer() + p0 + pOzone +
   plot_layout(widths = c(3,1), heights = c(1, 3)) 
 ```
 
-Next, we specify the marginal distributions and correlation coefficient (both type and magnitude).
-Here the analyst is free to be creative.
-For this example, we avoid goodness-of-fit considerations to determine the marginal distributions.
-But it seems sensible without domain knowledge to estimate these quantities from the data and `bigsimr` contains fast functions designed for this task.
+
+Next, we specify the marginal distributions and correlation coefficient (both type and magnitude). Here the analyst is free to be creative. For this example, we avoid goodness-of-fit considerations to determine the marginal distributions. But it seems sensible without domain knowledge to estimate these quantities from the data and `bigsimr` contains fast functions designed for this task.
+
 
 *Specifying marginal distributions*.
-Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we assume `Temp` is normally distributed and `Ozone` is log-normally distributed, as the latter values are positive and skewed.
-We use the well-known, unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the log-normal parameters:
+Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we assume `Temp` is normally distributed and `Ozone` is log-normally distributed, as the latter values are positive and skewed. We use the well-known, unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the log-normal parameters:
 
-```{r ch030-aq-temp-pars, echo=TRUE, eval=TRUE}
+
+```{r ch030-aq-temp-pars, echo=TRUE}
 df %>% 
   select(Temp) %>% 
   summarise_all(.funs = c(mean = mean, sd = sd))
 ```
+
 
 ```{r ch030-aq-ozone-pars, echo=TRUE}
 mle_mean <- function(x) mean(log(x))
@@ -101,10 +98,11 @@ df %>%
   summarise_all(.funs = c(meanlog = mle_mean, sdlog = mle_sd))
 ```
 
-Next, we configure the input marginals for later input into `rvec`.
-The marginal distributions are specified using `Julias`'s `Distributions.jl` package and stored in an `R` vector.
 
-```{r ch030-margins-alist, echo=TRUE, cache=T}
+Next, we configure the input marginals for later input into `rvec`. The marginal distributions are specified using `Julia`'s `Distributions` package and stored in a vector.
+
+
+```{r ch030-margins-alist, echo=TRUE}
 margins <- c(
     dist$Normal(mean(df$Temp), sd(df$Temp)),
     dist$LogNormal(mle_mean(df$Ozone), mle_sd(df$Ozone))
@@ -113,52 +111,56 @@ margins <- c(
 
 
 *Specifying correlation*.
-As mentioned, the user must decide how to describe correlation, based on the particulars of the problem.
-For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ and Kendall's $\tau$ correlation matrix $R_K$.
-We also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance).
-To aid in correlation specification, and estimation in general, we provide a high-performance function `cor_fast` which estimates Spearman, Kendall, or Pearson correlation of large data sets by computing pairwise correlations in parallel.
-(Anyone who has tried estimating Kendall's $\tau$ using `stats::cor` can attest that the routine does not scale to even moderate dimensions).
-These estimation methods are classical approaches, not designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
+As mentioned, the user must decide how to describe correlation, based on the particulars of the problem. For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ and Kendall's $\tau$ correlation matrix $R_K$. We also support approximate Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance). To aid in correlation specification, and estimation in general, we provide a high-performance function `cor_fast` which estimates Spearman, Kendall, or Pearson correlation of large data sets by computing pairwise correlations in parallel. (Anyone who has tried estimating Kendall's $\tau$ using `stats::cor` can attest that the routine does not scale to even moderate dimensions). These estimation methods are classical approaches, not designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
+
 
 ```{r ch030-aq-cor, echo=TRUE}
 (R_S <- bs$cor(as.matrix(df), bs$Spearman))
 ```
 
+
 *Checking target correlation matrix admissibility*.
-First we use `cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)).
-`cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
+First we use `cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)). `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
+
 
 ```{r ch030-cor-bounds, echo=TRUE}
 bounds <- bs$cor_bounds(margins)
 bounds$lower
 ```
 
-Since our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `rvec`.
-But even if the 2-dimensional bounds are satisfied for each pair of margins, this does not guarantee the feasibility of a $d-$variate distribution [@BF17].
+
+Since our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `rvec`. But even if the 2-dimensional bounds are satisfied for each pair of margins, this does not guarantee the feasibility of a $d-$variate distribution [@BF17].
+
 
 To provide higher dimensional feasibility/admissibility checking, we begin by mapping using `cor_convert` and check admissibility.
 
+
 ```{r ch030-cor-convert, echo=TRUE}
-## Step 1. Mapping
+# Step 1. Mapping
 (R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson))
-## Step 2. Check admissibily
+
+# Step 2. Check admissibility
 is_valid_correlation <- function(rho) {
   all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
 }
 is_valid_correlation(R_X)
 ```
 
+
 The bounds on the Pearson correlation coefficient $R_P$ between these margins is restricted as seen below in our MC estimated correlation bounds:
+
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
 bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 ```
 
+
 Our MC estimate of the bounds slightly underestimates the theoretic bounds of $(-0.881, 0.881)$. An analytic derivation is presented as an Appendix.
 
+
 *Simulating random vectors*.
-Finally, we arrive at the main function of `bigsimr`, `rvec`.
-We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
+Finally, we arrive at the main function of `bigsimr`, `rvec`. We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
+
 
 ```{r ch030-sim-margins, echo=TRUE}
 x <- bs$rvec(10000, R_X, margins)
@@ -166,7 +168,9 @@ df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```
 
+
 Figure \@ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
+
 
 ```{r ch030-plot-sim, fig.cap="Contour plot and marginal densities for the simulated bivariate distribution of Air Quality Temperatures and Ozone levels. The simulated points mimic the observed data with respect to both the marginal characteristics and bivariate association."}
 p1 <- df_sim %>%
@@ -195,6 +199,7 @@ p1Ozone <- ggplot(df_sim, aes(Ozone)) +
 p1Temp + plot_spacer() + p1 + p1Ozone + 
   plot_layout(widths = c(3,1), heights = c(1, 3))
 ```
+
 
 <!-- 
 *Comparison to Uncorrelated Samples*.
@@ -234,16 +239,15 @@ p2Temp + plot_spacer() + p2 + p2Ozone +
 ```
 
 Notice that this uncorrelated bivariate distribution has the same marginal distributions as the correlated example above.
+-->
 
-your comment -->
 
 ## Advanced use {#advanced-use}
 
+
 *Using `bigsimr` on a computing cluster via `rslurm`*.
-Although `bigsimr` runs quickly, for large $d$ users may wish to run jobs on a shared computing server.
-The R package `rslurm` enables parallel `rvec` calls.
-This example assumes that `bigsimr` is installed on a system with a slurm scheduler.
-A single run of `bigsimr:rvec` using `rslurm` can be coded as:
+Although `bigsimr` runs quickly, for large $d$ users may wish to run jobs on a shared computing server. The R package `rslurm` enables parallel `rvec` calls. This example assumes that `bigsimr` is installed on a system with a slurm scheduler. A single run of `rvec` using `rslurm` can be coded as:
+
 
 ```{r ch030-rvecRslurm-with-comments, echo=FALSE, eval=FALSE}
 library(rslurm)
@@ -259,6 +263,7 @@ sjob <- slurm_call(bs$rvec, jobname = 'rvec',
                    submit = TRUE)
 ```
 
+
 ```{r ch030-rvecRslurm, echo=TRUE, eval=FALSE}
 library(rslurm)
 sjob <- slurm_call(bs$rvec, jobname = 'rvec',
@@ -268,18 +273,20 @@ sjob <- slurm_call(bs$rvec, jobname = 'rvec',
                    submit = TRUE)
 ```
 
+
 <!-- 
-Once your jobs complete, `rslurm` conveniently stores simulation results in a standardized format.
-Retriving the data is accomplished by
+Once your jobs complete, `rslurm` conveniently stores simulation results in a standardized format. Retriving the data is accomplished by
 -->
+
 
 ```{r ch030-rvecRslurmRes, echo=FALSE, eval=FALSE}
 res <- readRDS(file.path('_rslurm_rvec', list.files('_rslurm_rvec', 'results')))
 head(res, 3)
 ```
 
-The power of combining `bigsimr` and `rslurm` can be illustrated by simulating many correlation structures.
-The `rslurm::slumr_map` syntax mirrors the `base::lapply` and `purrr::map` functions. 
+
+The power of combining `bigsimr` and `rslurm` can be illustrated by simulating many correlation structures. The `rslurm::slumr_map` syntax mirrors the `base::lapply` and `purrr::map` functions. 
+
 
 ```{r ch030-rvecRslurmMap-comments, echo=FALSE, eval=FALSE}
 library(rslurm)
@@ -302,6 +309,7 @@ sjob <- slurm_map(x = rhoList,
                   submit = TRUE)
 ```
 
+
 ```{r ch030-rvecRslurmMap, echo=TRUE, eval=FALSE}
 library(rslurm)
 simReps <- 100
@@ -318,12 +326,14 @@ sjob <- slurm_map(x = rhoList,
                   submit = TRUE)
 ```
 
+
 On a cluster carrying 24 nodes with 48 threads, these 100 jobs complete in about a minute.
+
 
 <!-- 
 Let's evaluate the quality of simulation performance.
+-->
 
-your comment -->
 
 ```{r ch030-rvecRslurmMapRes, echo=FALSE, eval=FALSE}
 list.files('_rslurm_rvecMap', 'results')
@@ -356,7 +366,8 @@ saveRDS(res, file = 'data/rvecRslurmMapRes.rds')
 ## cleanup_files(sjob) 
 ```
 
-```{r ch030-rvecRslurmMapFig, echo = FALSE, eval=FALSE, message=FALSE, warning=FALSE, out.width= '75%', fig.align='center', fig.cap='The continous marginal pairs exact reproduce the specified correlation whereas the discrete pairs (green nad blue) show a downward bias. Future work with employ a discrete adjusted procedures using *rescaling* on the traditional correlation coefficient.'}
+
+```{r ch030-rvecRslurmMapFig, eval=FALSE, out.width= '75%', fig.cap='The continous marginal pairs exact reproduce the specified correlation whereas the discrete pairs (green nad blue) show a downward bias. Future work with employ a discrete adjusted procedures using *rescaling* on the traditional correlation coefficient.'}
 res <- readRDS( 'data/rvecRslurmMapRes.rds' )
 res
 res %>%

@@ -1,17 +1,23 @@
 # Appendix {.unnumbered #appendix}
 
+
 \noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). 
+
 
 \vspace{0.1in}
 
+
 \noindent First, let us note that when we get such a vector from BigSimR package then in fact it can be represented as 
+
 
 \begin{equation}
 \label{kram1}
 (Y_1, Y_2)^\top \stackrel{d}{=} \left(X_1, e^{X_2}\right)^\top
 \end{equation}
 
+
 where $(X_1, X_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$, which is bivariate normal with mean vector $\boldsymbol \mu = (\mu_1, \mu_2)^\top$ and variance-covariance matrix 
+
 
 \begin{equation}
 \label{kram2}
@@ -24,7 +30,9 @@ where $(X_1, X_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$, which is 
 \right].
 \end{equation}
 
+
 To see this, consider the three steps of the NORTA construction:
+
 
 \begin{enumerate}
 
@@ -48,23 +56,30 @@ To see this, consider the three steps of the NORTA construction:
 
 \end{enumerate}
 
+
 In this example, $F_1$ is the CDF of $N(\mu_1, \sigma_1^2)$ while $F_2$ is the CDF of $LN(\mu_2, \sigma_2^2)$, so that the two required quantile functions are 
+
 
 \begin{equation}
 \label{kram4}
 F_1^{-1}(u) = \mu_1+\sigma_1 \Phi^{-1}(u)\,\,\, \mbox{and} \,\,\, F_2^{-1}(u) = e^{\mu_2+\sigma_2 \Phi^{-1}(u)}, 
 \end{equation}
 
+
 as can be seen by standard calculation. Thus, when we apply Step 3 of the NORTA algorithm, we get 
+
 
 \begin{equation}
 \label{kram5}
 F_1^{-1}(U_1) = \mu_1+\sigma_1 \Phi^{-1}(\Phi(Z_1)) =  \mu_1+\sigma_1 Z_1 \,\,\, \mbox{and} \,\,\, F_2^{-1}(U_2) = e^{\mu_2+\sigma_2 \Phi^{-1}(\Phi(Z_2))} = e^{\mu_2+\sigma_2 Z_2}, 
 \end{equation}
 
+
 where $(X_1, X_2)^\top =  (\mu_1+\sigma_1 Z_1, \mu_2+\sigma_2 Z_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$. Consequently, the vector $(Y_1, Y_2)^\top$ obtained in Step 3 of the algorithm has the structure provided by (\ref{kram1}). 
 
+
 \vspace{0.1in}
+
 
 \noindent Next, we provide the exact covariance structure of the random vector $(Y_1, Y_2)^\top$ given by (\ref{kram1}), and relate the correlation of $Y_1$ and $Y_2$ to $\rho$, which is the correlation of the normal variables $Z_1$, $Z_2$ (and also $X_1$ and $X_2$). A straightforward albeit somewhat tedious algebra produces the following result. 
 
@@ -161,21 +176,27 @@ Finally, (\ref{covy1y2}), along with the expressions for the means of $Y_1$ and 
 This concludes the proof
 \end{proof}
 
+
 Using the above result, we can directly relate the correlation coefficient of $Y_1$ and $Y_2$ with that of $X_1$ and $X_2$, 
+
 
 \begin{equation}
 \label{kram8}
 \rho_{Y_1, Y_2} = \rho \frac{\sigma_2}{\sqrt{e^{\sigma_2^2} -1}},
 \end{equation}
 
+
 where $\rho$ is the correlation of $X_1$ and $X_2$. The above result is useful when studying the possible range of correlation of $Y_1$ and $Y_2$ in the above example. It can be shown that the factor on the far right in (\ref{kram8}) is a monotonically decreasing function of $\sigma_2$ on $(0,\infty)$, with the limits of 1 and 0 at zero and infinity, respectively. Thus, in principle, the range of correlation of $Y_1$ and $Y_2$ is the same as that of $X_1$ and $X_2$, as the factor on the far right in (\ref{kram8}) can be made arbitrarily close to 1. However, by changing this factor we may affect the marginal distributions of $Y_1$ and $Y_2$. It can be shown that if the marginal distributions of $Y_1$ and $Y_2$ are fixed, then the relation (\ref{kram8}) becomes 
+
 
 \begin{equation}
 \label{kram9}
 \rho_{Y_1, Y_2} = \rho \sqrt{\frac{\log(1+c_2^2)}{c_2^2}},
 \end{equation}
 
+
 where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the {\it coefficient of variation} (CV) of the variable $Y_2$. Thus, the range of possible correlations in this model is not affected by the distribution of $Y_1$, and is determined by the CV of $Y_2$ as follows:
+
 
 \begin{equation}
 \label{kram10}
@@ -185,12 +206,14 @@ where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the {\it coefficient of variation} (CV) of
  
  \vspace{0.1in}
  
+ 
  \noindent {\bf Further notes on the basic example in Section 4.1}. Based on the above analysis, one may propose a model of the form (\ref{kram1}) for these data, where $Y_1$ is the temperature (normal) and $Y_2$ is the Ozone variable (lognormal). Then, $X_1=Y_1$ and $X_2=\log Y_2$ will be bivariate normal, and the parameters can be estimated  based on the bivariate normal model. One can again use the marginal estimates as discussed in the paper, although one could actually use the exact same method for both variables (based on normality, after converting the Ozone variable to normal through the logarithmic transformation). According to the analysis presented in the paper, the values of 3.419 and 0.6967 are the estimates (the MLEs) of the mean and the variance of the underlying normal random variable $X_2$, that is $\hat{\mu}_2 = 0.3.419$ and $\hat{\sigma}_2=0.6967$. When this estimate of $\sigma_2$ is used in (\ref{kram8}), the factor on the far right becomes 
+
 
 \begin{equation}
 \label{kram11}
 \frac{\hat{\sigma}_2}{\sqrt{e^{\hat{\sigma}_2^2} -1}} = 0.881.
 \end{equation}
 
-Thus, the possible range of correlation becomes $(-0.881, 0.881)$. This approximately agrees with the MC results in Section \@ref(package).
 
+Thus, the possible range of correlation becomes $(-0.881, 0.881)$. This approximately agrees with the MC results in Section \@ref(package).

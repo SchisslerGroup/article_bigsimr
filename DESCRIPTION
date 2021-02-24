@@ -1,4 +1,4 @@
-Package: article_bigsimr
+Package: BigsimrArticle
 Title: Bigsimr Article Package
 Version: 0.0.1
 Authors@R: 
@@ -11,13 +11,14 @@ Encoding: UTF-8
 LazyData: true
 biocViews:
 Depends: 
-    tidyverse
+    R (>= 2.10)
 Imports:
     BiocManager,
     CNTools,
     graph,
     RBGL,
     Rgraphviz,
+    tidyverse,
     knitr,
     printr,
     rmarkdown,
@@ -26,4 +27,5 @@ Imports:
     GGally,
     patchwork,
     rags2ridges,
-    matrixcalc
+    matrixcalc,
+    rlang

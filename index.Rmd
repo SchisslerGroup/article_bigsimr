@@ -19,12 +19,6 @@ abstract:  It is critical to realistically simulate data when conducting Monte C
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
 
 ```{r indexSetup, include=FALSE, cache=FALSE}
-knitr::opts_chunk$set(eval = TRUE, 
-                      echo = FALSE,
-                      message = FALSE,
-                      warning = FALSE,
-                      cache = TRUE)
-
 library(tidyverse)
 library(knitr)
 library(printr)
@@ -46,21 +40,21 @@ knitr::write_bib(c(
 ```
 
 ```{r serveHelper, include=FALSE, eval=FALSE}
-## rmote::start_rmote()
-## library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
-## bookdown::render_book("index.Rmd", "bookdown::pdf_book", output_dir = "pdf")
-## bookdown::preview_chapter("index.Rmd")
+# rmote::start_rmote()
+# library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
+# bookdown::render_book("index.Rmd", "bookdown::pdf_book", output_dir = "pdf")
+# bookdown::preview_chapter("index.Rmd")
 rmarkdown::render_site(encoding = 'UTF-8')
 bookdown::serve_book()
 ```
 
 ```{r countWords, include=FALSE, eval=FALSE}
 rmdFiles <- dir(pattern = 'Rmd$', ignore.case= T)
-## rmdFiles <- rmdFiles[-grep('^_', rmdFiles)]
+# rmdFiles <- rmdFiles[-grep('^_', rmdFiles)]
 rmdFiles <- rmdFiles[-grep('references', rmdFiles)]
-## rmdFiles <- rmdFiles[-grep('README', rmdFiles)]
-## rmdFiles <- rmdFiles[-grep('article', rmdFiles)] ## after generating a single document
-## wordcountaddin::word_count( rmdFiles[11] )
+# rmdFiles <- rmdFiles[-grep('README', rmdFiles)]
+# rmdFiles <- rmdFiles[-grep('article', rmdFiles)] ## after generating a single document
+# wordcountaddin::word_count( rmdFiles[11] )
 (counts <- sapply( rmdFiles, wordcountaddin::word_count, simplify = T ))
 sum(counts)
 ```
@@ -73,7 +67,9 @@ As many have noted, it can be vexing to simulate dependent, non-normal/discrete 
 
 Another central issue lies in characterizing dependency between components in the high-dimensional random vector. The choice of correlation in practice usually relates to the eventual analytic goal and distributional assumptions of the data (e.g., non-normal, discrete, infinite support, etc).
 
-<!-- Here we propose a scheme that ignores the analytic goal --- and, instead, aims to match the empirically-derived estimated correlation data and marginal characteristics.  -->
+<!-- 
+Here we propose a scheme that ignores the analytic goal --- and, instead, aims to match the empirically-derived estimated correlation data and marginal characteristics.
+-->
 
 For normal data, the Pearson product-moment correlation describes the dependency perfectly. As we will see, however, simulating arbitrary random vectors that match a target Pearson correlation matrix exactly is computationally intense [@Chen2001; @Xia17]. On the other hand, an analyst might consider use of nonparametric correlation measures to better characterize monotone, non-linear dependency, such as Spearman's $\rho$ and Kendall's $\tau$. Throughout, we focus on matching these nonparametric dependency measures, as our aim lies in modeling non-normal data and these rank-based measures possess invariance properties favorable in our proposed methodology.
 

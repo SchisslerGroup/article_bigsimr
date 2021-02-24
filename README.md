@@ -11,3 +11,17 @@ devtools::install_deps()
 devtools::install_version("TCGA2STAT", version = "1.2")
 devtools::install_github("SchisslerGroup/bigsimr", ref = "dev-julia")
 ```
+
+## Other Setup
+
+During setup, `JuliaCall` will try to look for your julia installation by first checking the environment variable `JULIA_HOME`. If it is not set, then it will try to automatically install julia. This can sometimes be problematic. To get around this, first install julia, then edit your `.Renviron` file to include the following:
+
+```
+JULIA_HOME = "/path/to/julia/bin/"
+```
+
+You can edit your `.Renviron` file by calling
+
+```r
+usethis::edit_r_environ("user")
+```

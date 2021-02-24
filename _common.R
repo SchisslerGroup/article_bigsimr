@@ -7,9 +7,9 @@ knitr::opts_chunk$set(
   echo = FALSE,
   results = 'markup',
   collapse = TRUE,
+  message = FALSE,
   warning = FALSE,
   error = FALSE,
-  message = FALSE,
   # Code Decoration
   comment = NA,
   background = '#F7F7F7',

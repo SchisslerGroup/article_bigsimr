@@ -18,25 +18,18 @@ abstract:  It is critical to realistically simulate data when conducting Monte C
 
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
 
-```{r indexSetup, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide", cache=F}
-## devtools::install_github("SchisslerGroup/bigsimr", ref="dev-julia")
-## library(bigsimr)
-## Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
-## Either let JuliaCall find your installation of Julia or set manually
-## bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
-## dist <- distributions_setup() # Julia distributions
+```{r indexSetup, include=FALSE, cache=FALSE}
 library(tidyverse)
 library(knitr)
 library(printr)
-knitr::opts_chunk$set(eval = TRUE, echo = FALSE, cache = TRUE)
 library(rmarkdown)
 library(bookdown)
-## setwd('~/article_bigsimr')
+
 set.seed(09212020)
 ```
 
-```{r copyBib, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
-system( 'cp ~/bib/bigsimr.bib ./.' )
+```{r copyBib, include=FALSE, eval=FALSE}
+system('cp ~/bib/bigsimr.bib ./.')
 ```
 
 ```{r include=FALSE}
@@ -47,55 +40,39 @@ knitr::write_bib(c(
 ```
 
 ```{r serveHelper, include=FALSE, eval=FALSE}
-## rmote::start_rmote()
-## library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
-## bookdown::render_book("index.Rmd", "bookdown::pdf_book", output_dir = "pdf")
-## bookdown::preview_chapter("index.Rmd")
+# rmote::start_rmote()
+# library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
+# bookdown::render_book("index.Rmd", "bookdown::pdf_book", output_dir = "pdf")
+# bookdown::preview_chapter("index.Rmd")
 rmarkdown::render_site(encoding = 'UTF-8')
 bookdown::serve_book()
 ```
 
-```{r countWords, echo = FALSE, eval = FALSE, message=FALSE, warning=FALSE, results = "hide"}
+```{r countWords, include=FALSE, eval=FALSE}
 rmdFiles <- dir(pattern = 'Rmd$', ignore.case= T)
-## rmdFiles <- rmdFiles[-grep('^_', rmdFiles)]
+# rmdFiles <- rmdFiles[-grep('^_', rmdFiles)]
 rmdFiles <- rmdFiles[-grep('references', rmdFiles)]
-## rmdFiles <- rmdFiles[-grep('README', rmdFiles)]
-## rmdFiles <- rmdFiles[-grep('article', rmdFiles)] ## after generating a single document
-## wordcountaddin::word_count( rmdFiles[11] )
+# rmdFiles <- rmdFiles[-grep('README', rmdFiles)]
+# rmdFiles <- rmdFiles[-grep('article', rmdFiles)] ## after generating a single document
+# wordcountaddin::word_count( rmdFiles[11] )
 (counts <- sapply( rmdFiles, wordcountaddin::word_count, simplify = T ))
 sum(counts)
 ```
 
 # Introduction
 
-Massive high-dimensional data sets are now commonplace in many areas of scientific inquiry.
-As new methods are developed for data, a fundamental challenge lies in designing and conducting simulation studies to assess the operating characteristics of analyzing such proposed methodology --- such as false positive rates, statistical power, interval coverage, and robustness --- often with comparison to existing methods.
-Further, efficient simulation empowers statistical computing strategies, such as the parametric bootstrap [@Chernick2008] to simulate from a hypothesized null model, providing inference in analytically challenging settings.
-Such Monte Carlo (MC) techniques become difficult for high-dimensional data using existing algorithms and tools.
-This is particularly true when simulating massive *multivariate*, *non-normal* distributions, arising naturally in many fields of study.
+Massive high-dimensional data sets are now commonplace in many areas of scientific inquiry. As new methods are developed for data, a fundamental challenge lies in designing and conducting simulation studies to assess the operating characteristics of analyzing such proposed methodology --- such as false positive rates, statistical power, interval coverage, and robustness --- often with comparison to existing methods. Further, efficient simulation empowers statistical computing strategies, such as the parametric bootstrap [@Chernick2008] to simulate from a hypothesized null model, providing inference in analytically challenging settings. Such Monte Carlo (MC) techniques become difficult for high-dimensional data using existing algorithms and tools. This is particularly true when simulating massive *multivariate*, *non-normal* distributions, arising naturally in many fields of study.
 
-As many have noted, it can be vexing to simulate dependent, non-normal/discrete data ---  even for low dimensional settings [@MB13; @XZ19].
-For continuous non--normal multivariate data, the well-known NORmal To Anything (NORTA) algorithm [@Cario1997] and other copula approaches [@Nelsen2007] are well-studied, with flexible, robust software available [@Yan2007; @Chen2001].
-Yet these approaches do not scale in a timely fashion to high-dimensional problems [@Li2019gpu]. 
-For discrete data, early simulation strategies had major flaws --- such as failing to obtain the full range of possible dependencies (e.g., admitting only positive correlations: see @Park1996). 
-While more recent approaches [@MB13; @Xia17; @BF17] have largely remedied this issue for low-dimensional problems, the existing tools are not designed to scale to high dimensions.
+As many have noted, it can be vexing to simulate dependent, non-normal/discrete data ---  even for low dimensional settings [@MB13; @XZ19]. For continuous non--normal multivariate data, the well-known NORmal To Anything (NORTA) algorithm [@Cario1997] and other copula approaches [@Nelsen2007] are well-studied, with flexible, robust software available [@Yan2007; @Chen2001]. Yet these approaches do not scale in a timely fashion to high-dimensional problems [@Li2019gpu]. For discrete data, early simulation strategies had major flaws --- such as failing to obtain the full range of possible dependencies (e.g., admitting only positive correlations: see @Park1996). While more recent approaches [@MB13; @Xia17; @BF17] have largely remedied this issue for low-dimensional problems, the existing tools are not designed to scale to high dimensions.
 
-Another central issue lies in characterizing dependency between components in the high-dimensional random vector.
-The choice of correlation in practice usually relates to the eventual analytic goal and distributional assumptions of the data (e.g., non-normal, discrete, infinite support, etc). 
-<!-- Here we propose a scheme that ignores the analytic goal --- and, instead, aims to match the empirically-derived estimated correlation data and marginal characteristics.  -->
-For normal data, the Pearson product-moment correlation describes the dependency perfectly.
-As we will see, however, simulating arbitrary random vectors that match a target Pearson correlation matrix exactly is computationally intense [@Chen2001; @Xia17]. 
-On the other hand, an analyst might consider use of nonparametric correlation measures to better characterize monotone, non-linear dependency, such as Spearman's $\rho$ and Kendall's $\tau$.
-Throughout, we focus on matching these nonparametric dependency measures, as our aim lies in modeling non-normal data and these rank-based measures possess invariance properties favorable in our proposed methodology.
+Another central issue lies in characterizing dependency between components in the high-dimensional random vector. The choice of correlation in practice usually relates to the eventual analytic goal and distributional assumptions of the data (e.g., non-normal, discrete, infinite support, etc).
 
-With all this in mind, we present a scaleable, flexible multivariate simulation algorithm. 
-The crux of the method lies in the construction of a Gaussian copula, in the spirit of the NORTA procedure.
-Further, we introduce the `bigsimr` R package that provides high-performance software implementing our algorithm.
-The algorithm design leverages useful properties of nonparametric correlation measures, namely invariance under monotone transformation and well-known closed-form relationships between dependency measures for the multivariate normal (MVN) distribution. 
+<!-- 
+Here we propose a scheme that ignores the analytic goal --- and, instead, aims to match the empirically-derived estimated correlation data and marginal characteristics.
+-->
 
-Our study proceeds by providing background information, including a description of our motivating example application --- RNA-sequencing (RNA-seq) breast cancer data.
-Then we describe and justify our simulation methodology and related algorithms.
-Next, we detail an illustrative low-dimensional example of basic and advanced use of the `bigsimr` R package.
-Then we proceed with Monte Carlo studies under various distributional assumptions to assess accuracy and computation times for increasingly large $d$.
-After the MC evaluations, we revisit our high-dimensional motivating example and employ our methods in commonplace statistical computing tasks.
-Finally, we discuss the method's utility, limitations, and future directions.
+For normal data, the Pearson product-moment correlation describes the dependency perfectly. As we will see, however, simulating arbitrary random vectors that match a target Pearson correlation matrix exactly is computationally intense [@Chen2001; @Xia17]. On the other hand, an analyst might consider use of nonparametric correlation measures to better characterize monotone, non-linear dependency, such as Spearman's $\rho$ and Kendall's $\tau$. Throughout, we focus on matching these nonparametric dependency measures, as our aim lies in modeling non-normal data and these rank-based measures possess invariance properties favorable in our proposed methodology.
+
+With all this in mind, we present a scaleable, flexible multivariate simulation algorithm. The crux of the method lies in the construction of a Gaussian copula, in the spirit of the NORTA procedure. Further, we introduce the `bigsimr` R package that provides high-performance software implementing our algorithm. The algorithm design leverages useful properties of nonparametric correlation measures, namely invariance under monotone transformation and well-known closed-form relationships between dependency measures for the multivariate normal (MVN) distribution. 
+
+Our study proceeds by providing background information, including a description of our motivating example application --- RNA-sequencing (RNA-seq) breast cancer data. Then we describe and justify our simulation methodology and related algorithms. Next, we detail an illustrative low-dimensional example of basic and advanced use of the `bigsimr` R package. Then we proceed with Monte Carlo studies under various distributional assumptions to assess accuracy and computation times for increasingly large $d$. After the MC evaluations, we revisit our high-dimensional motivating example and employ our methods in commonplace statistical computing tasks. Finally, we discuss the method's utility, limitations, and future directions.

@@ -37,7 +37,7 @@ Simulating high-dimensional, non-normal, correlated data motivates this work ---
 
 
 We illustrate our methodology using a well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
-For simplicity, we only consider high expressing genes. In turn, we begin by filtering to retain the top `r d`% of highest-expressing genes (in terms of median expression) of the 20,502 gene measurements from $N=`r nrow(example_brca)`$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters). Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
+For simplicity, we only consider high expressing genes. In turn, we begin by filtering to retain the top `r d` of the highest-expressing genes (in terms of median expression) of the oover 20,000 gene measurements from $N=`r nrow(example_brca)`$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters). Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
  
  
 ```{r ch010-realDataTab}
@@ -104,7 +104,7 @@ Kendall's $\tau$, on the other hand, is the difference in probabilities of conco
 By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determined by the ranks of the values, not the values themselves.
 
 
-Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property is essential to scalable match rank-based correlations with speed (SP1) and accuracy (SP2).
+Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property enables matching rank-based correlations with speed (SP1) and accuracy (SP2).
 
 
 *Correspondence among Pearson, Spearman, $\tau$ correlations*.
@@ -125,10 +125,6 @@ For *bivariate normal vectors*, however, the correspondence is well-known:
 (\#eq:convertSpearman)
 \rho_P = 2 \times sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
-
-
-These features are critical in our simulation algorithm to broaden the dependency measures supported by `bigsimr`, in a computationally effective manner.
-
 
 *Discrete marginal considerations*.
 Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale Equation \@ref(eq:spearman). For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as

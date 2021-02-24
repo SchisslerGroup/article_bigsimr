@@ -57,6 +57,3 @@ vignettes/*.pdf
 .Rproj.user
 
 _rslurm_*
-
-# data directory to keep size down
-data/

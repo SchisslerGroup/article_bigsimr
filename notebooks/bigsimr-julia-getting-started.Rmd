@@ -28,7 +28,8 @@ Please see the [Installation and Setup](https://schisslergroup.github.io/bigsimr
 library(bigsimr)
 Sys.setenv(JULIA_NUM_THREADS=parallel::detectCores())
 ## Either let JuliaCall find your installation of Julia or set manually
-bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+## bs <- bigsimr_setup(JULIA_HOME = "/usr/local/bin/")
+bs <- bigsimr_setup()
 dist <- distributions_setup() # Julia distributions
 library(tidyverse)
 library(patchwork)

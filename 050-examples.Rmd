@@ -25,7 +25,7 @@ This section demonstrates how to simulate multivariate data using `bigsimr`, aim
 d <- 1000
 brca1000 <- example_brca %>%
   select(all_of(1:d)) %>%
-  mutate(across(everything(), as.double)) # cor_fast currently doesn't work with integers
+  mutate(across(everything(), as.double))
 ```
 
 
@@ -48,7 +48,7 @@ With this goal in mind, we first estimate the desired correlation matrix using t
 ```{r ch050-estRhoBRCA, echo=TRUE, cache=FALSE}
 # Estimate Spearman's correlation on the count data
 type <- 'Spearman'
-R_S <- bs$cor_fast(as.matrix(brca1000), bs[[type]])
+R_S <- bs$cor(as.matrix(brca1000), bs[[type]])
 ```
 
 
@@ -171,7 +171,7 @@ Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i
 ```{r ch050-makeFigBRCA, cache=FALSE}
 if(!file.exists("fig/ch050-figBRCA.png")) {
     ## estimate rho from sims and plot
-    R_S_hat <- cor_fast(sim_nbinom, method = type)
+    R_S_hat <- bs$cor(as.matrix(sim_nbinom), bs[[type]])
     ## triplot
     ## png("fig/ch050-figBRCA.png", width = 4, res = 100, units = 'in')
     png("fig/ch050-figBRCA.png", res = 300, width = 5, height = 4, units = 'in')
@@ -274,7 +274,7 @@ N <- nrow(brca)
 ## create m random vectors and estimate correlation
 simRho <- replicate(n = m, expr = {
   tmpSim <- bs$rvec(N , R_X, nb_margins)
-  bs::cor_fast(tmpSim, bs[[type]])
+  bs$cor(tmpSim, bs[[type]])
 }, simplify = FALSE)
 ## find quadratic loss at each rep
 quadLoss <- sapply(simRho, rags2ridges::loss, T = R_S, type = "quadratic")
@@ -288,7 +288,7 @@ if (!file.exists(frobeniusRDS)) {
     ## create m random vectors and estimate correlation
     simRho <- replicate(n = m, expr = {
         tmpSim <- bs$rvec(N , R_X, nb_margins)
-        bs$cor_fast(tmpSim, bs[[type]])
+        bs$cor(tmpSim, bs[[type]])
     }, simplify = FALSE)
     frobenius <- sapply(simRho, rags2ridges::loss, T = R_S, type = "frobenius")
     saveRDS(frobenius, frobeniusRDS)

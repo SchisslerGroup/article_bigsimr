@@ -16,8 +16,7 @@ set.seed(10142020)
 ```
 
 
-This section demonstrates how to simulate multivariate data using `bigsimr`, aiming to replicate the structure of high-dimensional dependent count data. In an illustration of our proposed methodology, we seek to simulate RNA-sequencing data by producing simulated random vectors with assumed marginal distributions and with estimated parameters that mimic the observed data and its generating process. We seek realistic multivariate simulation to enable Monte Carlo (MC) methods for these data. Modeling RNA-seq using multivariate probability distributions is natural as inter-gene correlation is an inherent part of biological processes [@Wang2009b]. Yet many models do not account for this, leading to major disruptions to the operating characteristics of statistical estimation, testing, and prediction. See @Efron2012 for a detailed discussion with related methods and @Wu2012b, @Schissler2018, @Schissler2019 for applied examples. The following subsections apply `bigsimr`'s methods to real RNA-seq data, including replicating an estimated parametric structure, MC probability estimation, and MC evaluation of correlation estimation efficiency.
-
+This section demonstrates how to simulate multivariate data using `bigsimr`, aiming to replicate the structure of high-dimensional dependent count data. In an illustration of our proposed methodology, we seek to simulate RNA-sequencing data by producing simulated random vectors mimicking the observed data and its generating process. Modeling RNA-seq using multivariate probability distributions is natural as inter-gene correlation is an inherent part of biological processes [@Wang2009b]. Yet many models do not account for this, leading to major disruptions to the operating characteristics of statistical estimation, testing, and prediction. See @Efron2012 for a detailed discussion with related methods and @Wu2012b, @Schissler2018, @Schissler2019 for applied examples. The following subsections apply `bigsimr`'s methods to real RNA-seq data, including replicating an estimated parametric structure, MC probability estimation, and MC evaluation of correlation estimation efficiency.
 
 ## Simulating High-Dimensional RNA-seq data
 
@@ -30,7 +29,7 @@ brca1000 <- example_brca %>%
 ```
 
 
-Our initial goal is to replicate the structure of the TCGA BRCA RNA-seq data set (see [Background](background)). Ultimately, we will simulate $B=10,000$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with $d=`r d`$. Often researchers posit a negative binomial (NB) model as RNA-seq counts are often over-dispersed. All $d$ selected genes exhibit over-dispersion (data not shown) and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $f_i$ (via the method of moments). To complete specification of the simulation algorithm inputs, we estimate the Spearman correlation matrix ${ \bf R}_{Spearman}$ to characterize dependency.
+We begin by estimating the structure of the TCGA BRCA RNA-seq data set (see [Background](background)). Ultimately, we will simulate $B=10,000$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with $d=`r d`$. We assume a multivariate negative binomial (MVNB) model as RNA-seq counts are often over-dispersed and correlated. All $d$ selected genes exhibit over-dispersion (data not shown) and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $f_i$. To complete specification of the simulation algorithm inputs, we estimate the Spearman correlation matrix ${ \bf R}_{Spearman}$ to characterize dependency.
 
 
 <!--
@@ -77,7 +76,7 @@ nbinom_mom <- function(x) {
 ```
 
 
-Now we estimate the marginal parameters using the built-in `apply` function:
+We apply these estimators to all `r d` genes across the `r nrow(brca1000)` patients:
 
 
 ```{r ch050-estMargins, echo = TRUE, eval = TRUE, cache=F}
@@ -88,7 +87,7 @@ nb_margins <- make_nbinom_margins(sizes, probs)
 ```
 
 
-Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of specified correlation matrix. We begin with the pairwise, 2D MC estimated bounds. And then follow the `r d`-D bounds.
+Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of specified correlation matrix.
 
 
 ```{r ch050-cor-check, echo=TRUE}
@@ -109,7 +108,7 @@ if (!is_valid_corr) {
 summary(abs(targets - approximates))
 ```
 
-While the exact $d \times d$ Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-positive definite result above), the approximation is of sufficient quality for most applications with a maximum pairwise of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))`.
+While the exact $d \times d$ Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-positive definite result above), the approximation is close with a maximum absolute error of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))` across the `r choose(d,2)` correlations.
 
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache=FALSE}
@@ -146,11 +145,12 @@ GGally::ggpairs(
 ) + theme_bw()
 ```
 
-
 Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).
 The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
-Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in just over 2 minutes.
 
+<!-- 
+Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in just over 2 minutes.
+your comment -->
 
 ```{r ch050-makeFigBRCA, cache=FALSE}
 R_S_hat <- bs$cor(as.matrix(sim_nbinom), bs$Spearman)

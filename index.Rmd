@@ -20,7 +20,6 @@ abstract:  It is critical to realistically simulate data when employing Monte Ca
 
 ```{r indexSetup, include=FALSE, cache=FALSE}
 library(tidyverse)
-
 set.seed(09212020)
 ```
 

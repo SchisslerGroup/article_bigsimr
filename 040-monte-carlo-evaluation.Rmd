@@ -4,26 +4,17 @@
 ```{r ch040-LoadLib040, include=FALSE}
 devtools::load_all()
 library(tidyverse)
-library(bigsimr)
-
-Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
-bs <- bigsimr_setup()
-dist <- distributions_setup()
-
-cores <- as.integer(parallel::detectCores() - 1)
-set.seed(10162020)
-prob <- 3e-04
+## library(bigsimr)
+## Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
+## bs <- bigsimr_setup()
+## dist <- distributions_setup()
 ```
-
 
 Before applying our methodology to real data simulation, we conduct several Monte Carlo studies to investigate method performance. Since marginal parameter matching in our scheme is essentially a sequence of univariate inverse probability transforms, the challenging aspects are the accuracy of dependency matching and computational efficiency at high dimensions. To evaluate our methods in those respects, we design the following numerical experiments to first assess accuracy of matching dependency parameters in bivariate simulations and then time the procedure in increasingly large dimension $d$.
 
-
 ## Bivariate experiments
 
-
 We select bivariate simulation configurations to ultimately simulate our motivating discrete-valued RNA-seq example, and, so we proceed in increasing complexity, leading to the model in our motivating application in Section \@ref(examples). We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson's, Spearman's, and Kendall's --- in identical, bivariate marginal configurations. For each pair of identical margins, we vary the target correlation across $\Omega$, the set of possible admissible values for correlation type, to evaluate the simulation's ability to obtain the theoretic bounds. The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (mimicking RNA-seq counts).
-
 
 Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations. We increase the simulate replicates $B$ to check that our results converge to the target correlations and gauge statistical efficiency. We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types. Then, we select a non-symmetric continuous distribution: a standard (rate =1) two-component multivariate gamma (MVG). Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [Example applications](examples) for estimation details). Thus we arrive at a multivariate negative binomial (MVNB) $p_1 = p_2 = 3\times10^{-4}, r_1 = r_2 = 4, \rho \in \Omega$.
 
@@ -122,11 +113,9 @@ tabMAE %>%
                  caption = 'Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.')
 ```
 
+Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation values all three dependency measures, at least in these limited simulation settings for the rank-based correlations. Our Pearson matching performs nearly as well as Spearman or Kendall, except a slight increase in error for negative binomial case. This is due the particularly large counts generated with our choice of parameters for $p$ and $r$.
 
-Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation values for the rank-based dependency measures, at least in these limited simulation settings for the rank-based correlations. For the two non-normal bivariate marginals, the Pearson correlation matching is approximate. For discrete margins, matching the dependency measures was somewhat less accurate, even for the rank-based metrics, and particularly inaccurate near the lower bound of Pearson correlations.
-
-
-```{r ch040-bPlot, cache=FALSE, fig.asp=1.30, fig.weight=4, fig.cap="Bivariate simulations match specified correlations. The horizontal axis plots the specified target correlations across the entire range of possible correlations for each bivariate margin. Normal margins are plotted in dark blue, gamma in medium blue, and negative binomial in light blue. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations. Only the normal margins match the Pearson correlations (top row) exactly across the entire range of correlations. The two non-normal bivariate random vectors experience attenuation (downward bias) for extreme Pearson correlations (due to limitations in our algorithm) and more restriction (due to the Frechet bounds). The rank-based correlations (bottom two rows) are matched exactly for all margins and obtain the full range of possible dependencies."}
+```{r ch040-bPlot, cache=FALSE, fig.asp=1.30, fig.weight=4, fig.cap="Bivariate simulations match target correlations across the entire range of feasible correlations. The horizontal axis plots the specified target correlations for each bivariate margin. Normal margins are plotted in dark dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations."}
 # https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
 # New facet label names
 repsLabs <- paste0("B=", c("1,000", "10,000", "100,000") )
@@ -138,7 +127,7 @@ names(typeLabs) <- c("Pearson", "Spearman", "Kendall")
 ## RColorBrewer::display.brewer.all()
 numColors <- 4
 numGroups <- length(levels(allDat$margins))
-myColors <- rev(RColorBrewer::brewer.pal(n = numColors, name = "Blues")[ ((numColors - numGroups) + 1):numColors])
+myColors <- rev(RColorBrewer::brewer.pal(n = numColors, name = "Greys")[ ((numColors - numGroups) + 1):numColors])
 
 allDat %>%
     ggplot(aes(x = rho, y = rho_hat, color = margins)) +
@@ -151,10 +140,6 @@ allDat %>%
     theme(legend.position = "bottom", legend.direction = "horizontal")
 ```
 
-
-The accuracy appears adequate for many applications. In practice, we recommend evaluating the accuracy in each application setting, using methods similar to those presented above.
-
-
 <!-- 
 See [Discussion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
 -->
@@ -162,17 +147,73 @@ See [Discussion](discussion) for future directions for fast Pearson matching and
 
 ## Scale up to High Dimensions
 
+With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether the `bigsimr` can scale to larger dimensional problems with practical computation times.
+Specifically, we ultimately generate $B=1,000$ random vectors for $d=\{100, 250, 500, 1000, 2500, 5000, 10000\}$ for each correlation type, $\{Pearson, Spearman, Kendall\}$ while timing the algorithm's major steps.
 
-With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether the `bigsimr` can scale to larger dimensional problems. Specifically, we seek evidence to determine whether the method can scale to higher dimensions in a practical time. Using our motivating RNA-seq data, we filtered the original 20,501 genes to the high-expressing genes at increasing percentiles, $1, 5, 10, 15, 20, 25\%$, to obtain $d=\{206, 1026, 2051, 3076, 4101, 5127\}$ marginals and $\binom{d}{2}$ pairwise correlations at each setting. For example, for $d=5127$ there are $13,140,501$ correlation coefficients. We estimated the marginal negative binomial parameters and the correlation coefficients from the RNA-seq data to seed our simulations. (See [Example applications](examples) for a detailed description of the estimation).
+To mimick the workflow, we first produce a synthetic "data set" by completing the following steps:  
+1. Produce heterogeneous gamma marginals by randomly selecting the $j^{th}$ gamma shape parameter from $U_j \sim uniform(1,10), j=1,\ldots,d$ and the $j^{th}$ rate parameter from $V_j \sim exp(1/5), j=1,\ldots,d$, with the constant parameters determined arbitrarily.  
+2. Produce a random full-rank Pearson correlation matrix via `cor_randPD` of size $d \times d$.  
+3. Simulate a "data set" of $1,000 \times d$ random vectors via `rvec` (without matching the Pearson exactly).  
 
+With the synthetic data set in hand, we complete and time the following 4 steps:  
+i. Estimate the correlation matrix from the "data" in the *Compute Correlation* step.  
+1. Map the correlations to initialize the algorithm (Pearson to Pearson, Spearman to Pearson, or Kendall to Pearson) in the *Adjust Correlation* step.  
+2. Check whether the mapping produces a valid correlation matrix and, if not, find the nearest PD correlation matrix in the *Check Admissibility* step.  
+3. Simulate $1,000$ vectors via the Inverse Transform method in the *Simulate Data* step.
 
-Figure \@ref(fig:ch040-gpuVScpuFig) displays computation times using various high-performance settings (1 central processing unit, CPU-1, versus twenty CPUs, CPU-20; with and without GPU acceleration, GPU-1; GPU-20) to produce $B=10,000$ random vectors. The Pearson simulations are much faster since the correlation conversion steps are avoided (pre-processing step; see [Algorithms](algorithms)), but as we know from above the accuracy will suffer slightly, especially near the negative boundary of the possible correlations. Matching Spearman's correlation at larger $d$ becomes costly if one desires to produce $B=10,000$ random vectors at many different simulation settings, but the conversion steps need only be computed once (see [MC evaluation of correlation estimation efficiency](MC-evaluation-of-correlation-estimation-efficiency) for an example of this strategy).
+The results for $d \leq 500$ are fast with all times under 3 seconds.
+Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1through 3, including estimation step i.
 
+```{r ch040-moderateDtab}
+dat_long <- benchmark_dependences %>%
+  select(-total_time, -n_sim, -needed_near_pd) %>%
+  pivot_longer(cols = c(corr_time:sim_time), names_to = "Step", values_to = "Time") %>%
+  mutate(dim = factor(dim),
+         Step = factor(Step,
+                       levels = c("corr_time", "adj_time", "admiss_time", "sim_time"),
+                       labels = c("Compute Correlation",
+                                  "Adjust Correlation",
+                                  "Check Admissibility",
+                                  "Simulate Data"))) %>%
+    rename(Correlation = corr_type, Dimensions = dim)
 
-```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
-knitr::include_graphics("fig/cpu-gpu-times.png")
+tabTimes  <- dat_long %>%
+    filter(Dimensions %in% c(100, 250, 500)) %>%
+    group_by(Dimensions, Correlation) %>%
+    summarize('Total Time(Seconds)' = sum(Time)) %>%
+    ungroup()
+
+tabTimes %>%
+    knitr::kable(booktabs = TRUE,
+                 col.names = c("Dimension",
+                               "Correlation type",
+                               "Total Time (Seconds)" ),
+                 caption = 'Total time to produce 10,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.')
 ```
 
+The results larger dimensional vectors show scalebility to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
+Figure \@ref(ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ of 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster with total times under 5 minutes for $d=10,000$, making Spearman correlations the most computationally-friendly dependency type. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtaned the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set.
+We note that for a given target correlation matrix and margins, steps i, 1, and 2 only need to be computed once and the third step, *Simulate Data*, is fast under all schemes for all $d$ under consideration.
+
+```{r ch040-largeDfig, echo=F, fig.cap="Computation times as d increases."}
+# Set colors
+## RColorBrewer::display.brewer.all()
+numColors <- 5
+numGroups <- 4
+myColors <- rev(RColorBrewer::brewer.pal(n = numColors, name = "Greys")[ ((numColors - numGroups) + 1):numColors])
+
+dat_long %>%
+    filter(Dimensions %in% c(1000, 2500, 5000, 10000, 20000)) %>%
+    mutate(`Time (minutes)` = Time / 60) %>%
+    ggplot(aes(Correlation, `Time (minutes)`, fill=Step)) +
+    geom_bar(position = "stack", stat = "identity") +
+    scale_fill_manual(values = myColors ) +
+    scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30),
+                     minor_breaks = NULL) +
+    facet_grid(. ~ Dimensions) +
+    theme(axis.text.x = element_text(angle = -90))
+```
 
 *Limitations, conclusions, and recommendations.*
 In the bivariate studies, we chose arbitrary simulation parameters for three distributions, moving from the Gaussian to the discrete and non-normal, multivariate negative binomial. Under these conditions, the simulated random vectors sample the desired bivariate distribution across the entire range of pairwise correlations for the three dependency measures. The simulation results could differ for other choices of simulation settings. Specifying extreme correlations near the boundary or Frechet bounds could result in poor simulation performance. Fortunately, it is straightforward to evaluate simulation performance by using strategies similar to those completed above. We expect our random vector generation to perform well for the vast majority of NORTA-feasible correlation matrices, but advise to check the performance before making inferences/further analyses.
+Finally, we note that one could use our single-pass algorithm `cor_fastPD` to produce a "close" (not nearest PD) to scale to even higher dimensions with greater loss of accuracy.

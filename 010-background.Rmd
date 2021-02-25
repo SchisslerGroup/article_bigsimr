@@ -7,7 +7,7 @@ d <- 1000
 ```
 
 
-The `bigsimr` `R` package presented here provides multiple algorithms that operate with high-dimensional multivariate data; however, all these algorithms were originally designed to support a single task: to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics. Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in practically useful timescale.
+The `bigsimr` `R` package presented here provides multiple algorithms that operate with high-dimensional multivariate data; however, all these algorithms were originally designed to support a single task: to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics. Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in a practical timescale.
 
 
 When designing this methodology, we developed the following properties to guide our effort. We divide the properties into two categories: (1) basic properties (BP) and "scalability" properties (SP). The BPs are adapted from an existing criteria due to @Nik13a. A suitable simulation strategy should possess the following properties:
@@ -81,7 +81,7 @@ The most widely-known is the Pearson (product-moment) correlation coefficient th
 
 \begin{equation}
 (\#eq:pearson)
-\rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ var(X)var(Y)\right]^{1/2}}.
+\rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ \mathrm{Var}(X)\mathrm{Var}(Y)\right]^{1/2}}.
 \end{equation}
 
 
@@ -107,14 +107,13 @@ By concordance we mean that orderings have the same direction (e.g., if $X_i < X
 Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property enables matching rank-based correlations with speed (SP1) and accuracy (SP2).
 
 
-*Correspondence among Pearson, Spearman, $\tau$ correlations*.
-There is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation.
-For *bivariate normal vectors*, however, the correspondence is well-known:
+*Correspondence among Pearson, Spearman, Kendall correlations*.
+There is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation. For *bivariate normal vectors*, however, the correspondence is well-known:
 
 
 \begin{equation}
 (\#eq:convertKendall)
-\rho_{P} = sin \left( \tau \times \frac{\pi}{2} \right), 
+\rho_{P} = \sin \left( \tau \times \frac{\pi}{2} \right), 
 \end{equation}
 
 
@@ -123,7 +122,7 @@ For *bivariate normal vectors*, however, the correspondence is well-known:
 
 \begin{equation}
 (\#eq:convertSpearman)
-\rho_P = 2 \times sin \left( \rho_S \times \frac{\pi}{6} \right).
+\rho_P = 2 \times \sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
 *Discrete marginal considerations*.
@@ -143,7 +142,7 @@ Also, for a discrete random variable $Y_i$, some care must be taken to define th
 
 
 \begin{equation}
-F_{i}^{-1} = inf\{y:F_{i}(y) \geq u \}.
+F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
 (\#eq:inverseCDF)
 \end{equation}
 
@@ -169,7 +168,7 @@ For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCD
 There is a strong connection of our simulation strategy to Gaussian *copulas* (see @Nelsen2007 for a technical introduction). A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals. This provides a powerful, natural way to characterize joint probability structures. Consequently, the study of copulas is an important and active area of statistical theory and practice.
 
 
-For any random vector ${\bf X}=(X_1, \ldots, X_d)$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function $C(u_1, \ldots, u_d)$ satisfying
+For any random vector ${\bf X}=(X_1, \ldots, X_d)^\top$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function $C(u_1, \ldots, u_d)$ satisfying
 
 
 \begin{equation}
@@ -193,4 +192,4 @@ F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 where $\Phi(\cdot)$ is the standard normal CDF. Note that the copula $C_{{\bf R}}$ is the familiar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$. 
 
 
-Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ provides $Y_i \sim F_i, \, \forall \, i$.
+Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)^\top$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ provides $Y_i \sim F_i, \, \forall \, i$.

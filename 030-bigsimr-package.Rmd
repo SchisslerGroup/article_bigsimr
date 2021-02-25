@@ -1,5 +1,22 @@
 # The `bigsimr` R package {#package}
 
+
+```{r ch030-basic-example-setup, echo=TRUE, cache=FALSE}
+box::use(
+  patchwork[...],
+  dplyr[...],
+  ggplot2[...],
+  tidyr[drop_na],
+  bigsimr[bigsimr_setup, distributions_setup],
+  JuliaCall[julia_call]
+)
+
+Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
+bs <- bigsimr_setup(pkg_check = FALSE)
+dist <- distributions_setup()
+```
+
+
 This section describes a low-dimensional (2D) random vector simulation workflow via the `bigsimr` `R` package.
 `bigsimr` provides an interface to the native code written in Julia, registered as the `Bigsimr` Julia package PROVIDE URL.
 In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` (PROVIDE URL) that interfaces with the Julia `Bigsimr` package. 
@@ -15,16 +32,6 @@ The code chunk below prepares the computing environment:
 
 The next computational step after obtaining the correlated uniform marginals is the inverse transform into the target marginal distributions. Since this consists of $d$ independent transformations, we utilize parallelization to achieve higher throughput. As with many parallel algorithms, there is overhead associated with forking the task to utilize multiple cores, however cost is negligible compared to the total run-time.
 -->
-
-```{r ch030-basic-example-setup, echo=TRUE, cache=FALSE}
-library(tidyverse)
-library(patchwork)
-library(bigsimr)
-
-Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
-bs <- bigsimr_setup()
-dist <- distributions_setup()
-```
 
 ## Bivariate example description
 
@@ -131,10 +138,7 @@ To provide higher dimensional feasibility/admissibility checking, we begin by ma
 (R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson))
 
 # Step 2. Check admissibility
-is_valid_correlation <- function(rho) {
-  all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
-}
-is_valid_correlation(R_X)
+julia_call("Bigsimr.iscorrelation", R_X)
 ```
 
 

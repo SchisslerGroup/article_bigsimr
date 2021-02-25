@@ -1,8 +1,15 @@
 # Background {#background}
 
 ```{r ch010-background, include=FALSE, cache=FALSE}
-devtools::load_all()
-library(tidyverse)
+box::use(
+  dplyr[...],
+  ggplot2[...],
+  stringr[str_sub],
+  GGally[ggpairs, wrap],
+  knitr[kable]
+)
+load("data/example_genes.rda")
+load("data/example_brca.rda")
 d <- 1000
 ```
 
@@ -57,7 +64,7 @@ small_brca <- example_brca %>%
   mutate(`Patient ID` = str_sub(`Patient ID`, end = 12))
 
 small_brca %>%
-  knitr::kable(booktabs = TRUE, caption = cap)
+  kable(booktabs = TRUE, caption = cap)
 ```
 
 
@@ -65,9 +72,9 @@ To help visualize the bivariate relationships for these three selected genes acr
 
 
 ```{r ch010-realDataFig, cache=FALSE, fig.width=8, fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
-GGally::ggpairs(
+ggpairs(
   data = example_brca[, gene_sample],
-  upper = list(continuous = GGally::wrap('cor', method = "spearman"))
+  upper = list(continuous = wrap('cor', method = "spearman"))
 ) + theme_bw()
 ```
 

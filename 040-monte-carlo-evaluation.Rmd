@@ -2,15 +2,23 @@
 
 
 ```{r ch040-LoadLib040, include=FALSE}
-devtools::load_all()
-library(tidyverse)
-library(bigsimr)
+box::use(
+    dplyr[...],
+    ggplot2[...],
+    patchwork[...],
+    tidyr[pivot_longer],
+    bigsimr[bigsimr_setup, distributions_setup],
+    knitr[include_graphics]
+)
+load("data/bivariate_normal_sims.rda")
+load("data/bivariate_gamma_sims.rda")
+load("data/bivariate_nbinom_sims.rda")
+
+load("data/benchmark_dependences.rda")
 
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
-bs <- bigsimr_setup()
+bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
-
-cores <- as.integer(parallel::detectCores() - 1)
 set.seed(10162020)
 prob <- 3e-04
 ```
@@ -169,8 +177,30 @@ With information of our method's accuracy from a low-dimensional perspective, we
 Figure \@ref(fig:ch040-gpuVScpuFig) displays computation times using various high-performance settings (1 central processing unit, CPU-1, versus twenty CPUs, CPU-20; with and without GPU acceleration, GPU-1; GPU-20) to produce $B=10,000$ random vectors. The Pearson simulations are much faster since the correlation conversion steps are avoided (pre-processing step; see [Algorithms](algorithms)), but as we know from above the accuracy will suffer slightly, especially near the negative boundary of the possible correlations. Matching Spearman's correlation at larger $d$ becomes costly if one desires to produce $B=10,000$ random vectors at many different simulation settings, but the conversion steps need only be computed once (see [MC evaluation of correlation estimation efficiency](MC-evaluation-of-correlation-estimation-efficiency) for an example of this strategy).
 
 
-```{r ch040-gpuVScpuFig, echo=F, out.width='80%', fig.align='center', fig.cap="Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25\\% expressing genes (in terms of median expression.)"}
-knitr::include_graphics("fig/cpu-gpu-times.png")
+```{r ch040-gpuVScpuFig, echo=FALSE, out.width='80%', fig.asp=1, fig.cap="Computation times as d increases."}
+dat_long <- benchmark_dependences %>%
+  select(-total_time, -n_sim, -needed_near_pd) %>%
+  pivot_longer(cols = c(corr_time:sim_time), names_to = "Step", values_to = "Time") %>%
+  mutate(dim_size = if_else(dim <= 1000, "Low Dimensional", "High Dimensional"),
+         dim_size = factor(dim_size, levels = c("Low Dimensional", "High Dimensional")),
+         dim = factor(dim),
+         Step = factor(Step,
+                       levels = c("corr_time",
+                                  "adj_time",
+                                  "admiss_time",
+                                  "sim_time"),
+                       labels = c("Compute Correlation",
+                                  "Adjust Correlation",
+                                  "Check Admissibility",
+                                  "Simulate Data"))) %>%
+  rename(Correlation = corr_type, Dimensions = dim)
+
+
+ggplot(dat_long, aes(Correlation, Time, fill=Step)) +
+  geom_bar(position = "stack", stat = "identity") +
+  labs(y = "Time (Seconds)") +
+  facet_grid(dim_size ~ Dimensions, scales = "free") +
+  theme(axis.text.x = element_text(angle = -90))
 ```
 
 

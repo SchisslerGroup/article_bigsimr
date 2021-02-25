@@ -2,16 +2,20 @@
 
 
 ```{r ch050-LoadLib, include=FALSE, cache=FALSE}
-devtools::load_all()
-library(tidyverse)
-library(patchwork)
-library(bigsimr)
+box::use(
+  dplyr[...],
+  ggplot2[...],
+  patchwork[...],
+  bigsimr[...],
+  knitr[include_graphics]
+)
+load("data/example_brca.rda")
+load("data/example_genes.rda")
 
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 
-cores <- as.integer(parallel::detectCores() - 1)
 set.seed(10142020)
 ```
 
@@ -199,7 +203,7 @@ if(!file.exists("fig/ch050-figBRCA.png")) {
 
 
 ```{r ch050-figBRCA, out.width='80%', fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
-knitr::include_graphics('fig/ch050-figBRCA.png')
+include_graphics('fig/ch050-figBRCA.png')
 ```
 
 

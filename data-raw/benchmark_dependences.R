@@ -6,10 +6,25 @@ Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 
+
+make_margins <- function(par1, par2) {
+  margins <- lapply(1:length(par1), function(i) {
+    dist$Gamma(par1[i], par2[i])
+  })
+  do.call(c, margins)
+}
+shapes <- runif(20000, 1, 10)
+rates  <- rexp(20000, 1/5)
+
+
 # "preheat" the bigsimr functions
 bs$cor(rnorm(10), rnorm(10), bs$Pearson)
 bs$cor(rnorm(10), rnorm(10), bs$Spearman)
 bs$cor(rnorm(10), rnorm(10), bs$Kendall)
+
+bs$cor(matrix(rnorm(100), 10, 10), bs$Pearson)
+bs$cor(matrix(rnorm(100), 10, 10), bs$Spearman)
+bs$cor(matrix(rnorm(100), 10, 10), bs$Kendall)
 
 bs$cor_fast(matrix(rnorm(100), 10, 10), bs$Pearson)
 bs$cor_fast(matrix(rnorm(100), 10, 10), bs$Spearman)
@@ -37,29 +52,28 @@ JuliaCall::julia_call("Bigsimr.iscorrelation", r)
 d <- dist$Gamma(3, 0.01)
 bs$rvec(10, bs$cor_randPD(2), c(d, d))
 
+tmp_cor <- bs$cor_randPD(100)
+tmp_margins <- make_margins(shapes[1:100], rates[1:100])
+bs$pearson_match(tmp_cor, tmp_margins)
+
+rm(p, r, s, d, tmp_cor, tmp_margins, shapes, rates)
+gc()
+
 
 # Prepare the data
-load("data/example_brca.rda")
-brca_mat <- do.call(cbind, lapply(example_brca, as.double))
+# margins <- make_margins(shapes, rates)
+# system.time(corr <- bs$cor_randPD(20000))
+# data <- bs$rvec(1000, corr, margins)
+#
+# saveRDS(data,   "data/synthetic_data.rds")
+# saveRDS(shapes, "data/synthetic_shapes.rds")
+# saveRDS(rates,  "data/synthetic_rates.rds")
+# rm(corr)
+# gc()
 
-mom_gamma <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  c(shape = m^2 / s^2, rate = m / s^2)
-}
-
-make_margins <- function(par1, par2) {
-  margins <- lapply(1:length(par1), function(i) {
-    dist$Gamma(par1[i], par2[i])
-  })
-  do.call(c, margins)
-}
-
-params <- apply(brca_mat, 2, mom_gamma)
-tmp_cor <- bs$cor(brca_mat[,1:100])
-tmp_margins <- make_margins(params[1, 1:100], params[2, 1:100])
-
-bs$pearson_match(tmp_cor, tmp_margins)
+data   <- readRDS("data/synthetic_data.rds")
+shapes <- readRDS("data/synthetic_shapes.rds")
+rates  <- readRDS("data/synthetic_rates.rds")
 
 # steps
 # 1. estimate pearson correlation: cor(data, cor_type)
@@ -71,8 +85,8 @@ bs$pearson_match(tmp_cor, tmp_margins)
 
 bench <- function(type, d, n=1000) {
   # step 0
-  m <- brca_mat[,1:d]
-  margins <- make_margins(params[1, 1:d], params[2, 1:d])
+  margins <- make_margins(shapes[1:d], rates[1:d])
+  m <- data[, 1:d]
 
   # step 1
   if (type == "Kendall") {
@@ -114,13 +128,13 @@ bench <- function(type, d, n=1000) {
 }
 
 
-dims <- c(100, 250, 500, 1000)
+dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
 pearson_bench <- lapply(dims, function(d) bench("Pearson", d)) %>%
   do.call(what = bind_rows)
 usethis::use_data(pearson_bench, overwrite = TRUE)
 
 
-dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
+dims <- c(100, 250, 500, 1000, 2500, 5000, 10000, 20000)
 spearman_bench <- lapply(dims, function(d) bench("Spearman", d)) %>%
   do.call(what = bind_rows)
 usethis::use_data(spearman_bench, overwrite = TRUE)

@@ -13,7 +13,22 @@ dat_long <- benchmark_dependences %>%
                                   "Simulate Data"))) %>%
   rename(Correlation = corr_type, Dimensions = dim)
 
-ggplot(dat_long, aes(Dimensions, Time, fill=Step)) +
+dat_long %>%
+  filter(Dimensions %in% c(100, 250, 500, 1000)) %>%
+  ggplot(aes(Correlation, Time, fill=Step)) +
   geom_bar(position = "stack", stat = "identity") +
   labs(y = "Time (Seconds)") +
-  facet_grid(Correlation ~ ., scales = "free")
+  facet_grid(. ~ Dimensions, scales = "free") +
+  theme(axis.text.x = element_text(angle = -90))
+
+
+dat_long %>%
+  filter(Dimensions %in% c(2500, 5000, 10000, 20000)) %>%
+  mutate(`Time (minutes)` = Time / 60) %>%
+  ggplot(aes(Correlation, `Time (minutes)`, fill=Step)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 30, 45),
+                     minor_breaks = NULL) +
+  facet_grid(. ~ Dimensions) +
+  theme(axis.text.x = element_text(angle = -90))
+

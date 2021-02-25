@@ -4,6 +4,9 @@ Rmarkdown article related to the bigsimr package
 In order to build this article from scratch on your own PC, please install the dependencies by running the following:
 
 ```r
+if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
+
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 

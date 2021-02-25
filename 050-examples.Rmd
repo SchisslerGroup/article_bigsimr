@@ -4,13 +4,14 @@
 ```{r ch050-LoadLib, include=FALSE, cache=FALSE}
 devtools::load_all()
 library(tidyverse)
+library(patchwork)
 library(bigsimr)
 
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
-bs <- bigsimr_setup()
+bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 
-cores <- as.integer( parallel::detectCores() - 1 )
+cores <- as.integer(parallel::detectCores() - 1)
 set.seed(10142020)
 ```
 
@@ -47,8 +48,7 @@ With this goal in mind, we first estimate the desired correlation matrix using t
 
 ```{r ch050-estRhoBRCA, echo=TRUE, cache=FALSE}
 # Estimate Spearman's correlation on the count data
-type <- 'Spearman'
-R_S <- bs$cor(as.matrix(brca1000), bs[[type]])
+R_S <- bs$cor(as.matrix(brca1000), bs$Spearman)
 ```
 
 
@@ -72,9 +72,7 @@ nbinom_mom <- function(x) {
   m <- mean(x)
   s <- sd(x)
   s2 <- s^2
-  p <- m/s2
-  r <- m^2 / (s2 - m)
-  c(size = r, prob = p)
+  c(size = m^2 / (s2 - m), prob = m/s2)
 }
 ```
 
@@ -86,41 +84,32 @@ Now we estimate the marginal parameters using the built-in `apply` function:
 nbinom_fit <- apply(brca1000, 2, nbinom_mom)
 sizes <- nbinom_fit["size",]
 probs <- nbinom_fit["prob",]
-
 nb_margins <- make_nbinom_margins(sizes, probs)
 ```
 
 
-Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`:
-
-
-Now we check admissibility of specified correlation matrix. We begin with the pairwise, 2D MC estimated bounds. And then follow the `r d`D bounds.
+Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of specified correlation matrix. We begin with the pairwise, 2D MC estimated bounds. And then follow the `r d`-D bounds.
 
 
 ```{r ch050-cor-check, echo=TRUE}
 # 1. Mapping step first
-R_X <- bs$cor_convert(R_S, bs[[type]], bs$Pearson)
+R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson)
 
 # 2a. Check admissibility
-is_valid_correlation <- function(rho) {
-  all(diag(rho) == 1) && matrixcalc::is.positive.semi.definite(rho)
-}
-is_valid_correlation(R_X)
+(is_valid_corr <- JuliaCall::julia_call("Bigsimr.iscorrelation", R_X))
 
 # 2b. compute nearest correlation
-if (!is_valid_correlation(R_X)) {
-  R_Xtilde <- bs$cor_nearPD(R_X)
+if (!is_valid_corr) {
+  R_X_pd <- bs$cor_nearPD(R_X)
   ## Quantify the error
-  targets <- R_X[lower.tri(R_X)]
-  approximates <- R_Xtilde[lower.tri(R_Xtilde)]
-  ## R_Xtilde[1:5, 1:5]
-  ## norm( x = R_X - R_Xtilde, type = "F" )
-  R_X  <- R_Xtilde
+  targets      <- R_X[lower.tri(R_X, diag = FALSE)]
+  approximates <- R_X_pd[lower.tri(R_X_pd, diag = FALSE)]
+  R_X  <- R_X_pd
 }
-summary(targets - approximates)
+summary(abs(targets - approximates))
 ```
 
-While the exact $d \times d$ Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-PSD result above), the approximation is of sufficient quality for most applications with a maximum pairwise of `r max( targets - approximates)` and average error of `r mean( targets - approximates)`.
+While the exact $d \times d$ Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-positive definite result above), the approximation is of sufficient quality for most applications with a maximum pairwise of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))`.
 
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache=FALSE}
@@ -131,15 +120,14 @@ colnames(sim_nbinom) <- colnames(brca1000)
 
 ```{r ch050-runBRCA, echo=FALSE, results=FALSE, cache=FALSE}
 dir.create("results", showWarnings = FALSE, recursive = TRUE)
-brcaSimRDS <- paste0("results/brca", d, "sim.rds")
-if(!file.exists(brcaSimRDS)) {
+brca_sim_path <- paste0("results/brca_", d, "_sim.rds")
+if(!file.exists(brca_sim_path)) {
   set.seed(44)
-  n <- 10000
-  sim_nbinom <- bs$rvec(n, R_X, nb_margins) 
+  sim_nbinom <- bs$rvec(10000, R_X, nb_margins) 
   colnames(sim_nbinom) <- colnames(brca1000)
-  saveRDS(sim_nbinom, brcaSimRDS)
+  saveRDS(sim_nbinom, brca_sim_path)
 }
-sim_nbinom <- readRDS(brcaSimRDS)
+sim_nbinom <- readRDS(brca_sim_path)
 ```
 
 
@@ -147,19 +135,15 @@ Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise re
 Simulated counts roughly mimic the observed data but with a smoother appearance due to the assumed parameter form and with less extreme points then the observed data in Figure \@ref(fig:ch010-realDataFig).
 
 
-```{r ch050-makeSimDataFig, cache=FALSE}
-if(!file.exists("fig/ch050-simDataFig.png")) {
-  p <- GGally::ggpairs(
-    data = as.data.frame(sim_nbinom[,example_genes[1:3]]),
-    upper = list(continuous = GGally::wrap('cor', method = "spearman"))
-  ) + theme_bw()
-  ggsave("fig/ch050-simDataFig.png", plot = p, dpi = 300) 
-}
-```
+```{r ch050-simDataFig, cache=FALSE, fig.cap="Simulated data for three selected high-expressing genes generally replicates the estimated data structure. The data do not exhibit outlying points, but do possess the desired Spearman correlations, central tendencies, and discrete values."}
+set.seed(02242021)
+num_genes    <- 3
+gene_sample  <- sample(example_genes[1:1000], num_genes)
 
-
-```{r ch050-simDataFig, fig.cap='Simulated data for three selected high-expressing genes generally replicates the estimated data structure. The data do not exhibit outlying points, but do possess the desired Spearman correlations, central tendencies, and discrete values.'}
-knitr::include_graphics('fig/ch050-simDataFig.png')
+GGally::ggpairs(
+  data = as.data.frame(sim_nbinom[, gene_sample]),
+  upper = list(continuous = GGally::wrap('cor', method = "spearman"))
+) + theme_bw()
 ```
 
 
@@ -169,33 +153,47 @@ Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i
 
 
 ```{r ch050-makeFigBRCA, cache=FALSE}
+R_S_hat <- bs$cor(as.matrix(sim_nbinom), bs$Spearman)
+sim_nbinom_fit <- apply(sim_nbinom, 2, nbinom_mom)
+corr_compare <- tibble(
+  `Target Correlation` = R_S[lower.tri(R_S, diag = FALSE)],
+  `Estimated Correlation` = R_S_hat[lower.tri(R_S_hat, diag = FALSE)]
+)
+target_compare <- tibble(
+  `Target Size` = sizes,
+  `Estimated Size` = sim_nbinom_fit[1,]
+)
+logprob_compare <- tibble(
+  `Target Log Probability` = log(probs),
+  `Estimated Log Probability` = log(sim_nbinom_fit[2,])
+)
+
+
 if(!file.exists("fig/ch050-figBRCA.png")) {
-    ## estimate rho from sims and plot
-    R_S_hat <- bs$cor(as.matrix(sim_nbinom), bs[[type]])
-    ## triplot
-    ## png("fig/ch050-figBRCA.png", width = 4, res = 100, units = 'in')
-    png("fig/ch050-figBRCA.png", res = 300, width = 5, height = 4, units = 'in')
-    par(mfrow=c(1,3))
-    plot(R_S[lower.tri(R_S)], R_S_hat[lower.tri(R_S_hat)],
-         xlim = c(-1, 1), ylim = c(-1, 1),
-         pch = 1, cex = 1, col = rgb(0, 0, 0, 0.05),
-         xlab = "Target Correlation", ylab = "Estimated Correlation")
-         ## main = "Spearman Cor. Matching")
-    abline(a = 0, b = 1, col="red", lty="dashed")
-    ## estimate prob,size from sims and plot
-    nbinom_size_prob_hat <- apply(sim_nbinom, 2, nbinom_mom)
-    plot(sizes, nbinom_size_prob_hat[1,],
-         pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
-         xlab = "Target Size", ylab = "Estimated Size")
-         ## main = "Marginal NB Size Matching")
-    abline(a=0, b=1, col="red", lty="dashed")
-    plot(log(probs), log(nbinom_size_prob_hat[2,]),
-         pch = 1, cex = 1, col = rgb(0, 0, 0, 1),
-         xlab = "Target Log Probability", ylab = "Estimated Log Probability")
-         ## main = "Marginal NB Prob Matching")
-    abline(a=0, b=1, col="red", lty="dashed")
-    dev.off()
-    par(mfrow=c(1,1))
+  p1 <- ggplot(corr_compare, aes(`Target Correlation`, `Estimated Correlation`)) +
+    geom_point(alpha = 0.05) + 
+    geom_abline(slope = 1, col = "red", lty = "dashed") +
+    theme_bw() + coord_equal()
+  
+  p2 <- ggplot(target_compare, aes(`Target Size`, `Estimated Size`)) +
+    geom_point(alpha = 0.85) + 
+    geom_abline(slope = 1, col = "red", lty = "dashed") +
+    theme_bw() + coord_equal()
+  
+  p3 <- ggplot(logprob_compare, 
+               aes(`Target Log Probability`, `Estimated Log Probability`)) +
+    geom_point(alpha = 0.85) + 
+    geom_abline(slope = 1, col = "red", lty = "dashed") +
+    theme_bw() + coord_equal()
+  
+  p <- p1 + p2 + p3
+  
+  ggsave(filename = "fig/ch050-figBRCA.png",
+         plot = p,
+         device = "png",
+         width = 8,
+         height = 4,
+         units = "in")
 }
 ```
 
@@ -234,9 +232,9 @@ $$
 ```{r ch050-densityEvaluation, include=FALSE, cache=FALSE}
 d <- ncol(sim_nbinom)
 B <- nrow(sim_nbinom)
-threshold <- rep(1, d)
-pHat <- mean(apply(sim_nbinom, 1, function(X, y0 = threshold) {
-  all(X >= y0)
+y0 <- 1
+pHat <- mean(apply(sim_nbinom, 1, function(Y) {
+  all(Y >= y0)
 }))
 ```
 
@@ -247,9 +245,9 @@ where ${\bf Y^{(b)} }$ is the $b^{th}$ simulated vector from a total of $B$ simu
 ```{r ch050-densityEvaluationECHO, echo=TRUE, cache=FALSE}
 d <- ncol(sim_nbinom)
 B <- nrow(sim_nbinom)
-threshold <- rep(1, d)
-mean(apply(sim_nbinom, 1, function(X, y0 = threshold) {
-  all( X >= y0)
+y0 <- 1
+mean(apply(sim_nbinom, 1, function(Y) {
+  all(Y >= y0)
 }))
 ```
 
@@ -265,35 +263,45 @@ m <- 10
 MC methods are routinely used in many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates. To conclude the example applications, we demonstrate how `bigsimr` can be used to evaluate estimation efficiency. In particular, we wish to assess the error in our correlation estimation above. We used a conventional method, based on classical statistical theory, which unfortunately, was not designed for high-dimensional data. Indeed, high-dimensional covariance estimation (and precision matrices) is an active area of statistical science (.e.g., @Won2013g and @VanWieringen2016).
 
 
-In this small example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(brca)`$. Since our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-gpuVScpuFig)), we only convert the Spearman correlation matrix once (and ensure its PSD). At each iteration, we estimate the quadratic loss from the specified ${\bf R}_{Spearman}$, producing a distribution of loss values.
+In this small example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(example_brca)`$. Since our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-gpuVScpuFig)), we only convert the Spearman correlation matrix once (and ensure it is positive definite). At each iteration, we estimate the quadratic loss (residual sum of squared errors) from the specified ${\bf R}_{Spearman}$, producing a distribution of loss values.
 
 
 ```{r ch050-quadlossECHO, echo=TRUE, eval=FALSE, cache=FALSE}
-## Simulate random vectors equal to the sample size
-N <- nrow(brca)
-## create m random vectors and estimate correlation
+# Simulate random vectors equal to the sample size
+N <- nrow(example_brca)
+# create m random vectors and estimate correlation
 simRho <- replicate(n = m, expr = {
   tmpSim <- bs$rvec(N , R_X, nb_margins)
-  bs$cor(tmpSim, bs[[type]])
+  bs$cor(tmpSim, bs$Spearman)
 }, simplify = FALSE)
-## find quadratic loss at each rep
-quadLoss <- sapply(simRho, rags2ridges::loss, T = R_S, type = "quadratic")
+# Evaluate the residual sum of squared error
+sapply(simRho, function(R) sum((R - R_S)^2))
+```
+
+
+```{r loss_examples, include=FALSE, eval=FALSE}
+sapply(simRho, function(R) norm(R - R_S))           # norm of diff
+sapply(simRho, function(R) norm(R) - norm(R_S))     # diff of norms
+sapply(simRho, function(R) sum((R - R_S)^2))        # RSS
+sapply(simRho, function(R) mean((R - R_S)^2))       # MSE
+sapply(simRho, function(R) sqrt(mean((R - R_S)^2))) # RMSE
+sapply(simRho, function(R) mean(abs(R - R_S)))      # MAE
 ```
 
 
 ```{r ch050-lossResults, cache=FALSE}
-frobeniusRDS <- paste0("results/brca", d, "_frobenius.rds")
-if (!file.exists(frobeniusRDS)) {
-    N <- nrow(brca1000)
+frobenius_path <- paste0("results/brca_", d, "_frobenius.rds")
+if (!file.exists(frobenius_path)) {
+    N <- nrow(example_brca)
     ## create m random vectors and estimate correlation
     simRho <- replicate(n = m, expr = {
-        tmpSim <- bs$rvec(N , R_X, nb_margins)
-        bs$cor(tmpSim, bs[[type]])
+        tmpSim <- bs$rvec(N, R_X, nb_margins)
+        bs$cor(tmpSim, bs$Spearman)
     }, simplify = FALSE)
-    frobenius <- sapply(simRho, rags2ridges::loss, T = R_S, type = "frobenius")
-    saveRDS(frobenius, frobeniusRDS)
+    frobenius <- sapply(simRho, function(R) sum((R - R_S)^2))
+    saveRDS(frobenius, frobenius_path)
 }
-frobenius <- readRDS(frobeniusRDS)
+frobenius_loss <- readRDS(frobenius_path)
 ```
 
 
@@ -301,7 +309,7 @@ The `R` summary function supplies the mean-augmented five-number summary of the 
 
 
 ```{r ch050-loss-summary, echo=TRUE, eval=TRUE, cache=FALSE}
-summary(frobenius)
+summary(frobenius_loss)
 ```
 
 

@@ -6,7 +6,10 @@ dat_long <- benchmark_dependences %>%
   pivot_longer(cols = c(corr_time:sim_time), names_to = "Step", values_to = "Time") %>%
   mutate(dim = factor(dim),
          Step = factor(Step,
-                       levels = c("corr_time", "adj_time", "admiss_time", "sim_time"),
+                       levels = c("corr_time",
+                                  "adj_time",
+                                  "admiss_time",
+                                  "sim_time"),
                        labels = c("Compute Correlation",
                                   "Adjust Correlation",
                                   "Check Admissibility",
@@ -23,12 +26,14 @@ dat_long %>%
 
 
 dat_long %>%
-  filter(Dimensions %in% c(2500, 5000, 10000, 20000)) %>%
+  filter(Dimensions %in% c(2500, 5000, 10000)) %>%
   mutate(`Time (minutes)` = Time / 60) %>%
   ggplot(aes(Correlation, `Time (minutes)`, fill=Step)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 30, 45),
+                     limits = c(0, 30),
                      minor_breaks = NULL) +
   facet_grid(. ~ Dimensions) +
   theme(axis.text.x = element_text(angle = -90))
+
 

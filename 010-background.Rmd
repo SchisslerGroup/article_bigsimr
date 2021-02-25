@@ -44,7 +44,7 @@ For simplicity, we only consider high expressing genes. In turn, we begin by fil
 set.seed(02242021)
 num_genes    <- 3
 num_patients <- 5
-gene_sample  <- sample(example_genes, num_genes)
+gene_sample  <- sample(example_genes[1:1000], num_genes)
 
 cap <- paste0("mRNA expression for three selected high-expressing genes, ",
               paste(gene_sample, collapse = ", "), 

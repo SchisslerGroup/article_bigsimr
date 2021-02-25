@@ -15,17 +15,11 @@ Depends:
 Imports:
     BiocManager,
     CNTools,
-    graph,
-    RBGL,
-    Rgraphviz,
     tidyverse,
     knitr,
-    printr,
     rmarkdown,
     bookdown,
-    rslurm,
     GGally,
     patchwork,
-    rags2ridges,
     matrixcalc,
     rlang

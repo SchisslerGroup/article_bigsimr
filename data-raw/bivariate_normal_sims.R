@@ -1,6 +1,10 @@
 ## code to prepare `bivariate_normal_sims` dataset goes here
+box::use(
+  bigsimr[...],
+  usethis[use_data],
+  ./R/method_of_moments[mom_norm]
+)
 
-library(bigsimr)
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()

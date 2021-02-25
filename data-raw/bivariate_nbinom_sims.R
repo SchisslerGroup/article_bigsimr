@@ -2,7 +2,7 @@
 
 library(bigsimr)
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
-bs <- bigsimr_setup()
+bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 
 mom_nbinom <- function(x) {
@@ -43,7 +43,11 @@ for (i in 1:nrow(sim_pars)) {
   for (rho in cor_seq) {
     Rho <- matrix(rho, 2, 2)
     diag(Rho) <- 1.0
-    Rho <- bs$cor_convert(Rho, bs[[type]], bs$Pearson)
+    if (type == "Pearson") {
+      Rho <- bs$pearson_match(Rho, margins)
+    } else {
+      Rho <- bs$cor_convert(Rho, bs[[type]], bs$Pearson)
+    }
 
     time_data <- system.time(x <- bs$rvec(n, Rho, margins))
 
@@ -58,7 +62,7 @@ for (i in 1:nrow(sim_pars)) {
     )
 
     ## Estimate statistics
-    Rho_hat <- bs$cor_fast(x, bs[[type]])
+    Rho_hat <- bs$cor(x, bs[[type]])
     rho_hat <- Rho_hat[1, 2]
 
     nbinom_args_hat <- mom_nbinom(x[,1])

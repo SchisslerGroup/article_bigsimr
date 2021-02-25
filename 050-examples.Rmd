@@ -298,8 +298,8 @@ if (!file.exists(frobenius_path)) {
         tmpSim <- bs$rvec(N, R_X, nb_margins)
         bs$cor(tmpSim, bs$Spearman)
     }, simplify = FALSE)
-    frobenius <- sapply(simRho, function(R) sum((R - R_S)^2))
-    saveRDS(frobenius, frobenius_path)
+    frobenius_loss <- sapply(simRho, function(R) sum((R - R_S)^2))
+    saveRDS(frobenius_loss, frobenius_path)
 }
 frobenius_loss <- readRDS(frobenius_path)
 ```

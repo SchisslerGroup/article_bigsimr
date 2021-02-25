@@ -47,7 +47,18 @@ bs$pearson_match(0.5, d, d)
 s <- bs$cor_randPSD(100)
 p <- bs$cor_convert(s, bs$Spearman, bs$Pearson)
 r <- bs$cor_nearPD(p)
-JuliaCall::julia_call("Bigsimr.iscorrelation", r)
+bs$cor_nearPD(p, 1e-6)
+bs$cor_nearPD(p, 1e-6, 1e-6)
+
+k <- bs$cor_randPSD(10000)
+p <- bs$cor_convert(s, bs$Kendall, bs$Pearson)
+JuliaCall::julia_call("Bigsimr.iscorrelation", p)
+system.time(r1 <- bs$cor_nearPD(p, 1e-6, 1e-2))
+system.time(r2 <- bs$cor_nearPD(p, 1e-6, 1e-6))
+system.time(r3 <- bs$cor_fastPD(p))
+JuliaCall::julia_call("Bigsimr.iscorrelation", r1)
+JuliaCall::julia_call("Bigsimr.iscorrelation", r2)
+JuliaCall::julia_call("Bigsimr.iscorrelation", r3)
 
 d <- dist$Gamma(3, 0.01)
 bs$rvec(10, bs$cor_randPD(2), c(d, d))
@@ -56,7 +67,7 @@ tmp_cor <- bs$cor_randPD(100)
 tmp_margins <- make_margins(shapes[1:100], rates[1:100])
 bs$pearson_match(tmp_cor, tmp_margins)
 
-rm(p, r, s, d, tmp_cor, tmp_margins, shapes, rates)
+rm(p, r, r1, r2, r3, s, d, tmp_cor, tmp_margins, shapes, rates)
 gc()
 
 
@@ -108,7 +119,7 @@ bench <- function(type, d, n=1000) {
     needed_near_pd <- FALSE
     if (!JuliaCall::julia_call("Bigsimr.iscorrelation", adj_corr)) {
       needed_near_pd <- TRUE
-      adj_corr_pd <- bs$cor_nearPD(adj_corr)
+      adj_corr_pd <- bs$cor_nearPD(adj_corr, 1e-6, 0.005)
     }
   })
 
@@ -129,20 +140,32 @@ bench <- function(type, d, n=1000) {
 
 
 dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
-pearson_bench <- lapply(dims, function(d) bench("Pearson", d)) %>%
-  do.call(what = bind_rows)
+pearson_bench <- local({
+  x <- lapply(dims, function(d) bench("Pearson", d)) %>%
+    do.call(what = bind_rows)
+  beepr::beep(8)
+  x
+})
 usethis::use_data(pearson_bench, overwrite = TRUE)
 
 
-dims <- c(100, 250, 500, 1000, 2500, 5000, 10000, 20000)
-spearman_bench <- lapply(dims, function(d) bench("Spearman", d)) %>%
-  do.call(what = bind_rows)
+dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
+spearman_bench <- local({
+  x <- lapply(dims, function(d) bench("Spearman", d)) %>%
+    do.call(what = bind_rows)
+  beepr::beep(8)
+  x
+})
 usethis::use_data(spearman_bench, overwrite = TRUE)
 
 
 dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
-kendall_bench <- lapply(dims, function(d) bench("Kendall", d)) %>%
-  do.call(what = bind_rows)
+kendall_bench <- local({
+  x <- lapply(dims, function(d) bench("Kendall", d)) %>%
+    do.call(what = bind_rows)
+  beepr::beep(8)
+  x
+})
 usethis::use_data(kendall_bench, overwrite = TRUE)
 
 

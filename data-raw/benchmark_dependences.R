@@ -34,6 +34,9 @@ p <- bs$cor_convert(s, bs$Spearman, bs$Pearson)
 r <- bs$cor_nearPD(p)
 JuliaCall::julia_call("Bigsimr.iscorrelation", r)
 
+d <- dist$Gamma(3, 0.01)
+bs$rvec(10, bs$cor_randPD(2), c(d, d))
+
 
 # Prepare the data
 load("data/example_brca.rda")
@@ -53,8 +56,10 @@ make_margins <- function(par1, par2) {
 }
 
 params <- apply(brca_mat, 2, mom_gamma)
-margins <- make_margins(params[1, 1:3], params[2, 1:3])
-bs$pearson_bounds(margins)
+tmp_cor <- bs$cor(brca_mat[,1:100])
+tmp_margins <- make_margins(params[1, 1:100], params[2, 1:100])
+
+bs$pearson_match(tmp_cor, tmp_margins)
 
 # steps
 # 1. estimate pearson correlation: cor(data, cor_type)
@@ -108,17 +113,24 @@ bench <- function(type, d, n=1000) {
   )
 }
 
+
 dims <- c(100, 250, 500, 1000)
 pearson_bench <- lapply(dims, function(d) bench("Pearson", d)) %>%
   do.call(what = bind_rows)
+usethis::use_data(pearson_bench, overwrite = TRUE)
+
 
 dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
 spearman_bench <- lapply(dims, function(d) bench("Spearman", d)) %>%
   do.call(what = bind_rows)
+usethis::use_data(spearman_bench, overwrite = TRUE)
+
 
 dims <- c(100, 250, 500, 1000, 2500, 5000, 10000)
 kendall_bench <- lapply(dims, function(d) bench("Kendall", d)) %>%
   do.call(what = bind_rows)
+usethis::use_data(kendall_bench, overwrite = TRUE)
+
 
 benchmark_dependences <- bind_rows(pearson_bench, spearman_bench, kendall_bench) %>%
   mutate(corr_type = factor(corr_type, levels = c("Pearson", "Spearman", "Kendall")),

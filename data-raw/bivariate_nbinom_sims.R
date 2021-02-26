@@ -1,19 +1,16 @@
 ## code to prepare `bivariate_nbinom_sims` dataset goes here
 
-library(bigsimr)
+box::use(
+  bigsimr[...],
+  ./R/utils[mom_nbinom]
+)
+
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 
-mom_nbinom <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  list(size = m^2 / (s^2 - m), prob = m / s^2)
-}
-
 size <- 4
 prob <- 3e-04
-
 margins <- c(dist$NegativeBinomial(size, prob),
              dist$NegativeBinomial(size, prob))
 
@@ -66,8 +63,8 @@ for (i in 1:nrow(sim_pars)) {
     rho_hat <- Rho_hat[1, 2]
 
     nbinom_args_hat <- mom_nbinom(x[,1])
-    size_hat <- nbinom_args_hat$size
-    prob_hat <- nbinom_args_hat$prob
+    size_hat <- nbinom_args_hat["size"]
+    prob_hat <- nbinom_args_hat["prob"]
 
     ## Save the results
     res <- rbind(res, data.frame(
@@ -88,8 +85,7 @@ for (i in 1:nrow(sim_pars)) {
     ))
   }
 }
+
 res$type <- factor(res$type, levels = c("Pearson", "Spearman", "Kendall"))
-
 bivariate_nbinom_sims <- res
-
-usethis::use_data(bivariate_nbinom_sims, overwrite = TRUE)
+save(bivariate_nbinom_sims, file = "data/bivariate_nbinom_sims.rda")

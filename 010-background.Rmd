@@ -48,7 +48,7 @@ For simplicity, we only consider high expressing genes. In turn, we begin by fil
  
  
 ```{r ch010-realDataTab}
-set.seed(02242021)
+set.seed(2020-02-25)
 num_genes    <- 3
 num_patients <- 5
 gene_sample  <- sample(example_genes[1:1000], num_genes)

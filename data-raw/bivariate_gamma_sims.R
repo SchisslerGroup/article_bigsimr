@@ -1,15 +1,13 @@
 ## code to prepare `bivariate_gamma_sims` dataset goes here
 
-library(bigsimr)
+box::use(
+  bigsimr[...],
+  ./R/utils[mom_gamma]
+)
+
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
-
-mom_gamma <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  list(shape = m^2 / s^2, rate = m / s^2)
-}
 
 shape <- 10
 rate <- 1
@@ -65,8 +63,8 @@ for (i in 1:nrow(sim_pars)) {
     rho_hat <- Rho_hat[1, 2]
 
     gamma_args_hat <- mom_gamma(x[,1])
-    shape_hat <- gamma_args_hat$shape
-    rate_hat <- gamma_args_hat$rate
+    shape_hat <- gamma_args_hat["shape"]
+    rate_hat  <- gamma_args_hat["rate"]
 
     ## Save the results
     res <- rbind(res, data.frame(
@@ -87,8 +85,7 @@ for (i in 1:nrow(sim_pars)) {
     ))
   }
 }
+
 res$type <- factor(res$type, levels = c("Pearson", "Spearman", "Kendall"))
-
 bivariate_gamma_sims <- res
-
-usethis::use_data(bivariate_gamma_sims, overwrite = TRUE)
+save(bivariate_gamma_sims, file = "data/bivariate_gamma_sims.rda")

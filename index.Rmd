@@ -16,41 +16,15 @@ bibliography: ["bigsimr.bib", "packages.bib"]
 abstract:  It is critical to realistically simulate data when employing Monte Carlo techinques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. This article introduces the `bigsimr` R interface to the Julia `Bigsimr` package. This high-level package provides a flexible and scaleable procedure to simulate high-dimensional random vectors with arbitrary marginal distributions with specified Pearson, Spearman, or Kendall correlation matrices. It also contains additional high-performance features, including multi-core algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Finally, we demonstrate example applications enabled via `bigsimr` by applying these functions to a motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=878$ patients and dimension $d=1000$.
 ---
 
+
 <!-- keywords simulation multivariate models high-dimensional data R packages -->
 
-```{r indexSetup, include=FALSE, cache=FALSE}
-set.seed(09212020)
-```
-
-```{r copyBib, include=FALSE, eval=FALSE}
-system('cp ~/bib/bigsimr.bib ./.')
-```
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
 ), 'packages.bib')
-```
-
-```{r serveHelper, include=FALSE, eval=FALSE}
-# rmote::start_rmote()
-# library(ggplot2); qplot(mpg, wt, data=mtcars, colour=cyl)
-# bookdown::render_book("index.Rmd", "bookdown::pdf_book", output_dir = "pdf")
-# bookdown::preview_chapter("index.Rmd")
-rmarkdown::render_site(encoding = 'UTF-8')
-bookdown::serve_book()
-```
-
-```{r countWords, include=FALSE, eval=FALSE}
-rmdFiles <- dir(pattern = 'Rmd$', ignore.case = TRUE)
-# rmdFiles <- rmdFiles[-grep('^_', rmdFiles)]
-rmdFiles <- rmdFiles[-grep('references', rmdFiles)]
-# rmdFiles <- rmdFiles[-grep('README', rmdFiles)]
-# rmdFiles <- rmdFiles[-grep('article', rmdFiles)] ## after generating a single document
-# wordcountaddin::word_count( rmdFiles[11] )
-(counts <- sapply( rmdFiles, wordcountaddin::word_count, simplify = T ))
-sum(counts)
 ```
 
 

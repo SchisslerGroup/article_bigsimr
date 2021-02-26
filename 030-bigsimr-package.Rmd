@@ -106,8 +106,8 @@ Next, we configure the input marginals for later input into `rvec`. The marginal
 
 ```{r ch030-margins-alist, echo=TRUE}
 margins <- c(
-    dist$Normal(mean(df$Temp), sd(df$Temp)),
-    dist$LogNormal(mle_mean(df$Ozone), mle_sd(df$Ozone))
+  dist$Normal(mean(df$Temp), sd(df$Temp)),
+  dist$LogNormal(mle_mean(df$Ozone), mle_sd(df$Ozone))
 )
 ```
 

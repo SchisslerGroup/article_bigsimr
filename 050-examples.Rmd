@@ -5,18 +5,21 @@
 box::use(
   dplyr[...],
   ggplot2[...],
+  GGally[ggpairs, wrap],
   patchwork[...],
   bigsimr[...],
-  knitr[include_graphics]
+  knitr[include_graphics],
+  JuliaCall[julia_call],
+  ./R/utils[mom_nbinom]
 )
 load("data/example_brca.rda")
 load("data/example_genes.rda")
+sim_nbinom <- readRDS("results/brca_1000_sim.rds")
+simRho <- readRDS("results/brca_1000_frobenius.rds")
 
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
-
-set.seed(10142020)
 ```
 
 
@@ -70,21 +73,14 @@ make_nbinom_margins <- function(sizes, probs) {
   })
   do.call(c, margins)
 }
-
-nbinom_mom <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  s2 <- s^2
-  c(size = m^2 / (s2 - m), prob = m/s2)
-}
 ```
 
 
 We apply these estimators to all `r d` genes across the `r nrow(brca1000)` patients:
 
 
-```{r ch050-estMargins, echo = TRUE, eval = TRUE, cache=F}
-nbinom_fit <- apply(brca1000, 2, nbinom_mom)
+```{r ch050-estMargins, echo=TRUE}
+nbinom_fit <- apply(brca1000, 2, mom_nbinom)
 sizes <- nbinom_fit["size",]
 probs <- nbinom_fit["prob",]
 nb_margins <- make_nbinom_margins(sizes, probs)
@@ -99,7 +95,7 @@ Notably, the marginal NB probabilities $\hat{p}_i's$ are small --- ranging in th
 R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson)
 
 # 2a. Check admissibility
-(is_valid_corr <- JuliaCall::julia_call("Bigsimr.iscorrelation", R_X))
+(is_valid_corr <- julia_call("Bigsimr.iscorrelation", R_X))
 
 # 2b. compute nearest correlation
 if (!is_valid_corr) {
@@ -107,7 +103,7 @@ if (!is_valid_corr) {
   ## Quantify the error
   targets      <- R_X[lower.tri(R_X, diag = FALSE)]
   approximates <- R_X_pd[lower.tri(R_X_pd, diag = FALSE)]
-  R_X  <- R_X_pd
+  R_X          <- R_X_pd
 }
 summary(abs(targets - approximates))
 ```
@@ -115,22 +111,9 @@ summary(abs(targets - approximates))
 While the exact $d \times d$ Spearman correlation matrix is not strictly admissible in our scheme (seen by the non-positive definite result above), the approximation is close with a maximum absolute error of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))` across the `r choose(d,2)` correlations.
 
 
-```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE, cache=FALSE}
+```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE}
 sim_nbinom <- bs$rvec(10000, R_X, nb_margins) 
 colnames(sim_nbinom) <- colnames(brca1000)
-```
-
-
-```{r ch050-runBRCA, echo=FALSE, results=FALSE, cache=FALSE}
-dir.create("results", showWarnings = FALSE, recursive = TRUE)
-brca_sim_path <- paste0("results/brca_", d, "_sim.rds")
-if(!file.exists(brca_sim_path)) {
-  set.seed(44)
-  sim_nbinom <- bs$rvec(10000, R_X, nb_margins) 
-  colnames(sim_nbinom) <- colnames(brca1000)
-  saveRDS(sim_nbinom, brca_sim_path)
-}
-sim_nbinom <- readRDS(brca_sim_path)
 ```
 
 
@@ -139,67 +122,22 @@ Simulated counts roughly mimic the observed data but with a smoother appearance 
 
 
 ```{r ch050-simDataFig, cache=FALSE, fig.cap="Simulated data for three selected high-expressing genes generally replicates the estimated data structure. The data do not exhibit outlying points, but do possess the desired Spearman correlations, central tendencies, and discrete values."}
-set.seed(02242021)
-num_genes    <- 3
-gene_sample  <- sample(example_genes[1:1000], num_genes)
+set.seed(2020-02-25)
+num_genes <- 3
+gene_sample <- sample(example_genes[1:1000], num_genes)
 
-GGally::ggpairs(
-  data = as.data.frame(sim_nbinom[, gene_sample]),
-  upper = list(continuous = GGally::wrap('cor', method = "spearman"))
-) + theme_bw()
+ggpairs(data = as.data.frame(sim_nbinom[, gene_sample]),
+        upper = list(continuous = wrap('cor', method = "spearman"))) + 
+  theme_bw()
 ```
 
-Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes).
-The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
+
+Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes). The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
+
 
 <!-- 
 Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in just over 2 minutes.
-your comment -->
-
-```{r ch050-makeFigBRCA, cache=FALSE}
-R_S_hat <- bs$cor(as.matrix(sim_nbinom), bs$Spearman)
-sim_nbinom_fit <- apply(sim_nbinom, 2, nbinom_mom)
-corr_compare <- tibble(
-  `Target Correlation` = R_S[lower.tri(R_S, diag = FALSE)],
-  `Estimated Correlation` = R_S_hat[lower.tri(R_S_hat, diag = FALSE)]
-)
-target_compare <- tibble(
-  `Target Size` = sizes,
-  `Estimated Size` = sim_nbinom_fit[1,]
-)
-logprob_compare <- tibble(
-  `Target Log Probability` = log(probs),
-  `Estimated Log Probability` = log(sim_nbinom_fit[2,])
-)
-
-
-if(!file.exists("fig/ch050-figBRCA.png")) {
-  p1 <- ggplot(corr_compare, aes(`Target Correlation`, `Estimated Correlation`)) +
-    geom_point(alpha = 0.05) + 
-    geom_abline(slope = 1, col = "red", lty = "dashed") +
-    theme_bw() + coord_equal()
-  
-  p2 <- ggplot(target_compare, aes(`Target Size`, `Estimated Size`)) +
-    geom_point(alpha = 0.85) + 
-    geom_abline(slope = 1, col = "red", lty = "dashed") +
-    theme_bw() + coord_equal()
-  
-  p3 <- ggplot(logprob_compare, 
-               aes(`Target Log Probability`, `Estimated Log Probability`)) +
-    geom_point(alpha = 0.85) + 
-    geom_abline(slope = 1, col = "red", lty = "dashed") +
-    theme_bw() + coord_equal()
-  
-  p <- p1 + p2 + p3
-  
-  ggsave(filename = "fig/ch050-figBRCA.png",
-         plot = p,
-         device = "png",
-         width = 8,
-         height = 4,
-         units = "in")
-}
-```
+-->
 
 
 ```{r ch050-figBRCA, out.width='80%', fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicated equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
@@ -233,7 +171,7 @@ $$
 $$
 
 
-```{r ch050-densityEvaluation, include=FALSE, cache=FALSE}
+```{r ch050-densityEvaluation, include=FALSE}
 d <- ncol(sim_nbinom)
 B <- nrow(sim_nbinom)
 y0 <- 1
@@ -246,31 +184,22 @@ pHat <- mean(apply(sim_nbinom, 1, function(Y) {
 where ${\bf Y^{(b)} }$ is the $b^{th}$ simulated vector from a total of $B$ simulation replicates and $I(\cdot)$ is the indicator function. For example, we can estimate from our $B=10,000$ simulated vectors that the probability of all genes expressing (i.e., ${\bf y}_i \geq 1, \forall \; i$) is $`r pHat`$.
 
 
-```{r ch050-densityEvaluationECHO, echo=TRUE, cache=FALSE}
-d <- ncol(sim_nbinom)
-B <- nrow(sim_nbinom)
-y0 <- 1
-mean(apply(sim_nbinom, 1, function(Y) {
-  all(Y >= y0)
-}))
+```{r ch050-densityEvaluationECHO, echo=TRUE}
+<<ch050-densityEvaluation>>
+pHat
 ```
 
 
 ## Evaluation of correlation estimation efficiency
 
 
-```{r ch010-myM, include=FALSE}
-m <- 10
-```
-
-
 MC methods are routinely used in many statistical inferential tasks including estimation, hypothesis testing, error rates, and empirical interval coverage rates. To conclude the example applications, we demonstrate how `bigsimr` can be used to evaluate estimation efficiency. In particular, we wish to assess the error in our correlation estimation above. We used a conventional method, based on classical statistical theory, which unfortunately, was not designed for high-dimensional data. Indeed, high-dimensional covariance estimation (and precision matrices) is an active area of statistical science (.e.g., @Won2013g and @VanWieringen2016).
 
 
-In this small example, we simulate $m=`r m`$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(example_brca)`$. Since our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-gpuVScpuFig)), we only convert the Spearman correlation matrix once (and ensure it is positive definite). At each iteration, we estimate the quadratic loss (residual sum of squared errors) from the specified ${\bf R}_{Spearman}$, producing a distribution of loss values.
+In this small example, we simulate $m=30$ data sets with the number of simulated vectors matching the number of patients in the BRCA data set, $N=`r nrow(example_brca)`$. Since our simulation is much faster for the Pearson correlation type (see Figure \@ref(fig:ch040-largeDfig)), we only convert the Spearman correlation matrix once (and ensure it is positive definite). At each iteration, we estimate the quadratic loss (residual sum of squared errors) from the specified ${\bf R}_{Spearman}$, producing a distribution of loss values.
 
 
-```{r ch050-quadlossECHO, echo=TRUE, eval=FALSE, cache=FALSE}
+```{r ch050-quadlossECHO, echo=TRUE, eval=FALSE}
 # Simulate random vectors equal to the sample size
 N <- nrow(example_brca)
 # create m random vectors and estimate correlation
@@ -283,36 +212,15 @@ sapply(simRho, function(R) sum((R - R_S)^2))
 ```
 
 
-```{r loss_examples, include=FALSE, eval=FALSE}
-sapply(simRho, function(R) norm(R - R_S))           # norm of diff
-sapply(simRho, function(R) norm(R) - norm(R_S))     # diff of norms
-sapply(simRho, function(R) sum((R - R_S)^2))        # RSS
-sapply(simRho, function(R) mean((R - R_S)^2))       # MSE
-sapply(simRho, function(R) sqrt(mean((R - R_S)^2))) # RMSE
-sapply(simRho, function(R) mean(abs(R - R_S)))      # MAE
-```
-
-
-```{r ch050-lossResults, cache=FALSE}
-frobenius_path <- paste0("results/brca_", d, "_frobenius.rds")
-if (!file.exists(frobenius_path)) {
-    N <- nrow(example_brca)
-    ## create m random vectors and estimate correlation
-    simRho <- replicate(n = m, expr = {
-        tmpSim <- bs$rvec(N, R_X, nb_margins)
-        bs$cor(tmpSim, bs$Spearman)
-    }, simplify = FALSE)
-    frobenius_loss <- sapply(simRho, function(R) sum((R - R_S)^2))
-    saveRDS(frobenius_loss, frobenius_path)
-}
-frobenius_loss <- readRDS(frobenius_path)
+```{r ch050-lossResults}
+frobenius_loss <- sapply(simRho, function(R) sum((R - R_S)^2))
 ```
 
 
 The `R` summary function supplies the mean-augmented five-number summary of the quadratic loss distribution computed above.
 
 
-```{r ch050-loss-summary, echo=TRUE, eval=TRUE, cache=FALSE}
+```{r ch050-loss-summary, echo=TRUE}
 summary(frobenius_loss)
 ```
 

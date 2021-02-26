@@ -1,11 +1,6 @@
 # Algorithms {#algorithms}
 
 
-```{r ch020-preview, eval=FALSE}
-bookdown::preview_chapter('020-simulation-algorithm.Rmd')
-```
-
-
 This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$. Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$. To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$. The method can be described as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
 
 
@@ -50,18 +45,18 @@ There is hope, however, as @GH02 also showed that replicating an indefinite inpu
 We now describe our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
 1. Mapping step
-  (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$.
-  or
-  (i$^\prime$) Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
+    (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$.
+    or
+    (i$^\prime$) Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
 2. Check admissibility and, if needed, compute the nearest correlation matrix.
-  (i) Check that $R_X$ is a correlation matrix, a positive [semi]definite matrix with 1's along the diagonal.   
-	(ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme.
-	Otherwise,
-  (ii$^\prime$) Replace $R_X$ with the nearest correlation matrix $R_X$, in the Frobenius norm.
+    (i) Check that $R_X$ is a correlation matrix, a positive [semi]definite matrix with 1's along the diagonal.   
+	  (ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme.
+	  Otherwise,
+    (ii$^\prime$) Replace $R_X$ with the nearest correlation matrix $R_X$, in the Frobenius norm.
 3. NORTA step
-  (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.  
-  (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
-  (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
+    (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.  
+    (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
+    (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
 
 
 The "mapping step" takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `cor_covert`).

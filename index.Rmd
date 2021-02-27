@@ -12,7 +12,7 @@ author:
   - Walter W. Piegorsch
   - Duc Tran
 site: bookdown::bookdown_site
-bibliography: ["bigsimr.bib", "packages.bib"]
+bibliography: ["bigsimr.bib", "packages.bib", "alex.bib"]
 abstract:  It is critical to realistically simulate data when employing Monte Carlo techinques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. This article introduces the `bigsimr` R interface to the Julia `Bigsimr` package. This high-level package provides a flexible and scaleable procedure to simulate high-dimensional random vectors with arbitrary marginal distributions with specified Pearson, Spearman, or Kendall correlation matrices. It also contains additional high-performance features, including multi-core algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Finally, we demonstrate example applications enabled via `bigsimr` by applying these functions to a motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=878$ patients and dimension $d=1000$.
 ---
 

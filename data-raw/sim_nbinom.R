@@ -34,4 +34,4 @@ nb_margins <- make_nbinom_margins(sizes, probs)
 sim_nbinom <- bs$rvec(10000, R_X, nb_margins)
 colnames(sim_nbinom) <- colnames(brca1000)
 
-saveRDS(sim_nbinom, file = paste0("results/brca_", d, "_sim.rds"))
+saveRDS(sim_nbinom, file = "results/brca_1000_sim.rds")

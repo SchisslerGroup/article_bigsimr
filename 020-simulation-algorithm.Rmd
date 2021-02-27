@@ -44,12 +44,13 @@ There is hope, however, as @GH02 also showed that replacing an indefinite input 
 
 We now describe our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
+
 1. Mapping step
     (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$.
+    
+        or
 
-    or
-
-    (i$^\prime$) Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
+    (i') Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
 2. Check admissibility and, if needed, compute the nearest correlation matrix.
     (i) Check that $R_X$ is a correlation matrix, a positive definite matrix with 1's along the diagonal.   
 	(ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme.
@@ -57,7 +58,7 @@ We now describe our algorithm to generate random vectors, which mirrors the clas
     (ii$^\prime$) Replace $R_X$ with the nearest correlation matrix $\tilde{R}_X$, in the Frobenius norm.
 3. NORTA step
     (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.  
-    (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
+    (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.
     (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
 
 
@@ -88,7 +89,10 @@ The final step implements a high-performance NORTA algorithm. Specifically, step
 
 ## Algorithm details
 
+
 *Pearson Matching*
+
+
 Given a desired target correlation $\rho_Y$ between a pair of marginal distributions, the correlation coefficient $\rho_Z$ used in the Gaussian copula must be specified so as to satisfy equation \@ref(eq:pearsonIntegralRelation).
 
 
@@ -100,10 +104,11 @@ Given a desired target correlation $\rho_Y$ between a pair of marginal distribut
 
 where $\phi(\cdot)$ is the joint probability distribution function of two correlated standard normal variables. In general, the double integral in \@ref(eq:pearsonIntegralRelation) is difficult or impossible to solve analytically, so numerical methods are required. Our implementation is based off the work of @xiao2019matching where the marginal transformation is approximated by a weighted sum of Hermite polynomials.
 
+
 *Nearest Correlation Matrix*
 
 
-This algorithm is trying to find a correlation matrix $X$ close to $G$ in the convex optimization problem:
+Finding the nearest correlation matrix to an *almost* correlation matrix is a problem that has been researched since the 1990's, and improved upon in the 2000's by Nick Higham who presented an alternating projection algorithm (@higham2002computing) which is used by R (`Matrix::nearPD`), and then by Qi and Sun who developed a quadratically convergent algorithm based on the theory of strongly semismooth matrix functions (@qi2006quadratically). Our algorithm is transcription of the `R` code shared by Sun to the Julia language. The nearest correlation matrix problem can be written down as the following convex optimization problem:
 
 
 \begin{align*}
@@ -111,7 +116,3 @@ This algorithm is trying to find a correlation matrix $X$ close to $G$ in the co
     \mathrm{s.t.}\quad & X_{ii} = 1, \quad i = 1, \ldots , n, \\
     & X \in S_{+}^{n}
 \end{align*}
-
-
-* Qi, H., & Sun, D. (2006). A quadratically convergent Newton method for computing the nearest correlation matrix. SIAM journal on matrix analysis and applications, 28(2), 360-385.
-

@@ -195,7 +195,7 @@ where $\rho$ is the correlation of $X_1$ and $X_2$. The above result is useful w
 \end{equation}
 
 
-where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the {\it coefficient of variation} (CV) of the variable $Y_2$. Thus, the range of possible correlations in this model is not affected by the distribution of $Y_1$, and is determined by the CV of $Y_2$ as follows:
+where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the *coefficient of variation* (CV) of the variable $Y_2$. Thus, the range of possible correlations in this model is not affected by the distribution of $Y_1$, and is determined by the CV of $Y_2$ as follows:
 
 
 \begin{equation}

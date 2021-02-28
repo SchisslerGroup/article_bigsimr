@@ -1,0 +1,874 @@
+---
+title: "Simulating Ultra High-Dimensional Multivariate Data"
+subtitle: "Using the `bigsimr` R package"
+author: "A. Grant Schissler, Alexander Knudson, Tomasz J. Kozubowski, Anna K. Panorska"
+institute: |
+    "Department of Mathematics & Statistics" |
+    "University of Nevada, Reno"
+date: "8 Jun 2020 (updated: `r Sys.Date()`)"
+output:
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
+    logo: ../man/figures/logo.png
+bibliography: /Users/alfred/Dropbox/bib/bigsimr.bib
+abstract: "In this era of Big Data, it is critical to realistically simulate data to conduct informative Monte Carlo studies. This is problematic when data are inherently multivariate while at the same time are (ultra-) high dimensional. This situation appears frequently in observational data found on online and in high-throughput biomedical experiments (e.g., RNA-sequencing). Due to the difficulty in simulating realistic correlated data points, researchers often resort to simulation designs that posit independence --- greatly diminishing the insight into the empirical operating characteristics of any proposed methodology.  Major challenges lie in the computational complexity involved in simulating these massive random vectors. We propose a fairly general, scalable procedure to simulate high-dimensional multivariate distributions with pre-specified marginal characteristics and dependency characteristics. As a motivating example, we use our methodology to study large-scale statistical inferential procedures applied to cancer-related RNA-sequencing data sets. The proposed algorithm is implemented as the bigsimr R package."
+---
+
+```{r LoadLib, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, results = "hide"}
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+knitr::opts_chunk$set(cache=TRUE, autodep=TRUE, cache.comments=TRUE)
+library(dplyr)
+CORES <- parallel::detectCores() - 1
+set.seed(06082020)
+## devtools::install_github("ggobi/GGally")
+## for ggpairs
+library(GGally)
+```
+
+# 1 – Introduction
+
+## Problem we're addressing
+
+- In the era of Big Data, it is critical to realistically simulate data.
+- This is computationally challenging when data are correlated and (ultra-) high dimensional.
+- Many domains are producing these type of data.
+- A prototypical example is RNA-sequencing data derived from high-throughput biomedical experiments.
+
+## Our goal
+
+- Our goal is to simulate $N$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with **correlated** components.
+- The simulation replicates $N$ can be large (~100,000).
+- And the dimension $d$ can be very large (~20,000).
+- We propose a scaleable NORmal To Anything approach to this task .
+- We provide a high-performance and GPU-accelerated implementation in the `R` package `bigsimr`.
+
+## Desired high-dimensional multivariate simulation properties
+
+Our purposed methodology should possess the following properties  
+(adapted from [@Nik13a]):
+
+* P1: Wide range of dependence, allowing both positive and negative dependence
+* P2: Flexible dependence, meaning that the number of bivariate marginals is (approximately) equal to the number of dependence parameters.
+* P3: Flexible marginal modeling, generating heterogeneous data --- possibly from differing probability families.
+
+Moreover, the simulation method must scale to high dimensions:
+
+* S1: Procedure must scale to high dimensions, computable in a reasonable amount time.
+* S2: Procedure must scale to high dimensions while maintaining accuracy.
+
+## NORmal To Anything algorithm
+
+To simulate a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$,
+there is the well-known NORTA algorithm [@Cario1997]. It follows like this:
+
+1. Simulate a random vector $\bf Z$ with $d$ **independent** and **identical** standard normal components.
+2. Determine the input matrix $\Sigma_{\bf Z}$ to corresponds with the
+   specified output $\Sigma_{\bf Y}$ [@Chen2001; @Xia17]
+3. Produce the Cholesky factor $M$ of $\Sigma_{\bf Z}$ so that $M M^{\prime}=\Sigma_{\bf Z}$.
+4. Set $X$ by $X \gets MZ$.
+5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,2,...,d$.
+
+- We proposed a GPU-accerelated NORTA algorithm for ultra-high dimensional
+multivariate data [@Li2019gpu], presented at ESC0 2018.  
+- NORTA is an example of a **copula**-based algorithm. It uses the Gaussian copula [@Nelsen2007].
+-  Simulating correlated discrete and count data takes more care [@Xia17],
+   including slightly redefining the inverse. 
+
+## Other `R` packages for simulating random vectors
+
+There are a few R packages for multivariate simulation.
+
+* `copula` Highly flexible copula specification [@Yan2007]
+* `nortaRA` Implements exact Pearson matching (step 2 in NORTA) [@Chen2001] 
+* `Genord` Simulated correlated discrete variables [@BF17]
+* `mvnfast` High-performance multivariate normal simulator [@Fasiolo2016]
+
+# 2 Simulation algorithms
+
+## Algorithm 1: Matching Pearson approximately
+
+We aim to simulate multivariate data with a Pearson correlation
+matrix ${\bf R}$.
+
+(i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R})$;  
+(ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+(iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+* Where $F_i^{-1}$ is the inverse CDF for the $i^{th}$ gene's marginal
+distribution.  
+* And ${\bf R}$ is the target Pearson correlation matrix.  
+* Pearson's correlation is **not** invariant under the montonically increasing
+  transformations in steps 3, 4.  
+* So the resulting simulated random vectors will have the **exact** margins but **approximate** ${\bf R}$.  
+
+## Algorithm 2: Matching Spearman's exactly
+
+(i) Convert ${\bf R}_{Spearman}$ into ${\bf R}_{Pearson}$ via $\rho_{Pearson} =
+  2 \times sin \left( \rho_{Spearman} \times \frac{\pi}{6} \right)$;  
+(ii) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf} R_{Pearson})$;  
+(iii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+(iv) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+- Spearman's $\rho$ relates to the difference in the ranks of pairs of values.
+- We take advantage of a closed form correspondence between Pearson and Spearman
+  for *normal random variables* in step 1 [@BF17].
+- Since Spearman's $\rho$ is invariant under the monotonically increasing
+  transformations in steps 3 and 4, the resulting simulated random vectors will
+  have the **exact** margins and **exact** Spearman correlation (up to Monte Carlo/numeric error).
+
+## Algorithm 3: Matching Kendall's exactly
+
+(i) Convert ${\bf R}_{Kendall}$ into ${\bf R}_{Pearson}$ via $\rho_{Pearson} = sin \left( \tau \times \frac{\pi}{2} \right)$;  
+(ii) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R}_{Pearson})$;  
+(iii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$;  
+(iv) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$;  
+
+- Kendall's $\tau$ is the difference in the probabilities of concordant and discordant pairs.
+- We use the 1-1 relationship between Pearson and Kendall's $\tau$ for *normal
+  rvs* in step 1.
+- Since Kendall's $\rho$ is invariant under the montonically increasing
+  transformations in steps 3 and 4,  
+ the resulting simulated random vectors will have the **exact** margins and
+ **exact** Kendall's $\tau$  (up to Monte Carlo/numeric error).
+
+## Algorithm notes
+
+- Discrete margins pose some difficulties and matching *unadjusted* correlation
+  measures is not exact (empirically approximate).
+- Exact Pearson solutions are possible but require computing $d \choose 2$
+   double integrals $EY_iY_j = \int \int y_i y_j f_{X|r}(F_i^{-1}(\Phi(z_i)),
+   F_j^{-1}(\Phi(z_j))dy_idy_j$. We have yet to accelerate this process.
+- We GPU accelerate whenever possible during our proposed High-Performance NORTA
+  algorithm.
+- One thorny problem when dealing with high-dimensional correlation matrices is
+they can become non-positive definite through either during estimation or
+bivariate transformations.
+- When converting nonparametric correlations to Pearson (first step above) the
+  resultant correlation may not be positive definite (PD).
+- In that case, we replace ${\bf R}_{Pearson}$ with a "close" PD matrix ${\bf \tilde{R}}_{Pearson}$.
+- In practice, this loss in accuracy typically has little impact on performance,
+  but the algorithm needs acceleration (`Matrix::nearPD()` violates property S1).
+  
+# 3 The `bigsimr` R package
+
+## Installation and setup
+
+- `bigsimr` is on `Github`: [https://github.com/adknudson/bigsimr](https://github.com/adknudson/bigsimr).
+- Use `devtools` to install.
+- `bigsimr` uses `JAX` python libraries for GPU acceleration and other high
+  performance algorithms.
+
+```{r setup, eval=TRUE}
+## devtools::install_github( "adknudson/bigsimr")
+## A conda environment is also activitied (see README)
+library(bigsimr)
+```
+
+## Simulating random vectors through `bigsimr::rvec()`
+
+- `bigsimr`'s main function is `rvec()`. It generates random vectors with
+  correlated components.
+- Let's walkthrough the basic usage in a simple example.
+
+### 1. Specify the marginals
+
+- Create a list of lists to specify the marginal distributions
+- For example, the code below specifies a 3-component mixed type distribution.
+
+```{r}
+margins = list(
+  list("norm", mean = 3.14, sd = 0.1),
+  list("beta", shape1 = 1, shape2 = 4),
+  list("nbinom", size = 10, prob = 0.75)
+)
+```
+
+- Note: we use the standard `stats` package parameterizations and labels.
+
+---
+
+### 2. Specify correlation structure
+
+* Next specify the correlation structure for the desired multivariate
+distribution. 
+* Provide a valid correlation matrix (positive definite, one's on the diag) .
+
+```{r}
+rho <- matrix(0.5, nrow = 3, ncol = 3)
+diag(rho) <- 1.0
+rho
+```
+
+* Complete the correlation struction by providing the type
+
+```{r}
+corType <- "spearman"
+```
+
+---
+
+### 3. Generate N random vectors
+
+Let's simulate a 10 random vectors for illustration.
+
+```{r}
+x <- rvec(10, rho = rho, params = margins, type = corType)
+```
+
+If your setup has no dedicated GPU, you receive the following warning message once per session.
+
+```{r, echo=FALSE}
+warning("warning.warn('No GPU/TPU found, falling back to CPU.')")
+```
+
+----
+
+Taking a look at our random vector, we see that it has 10 rows and 3 columns, one column for each marginal.
+
+```{r}
+x
+```
+
+---
+
+### Scaling N to 10,000
+
+- For accuracy long-run frequency assessment, we generate more random vectors.
+- Let's simulate $N=10,000$ and check the visual appearance of the simulated values.
+
+```{r}
+x <- rvec(n = 10000, rho = rho, params = margins, type = corType)
+```
+
+```{r, echo = FALSE, fig.align='center', fig.width=4, fig.height = 4 }
+GGally::ggpairs(data = as.data.frame(x) )
+## par(mfrow=c(1,3))
+## hist(x[,1], breaks = 30, xlab = "", main = "Normal")
+## hist(x[,2], breaks = 30, xlab = "", main = "Beta")
+## hist(x[,3], breaks = 30, xlab = "", main = "Negative Binomial")
+```
+
+---
+
+```{r}
+## true rho
+rho
+## estimated rho
+bigsimr::fastCor(x, method = corType)
+```
+
+# Monte carlo experiments
+
+## Bivariate Normal
+
+* Let's simulate a bivariate normal and check our correlation matching
+  performance as N increases.
+* Here we have BVN( $\mu_1 = \mu_2 = 10, \rho_{type}$ )
+* We vary $\rho$ across the entire possible range of correlations for each
+  correlation type.
+
+```{r biNormal, echo = FALSE, eval = FALSE}
+mom_norm <- function(x) {
+  m <- mean(x)
+  s <- sd(x)
+  list(mean = m, sd = s)
+}
+
+margins <- list(
+   list("norm", mean = mu, sd = sigma),
+   list("norm", mean = mu, sd = sigma)
+)
+
+mu <- 10
+sigma <- 1
+margins <- list(
+    list("norm", mean = mu, sd = sigma),
+    list("norm", mean = mu, sd = sigma)
+)
+
+type <- c("pearson", "spearman", "kendall")
+cores <- c(1)
+n <- c(1e3, 1e4, 1e5)
+adjustForDiscrete <- c(FALSE)
+
+eps <- 1e-2
+grid_steps <- 100
+sim_pars <- expand.grid(type = type, cores = cores, n = n,
+                        stringsAsFactors = FALSE,
+                        adjustForDiscrete = adjustForDiscrete)
+
+
+res <- data.frame()
+for (i in 1:nrow(sim_pars)) {
+
+  type <- sim_pars$type[i]
+  cores <- sim_pars$cores[i]
+  n <- sim_pars$n[i]
+  adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+
+  tmp_bounds <- computeCorBounds(margins, type = type)
+  cor_lo <- tmp_bounds$lower[1,2] + eps
+  cor_hi <- tmp_bounds$upper[1,2] - eps
+  cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+
+  for (rho in cor_seq) {
+    Rho <- matrix(rho, 2, 2)
+    diag(Rho) <- 1.0
+
+    Rho <- convertCor( rho = Rho, from = type, to = 'pearson' )
+    time_data <- system.time({
+      x <- rmvn(n = n, mu = rep( mu, 2 ), sigma = Rho)
+    })
+
+    # Save the sims in case
+    id <- paste0(
+      "d", 2,
+      "-N", n,
+      "-c", cores,
+      "-r", rho,
+      "-Cor", type,
+      "-adj", as.character(adjustForDiscrete),
+      "-dev", "1CORE",
+      "-lib", "bigsimr"
+    )
+    saveRDS(x, file = paste0("sims_norm/", id, ".rds"))
+
+    # Estimate statistics
+    Rho_hat <- fastCor(x, method = type)
+    rho_hat <- Rho_hat[1, 2]
+    norm_args_hat <- mom_norm(x[,1])
+    mu_hat <- norm_args_hat$mean
+    sigma_hat <- norm_args_hat$sd
+
+    # Save the results
+    res <- rbind(res, data.frame(
+      method = "bigsimr",
+      device = "1CORE",
+      type = type,
+      cores = cores,
+      margins = "norm",
+      adjustForDiscrete = adjustForDiscrete,
+      d = 2,
+      N = n,
+      rho = rho,
+      rho_hat = rho_hat,
+      mean = mu,
+      sd = sigma,
+      mean_hat = mu_hat,
+      sd_hat = sigma_hat,
+      sim_time = unname(time_data["elapsed"])
+    ))
+  }
+}
+res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
+saveRDS(object = res, "norm_sims_ags.rds")
+```
+
+----
+
+```{r biNormPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.height = 5, fig.width= 8, fig.align='center', fig.cap = "`bigsimr` recovers the Pearson specified correlations for MVN."}
+dat <- readRDS("norm_sims_ags.rds")
+dat %>%
+    filter(cores == 1) %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    ## ggplot(aes(rho, rho_hat)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ + N) + theme_bw()
+    facet_wrap(~ type + N) + theme_bw()
+    
+## ggsave('fig/plot-biNormPlot.pdf')
+```
+
+## Bivariate Gamma
+
+* Similarly, let's check the performance for a non-symmetric continuous distribution: a
+  standard (rate =1) bivariate gamma.
+* Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
+* We vary $\rho$ across the entire possible range of correlations for each
+  correlation type.
+
+```{r biGamma, echo = FALSE, eval = FALSE}
+mom_gamma <- function(x) {
+  m <- mean(x)
+  s <- sd(x)
+  list(shape = m^2 / s^2, rate = m / s^2)
+}
+
+shape <- 10
+rate <- 1
+margins <- list(
+  list("gamma", shape = shape, rate = rate),
+  list("gamma", shape = shape, rate = rate)
+)
+
+type <- c("pearson", "spearman", "kendall")
+cores <- c(1)
+n <- c(1e3, 1e4, 1e5)
+adjustForDiscrete <- c(FALSE)
+
+eps <- 1e-2
+grid_steps <- 100
+sim_pars <- expand.grid(type = type, cores = cores, n = n,
+                        stringsAsFactors = FALSE,
+                        adjustForDiscrete = adjustForDiscrete)
+
+
+res <- data.frame()
+for (i in 1:nrow(sim_pars)) {
+
+  type <- sim_pars$type[i]
+  cores <- sim_pars$cores[i]
+  n <- sim_pars$n[i]
+  adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+
+  tmp_bounds <- computeCorBounds(margins, type = type)
+  cor_lo <- tmp_bounds$lower[1,2] + eps
+  cor_hi <- tmp_bounds$upper[1,2] - eps
+  cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+
+  for (rho in cor_seq) {
+    Rho <- matrix(rho, 2, 2)
+    diag(Rho) <- 1.0
+
+    time_data <- system.time({
+      x <- rvec(n = n,
+                rho = Rho,
+                params = margins,
+                cores = cores,
+                type = type,
+                adjustForDiscrete = adjustForDiscrete)
+    })
+
+    # Save the sims in case
+    id <- paste0(
+      "d", 2,
+      "-N", n,
+      "-c", cores,
+      "-r", rho,
+      "-Cor", type,
+      "-adj", as.character(adjustForDiscrete),
+      "-dev", "1CORE",
+      "-lib", "bigsimr"
+    )
+    saveRDS(x, file = paste0("sims_gamma/", id, ".rds"))
+
+    # Estimate statistics
+    Rho_hat <- fastCor(x, method = type)
+    rho_hat <- Rho_hat[1, 2]
+    gamma_args_hat <- mom_gamma(x[,1])
+    shape_hat <- gamma_args_hat$shape
+    rate_hat <- gamma_args_hat$rate
+
+    # Save the results
+    res <- rbind(res, data.frame(
+      method = "bigsimr",
+      device = "1CORE",
+      type = type,
+      cores = cores,
+      margins = "gamma",
+      adjustForDiscrete = adjustForDiscrete,
+      d = 2,
+      N = n,
+      rho = rho,
+      rho_hat = rho_hat,
+      shape = shape,
+      rate = rate,
+      shape_hat = shape_hat,
+      rate_hat = rate_hat,
+      sim_time = unname(time_data["elapsed"])
+    ))
+  }
+}
+res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
+saveRDS(object = res, "gamma_sims_ags.rds")
+```
+
+---
+
+```{r biGammaPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.width= 8, fig.height = 5,fig.align='center', fig.cap = "`bigsimr` recovers correlations for bivariate gamma only approximately for Pearson but exactly for the rank-based correlations."}
+dat <- readRDS("gamma_sims_ags.rds")
+dat %>%
+    filter(cores == 1, type == 'pearson') %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ type + N)
+    facet_wrap(~ type + N)
+```
+
+---
+
+```{r biGammaPlot2, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.width= 8, fig.height = 5,fig.align='center', fig.cap = "`bigsimr` recovers the correlations for bivariate gamma only approximately for Pearson but exactly for the rank-based correlations."}
+dat <- readRDS("gamma_sims_ags.rds")
+dat %>%
+    filter(cores == 1, type == 'spearman') %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ type + N)
+    facet_wrap(~ type + N)
+```
+
+---
+
+```{r biGammaPlot3, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.width= 8, fig.height = 5,fig.align='center', fig.cap = "`bigsimr` recovers the correlations for bivariate gamma only approximately for Pearson but exactly for the rank-based correlations."}
+dat <- readRDS("gamma_sims_ags.rds")
+dat %>%
+    filter(cores == 1, type == 'kendall') %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ type + N)
+    facet_wrap(~ type + N)
+```
+
+
+## Bivariate Negative Binomial
+
+* Let's check the performance for a discrete distribution: a bivariate negative binomial
+* Here we have Bivariate Negative Binomial ( $prob_1 = prob_2 = 0.5, size_1 = size_2 = 4,\rho_{type}$ )
+* We vary $\rho$ across the entire possible range of correlations for each
+  correlation type.
+
+```{r biNegBin, echo = FALSE, eval = FALSE}
+mom_nbinom <- function(x) {
+  m <- mean(x)
+  s <- sd(x)
+  list(size = m^2 / (s^2 - m), prob = m / s^2)
+}
+
+size <- 4
+prob <- 0.5
+margins <- list(
+  list("nbinom", size = size, prob = prob),
+  list("nbinom", size = size, prob = prob)
+)
+
+type <- c("pearson", "spearman", "kendall")
+cores <- c(1)
+n <- c(1e3, 1e4, 1e5)
+adjustForDiscrete <- c(FALSE)
+
+eps <- 1e-2
+grid_steps <- 100
+sim_pars <- expand.grid(type = type, cores = cores, n = n,
+                        stringsAsFactors = FALSE,
+                        adjustForDiscrete = adjustForDiscrete)
+
+
+res <- data.frame()
+for (i in 1:nrow(sim_pars)) {
+
+  type <- sim_pars$type[i]
+  cores <- sim_pars$cores[i]
+  n <- sim_pars$n[i]
+  adjustForDiscrete <- sim_pars$adjustForDiscrete[i]
+
+  tmp_bounds <- computeCorBounds(margins, type = type)
+  cor_lo <- tmp_bounds$lower[1,2] + eps
+  cor_hi <- tmp_bounds$upper[1,2] - eps
+  cor_seq <- seq(cor_lo, cor_hi, length.out = grid_steps)
+
+  for (rho in cor_seq) {
+    Rho <- matrix(rho, 2, 2)
+    diag(Rho) <- 1.0
+
+    time_data <- system.time({
+      x <- rvec(n = n,
+                rho = Rho,
+                params = margins,
+                cores = cores,
+                type = type,
+                adjustForDiscrete = adjustForDiscrete)
+    })
+
+    # Save the sims in case
+    id <- paste0(
+      "d", 2,
+      "-N", n,
+      "-c", cores,
+      "-r", rho,
+      "-Cor", type,
+      "-adj", as.character(adjustForDiscrete),
+      "-dev", "1CORE",
+      "-lib", "bigsimr"
+    )
+    saveRDS(x, file = paste0("sims_nb/", id, ".rds"))
+
+    # Estimate statistics
+    Rho_hat <- fastCor(x, method = type)
+    rho_hat <- Rho_hat[1, 2]
+    nbinom_args_hat <- mom_nbinom(x[,1])
+    size_hat <- nbinom_args_hat$size
+    prob_hat <- nbinom_args_hat$prob
+
+    # Save the results
+    res <- rbind(res, data.frame(
+      method = "bigsimr",
+      device = "1CORE",
+      type = type,
+      cores = cores,
+      margins = "nbinom",
+      adjustForDiscrete = adjustForDiscrete,
+      d = 2,
+      N = n,
+      rho = rho,
+      rho_hat = rho_hat,
+      size = size,
+      prob = prob,
+      size_hat = size_hat,
+      prob_hat = prob_hat,
+      sim_time = unname(time_data["elapsed"])
+    ))
+  }
+}
+res$type <- factor(res$type, levels = c("pearson",  "spearman", "kendall" ) )
+saveRDS(object = res, "nbinom_sims_ags.rds")
+```
+
+---
+
+```{r  biNegBinPlot, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
+dat <- readRDS("nbinom_sims_ags.rds")
+dat %>%
+    filter(cores == 1, type == 'pearson') %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ type + N)
+    facet_wrap(~ type + N)
+```
+
+---
+
+```{r  biNegBinPlot2, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
+dat <- readRDS("nbinom_sims_ags.rds")
+dat %>%
+    filter(cores == 1, type == 'spearman') %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ type + N)
+    facet_wrap(~ type + N)
+```
+
+---
+
+```{r  biNegBinPlot3, echo = FALSE, eval = TRUE, message=FALSE, warning=FALSE, fig.path='fig/plot-', dev='png', fig.ext='png', fig.align='center', fig.width = 8, fig.height=5,fig.cap = "`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations."}
+dat <- readRDS("nbinom_sims_ags.rds")
+dat %>%
+    filter(cores == 1, type == 'kendall') %>%
+    ggplot(aes(rho, rho_hat, color = type)) +
+    geom_point() +
+    geom_abline(slope = 1) +
+    ## facet_wrap(~ type + N)
+    facet_wrap(~ type + N)
+```
+
+# Scale up to Ultra-High dimensions in our motivating application
+
+## Simulating RNA-seq data
+
+- We have RNA-sequencing data for N=1212 breast cancer patients (TCGA BRCA).  
+- There are 20,501 genes that have count data quantifying the expression of the
+  each gene's mRNA.  
+- We simulate N random vectors to simulate a *fake dataset* with heterogeneous
+  negative binomial margins and correlations estimated from real data.
+
+## Scale up to Ultra-High Dimensions
+
+```{r, echo=F, out.width='80%', fig.align='center', fig.cap='Computation times as d increases. We filter to the top 1, 5, 10, 15, 20, 25% expressing genes (in terms of median expression'}
+knitr::include_graphics("fig/cpu-gpu-times.png")
+```
+
+## Simulate RNA-seq data example with d=206 
+
+```{r processBRCA, echo=TRUE, eval=TRUE}
+## full workflow simulating RNA-seq data
+allDat <- readRDS( file = "~/Downloads/complete_processed_tcga2stat_RNASeq2_with_clinical.rds" )
+lastClinical <- which( names(allDat) == 'tumorsize' )
+brca <- allDat[ allDat$disease == "BRCA", (lastClinical+1):ncol(allDat) ]
+## remove naively the RSEM adjustment
+brca <- round(brca, 0)
+dim(brca) ## num of genes 20501
+## compute the median expression! avoid the 0s
+brcaMedian <- apply(brca, 2, median)
+## retain top (1-probs)*100% highest expressing genes for illustration
+myProb <- 0.99
+cutPoint <- quantile( x = brcaMedian, probs = myProb )
+## genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
+genesToKeep <- names( brcaMedian ) [ which(brcaMedian >= cutPoint) ]
+brca <- brca[ , genesToKeep ]
+## ncol(brca) / 20501
+print(d <- length(genesToKeep))
+```
+
+---
+
+```{r figNBratio, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='The data are overdispersed (all values greater than 0)'}
+
+logVarOverMean <- function( x ) {
+    log ( var(x) / mean (x) )
+}
+## check whether NB makes sense
+
+summaryBRCA <- brca %>% 
+    summarize_all(  list(~ logVarOverMean( . ) ) )
+summaryBRCA <- as.data.frame( t(as.data.frame( summaryBRCA )) )
+names(summaryBRCA) <- "logVarOverMean"
+## sum(summaryBRCA$logVarOverMean < 0)  ## no underdispersed genes
+ggplot(data = summaryBRCA, mapping = aes(x = logVarOverMean)) +
+  geom_histogram(color = "white", bins = 20)
+```
+
+---
+
+### Let's walk through a workflow simulating RNA-seq data
+
+```{r estRhoBRCA, echo=TRUE, eval=TRUE}
+## 1. Estimate Spearman's correlation on the count data
+corType <- 'spearman'
+system.time( rho <- bigsimr::fastCor( brca, method = corType ) )
+```
+
+---
+
+```{r estMargins, echo = TRUE, eval = TRUE}
+## 2. Estimate NegBin parameters using Method of Moments
+estimateNegBinMoM <- function(tmpGene, minP = 1e-7) {
+    tmpMean <- mean(tmpGene)
+    tmpVar <- var(tmpGene)
+    ## relate to nbinom parameters
+    ## See ?rbinom for details.
+    p <- tmpMean / tmpVar
+    if (p < minP) {p <- minP } ## maybe add noise here
+    n <- ( tmpMean * p) / ( 1  - p )  
+    ## format for bigsimr margins
+    return( list("nbinom", size = n, prob = p) )
+}
+brcaMargins <- apply( unname(as.matrix(brca)), 2, estimateNegBinMoM )
+## describe the margins
+## check for too small prob
+## head( sort( unlist( lapply( brcaMargins, function(x) {x$prob} ) ) ) )
+## head( sort( unlist( lapply( brcaMargins, function(x) {x$size} ) ) ) )
+```
+
+----
+
+```{r simBRCA, echo=TRUE, eval=TRUE}
+## 3. Generate the simulated samples
+N <- nrow(brca)
+system.time( simBRCA <- rvec(N, rho = rho, params = brcaMargins, cores = CORES, type = corType) )
+simBRCA[1:2, 1:2 ]
+```
+
+---
+
+```{r evalBRCA2, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Real data for the 1st 3rd genes'}
+## Describe and plot real data
+GGally::ggpairs(data = as.data.frame(brca[ ,1:3] ) )
+```
+
+---
+
+```{r evalBRCA3, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Simulated data for the 1st 3rd genes'}
+## Describe and plot simulations
+GGally::ggpairs(data = as.data.frame(simBRCA[ ,1:3] ) )
+```
+
+---
+
+```{r evalBRCA4, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width= 8, fig.align='center', fig.cap='Marginal mean matching'}
+## check 1st moments
+trueMu <- colMeans(brca)
+simMu <- colMeans(simBRCA)
+qplot( x = trueMu, y = simMu ) + geom_abline(slope = 1, intercept = 0)
+
+## check 2nd moment
+## trueVar <- apply( brca, 2, var)
+## simVar <- apply( simBRCA, 2, var)
+## qplot( x = trueVar, y = simVar ) + geom_abline(slope = 1, intercept = 0)
+```
+
+---
+
+```{r evalBRCA5, echo = FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.align='center', fig.cap="Spearman's correlation matching in RNA-seq simulations"}
+## check correlation
+simRho <- bigsimr::fastCor( simBRCA, method = corType )
+## rho[1:5, 1:5]
+## simRho[1:5, 1:5]
+trueRho <- rho[lower.tri(rho)]
+simRho <- simRho[lower.tri(simRho)]
+qplot( x = trueRho, y = simRho ) + geom_abline(slope = 1, intercept = 0)
+```
+
+# Conclusions
+	
+## Concluding remarks
+
+* Our scaleable NORmal To Anything provides a flexible way to simulate
+  ultra high-dimensional *fake datasets*.
+
+### Pros
+* An easy-to-use tool to produce multivariate data of dimension larger than any
+  other existing tool.
+* Flexible modeling providing highly hetereogenous specification of joint probability models.
+* The R `bigsimr`package is a high-performance and GPU-accelerated implementation
+  of algorithm and other fast correlation utilities.
+
+### Cons
+* Our method requires a well-defined inverse CDF.
+* Discrete margins can slightly disrupt the matching algorithm (due the probability of ties). 
+* Not all algorithms are currently optimized.
+
+## Future Work
+
+* Investigate *rescaling* the correlations to adjust for discrete margins.
+* GPU accelerate the `normal2marginal()`.
+* Better handling of non-positive definiteness (fast checks for PD and faster
+  implementation/algorithms of nearest PD).
+* High-performance implementations for exact Pearson matching.
+* Match *partial correlations*.
+* Implement user-defined inverse CDFs.
+* Implement high-dimensional covariance estimation algorithms.
+* Take advantage of sparsity.
+* Explore different simulation algorithms.
+
+## List of supported distributions
+
+```{r, echo=TRUE, eval=FALSE}
+all_dists <- list(
+  list(dist = "beta", shape1, shape2),
+  list(dist = "binom", size, prob),
+  list(dist = "cauchy", location, scale),
+  list(dist = "chisq", df),
+  list(dist = "exp", rate),
+  list(dist = "f", df1, df2),
+  list(dist = "gamma", shape, rate),
+  list(dist = "geom", prob),
+  list(dist = "hyper", m, n, k),
+  list(dist = "logis", location, scale),
+  list(dist = "lnorm", meanlog, sdlog),
+  list(dist = "nbinom", size, prob),
+  list(dist = "norm", mean, sd),
+  list(dist = "pois", lambda),
+  list(dist = "t", df),
+  list(dist = "unif", min, max),
+  list(dist = "weibull", shape, scale),
+  list(dist = "wilcox", m, n),
+  list(dist = "signrank", n)
+)
+```
+
+<style>
+slides > slide { overflow: scroll; }
+slides > slide:not(.nobackground):before {
+  background: none;
+}
+</style>
+
+## References

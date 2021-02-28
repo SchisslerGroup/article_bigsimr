@@ -2,7 +2,7 @@
 title: "Simulating High-Dimensional Multivariate Data"
 subtitle: "using the `Bigsimr` Package"
 author:
-  - Alfred G. Schissler
+  - Alfred G. Schissler*
   - Edward J. Bedrick
   - Alexander D. Knudson
   - Tomasz J. Kozubowski
@@ -10,7 +10,7 @@ author:
   - Anna K. Panorska
   - Juli Petereit
   - Walter W. Piegorsch
-  - Duc Tranrmarkdown::render_site(encoding = 'UTF-8')
+  - Duc Tran
 site: bookdown::bookdown_site
 bibliography: ["bigsimr.bib", "packages.bib", "alex.bib"]
 abstract:  It is critical to realistically simulate data when employing Monte Carlo techinques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. This article introduces the `bigsimr` R interface to the Julia `Bigsimr` package. This high-level package provides a flexible and scaleable procedure to simulate high-dimensional random vectors with arbitrary marginal distributions with specified Pearson, Spearman, or Kendall correlation matrices. It also contains additional high-performance features, including multi-core algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Monte carlo studies quantify the accuracy and scalability of our approach, up to $d=20,000$. Finally, we demonstrate example applications enabled via `bigsimr` by applying these methods to a motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples with sample size $n=878$ patients and dimension $d=1000$.
@@ -18,6 +18,7 @@ abstract:  It is critical to realistically simulate data when employing Monte Ca
 
 *Keywords:* High-dimensional data, Big-data computing, Simulation, Nonparametric correlation, Gaussian copula, RNA-sequencing data
 
+*=Corresponding author. aschissler@unr.edu. 1664 N Virginia St, Reno, NV 89557
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

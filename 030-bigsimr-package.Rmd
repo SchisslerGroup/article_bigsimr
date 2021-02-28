@@ -17,9 +17,9 @@ dist <- distributions_setup()
 ```
 
 
-This section describes a low-dimensional (2D) random vector simulation workflow via the `bigsimr` `R` package.
-`bigsimr` provides an interface to the native code written in Julia, registered as the `Bigsimr` Julia package PROVIDE URL.
-In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` (PROVIDE URL) that interfaces with the Julia `Bigsimr` package. 
+This section describes a low-dimensional (2D) random vector simulation workflow via the `bigsimr` `R` package (https://github.com/SchisslerGroup/r-bigsimr).
+`bigsimr` provides an interface to the native code written in Julia, registered as the `Bigsimr` Julia package (https://github.com/adknudson/Bigsimr.jl).
+In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` (https://github.com/SchisslerGroup/python-bigsimr/) that interfaces with the Julia `Bigsimr` package. 
 The Julia implementation provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 When designing `bigsimr`, we aimed to conveniently provide parallelized computation, through multi-core and GPU acceleration, while allowing advanced users to customize.
 

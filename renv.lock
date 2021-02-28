@@ -188,15 +188,15 @@
     },
     "bigsimr": {
       "Package": "bigsimr",
-      "Version": "0.10.1",
+      "Version": "0.11.0",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "bigsimr",
+      "RemoteRepo": "r-bigsimr",
       "RemoteUsername": "SchisslerGroup",
-      "RemoteRef": "develop",
-      "RemoteSha": "9d99557c1c414f4f79225b070bff651496372e66",
-      "Hash": "474046f72f791012867ad1f0f6ded19e"
+      "RemoteRef": "HEAD",
+      "RemoteSha": "f3a6164b18a0bdef152b09b3030625c7648d7520",
+      "Hash": "ec408ba8100e1b0decec0682dd6840c2"
     },
     "bit": {
       "Package": "bit",

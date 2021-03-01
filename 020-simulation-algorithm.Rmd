@@ -20,10 +20,12 @@ With modern parallel computing, steps 1, 3, 4, 5 are readily implemented as high
 
 Matching specified Pearson correlation coefficients exactly (step 2 above), however, is computationally costly. In general, there is no closed-form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$. Matching the correlations involves evaluating or approximating $\binom{d}{2}$ integrals of the form 
 
+
 \begin{equation}
     \mathrm{E}\left[Y_i Y_j\right] = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} F_i^{-1}\left[\Phi(z_i)\right] F_j^{-1}\left[\Phi(z_j)\right] \phi(z_i, z_j, \rho_z) dz_i dz_j,
     (\#eq:pearsonIntegralRelation)
 \end{equation}
+
 
 where $\phi(\cdot)$ is the joint probability distribution function of two correlated standard normal variables. For HD data, (nearly) exact evaluation may become too costly to enable practical simulation studies. For low-dimensional problems, however, methods and tools exist to match Pearson correlations precisely [@Xia17] and the publicly available `nortaRA` R package [@Chen2001]. As described later, to enable HD Pearson matching we approximate these integrals.
 
@@ -56,7 +58,14 @@ We now describe our algorithm to generate random vectors, which mirrors the clas
     (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.  
 
 
-*Step 1*. The first two descriptions of the *Mapping step* employ the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) and \@ref(eq:convertSpearman), respectively (implemented as `cor_covert`). Initializing our algorthim to match the nonparametric correlations by computing these equations for all pairs is computationally trivial. For the computationally expensive process to match Pearson correlations, we approximate Equation \@ref(eq:pearsonIntegralRelation) for all pairs of margins. To this end, we implement the approximation scheme introduced by @xiao2019matching. Briefly, the many double integrals of the form in \@ref(eq:pearsonIntegralRelation) are approimated by weighted sums of Hermite polynomials.
+*Step 1*. The first two descriptions of the *Mapping step* employ the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) and \@ref(eq:convertSpearman), respectively (implemented as `cor_covert`). Initializing our algorithm to match the nonparametric correlations by computing these equations for all pairs is computationally trivial. 
+
+
+For the computationally expensive process to match Pearson correlations, we approximate Equation \@ref(eq:pearsonIntegralRelation) for all pairs of margins. To this end, we implement the approximation scheme introduced by @xiao2019matching. Briefly, the many double integrals of the form in \@ref(eq:pearsonIntegralRelation) are approximated by weighted sums of Hermite polynomials. Matching coefficients for pairs of continuous distributions is made tractable by this method, but for discrete distributions (especially discrete distributions with large support sets or infinite support), the problem is not so simple or efficient.
+
+
+Our solution is to approximate discrete distributions by a continuous distribution. However the question is then what distribution to use. We found that Generalized S-Distributions [@muino2006gs] solve this problem by approximating a wide range of unimodal distributions, both continuous and discrete. Using the GS-Distribution approximation of discrete distributions in Pearson matching scheme above yields favorable results.
+
 
 *Step 2*. Once $R_X$ has been determined, we check admissibility of the target correlation via the steps described above. If $R_X$ is not a valid correlation matrix, then we compute the nearest correlation matrix. Finding the nearest correlation matrix is a common statistical computing problem. The defacto default function in `R` is `Matrix::nearPD`, an alternating projection algorithm due to @higham2002computing. As implemented the function fails to scale to HD.  Instead, we provide the quadratically convergent algorithm based on the theory of strongly semi-smooth matrix functions (@qi2006quadratically). The nearest correlation matrix problem can be written down as the following convex optimization problem:
 

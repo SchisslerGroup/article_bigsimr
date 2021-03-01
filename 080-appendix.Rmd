@@ -1,7 +1,7 @@
 # Appendix {.unnumbered #appendix}
 
 
-\noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). First, let us note that when we get such a vector from BigSimR package then in fact it can be represented as 
+\noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). First, let us note that when we get such a vector from bigsimr package then in fact it can be represented as 
 
 
 \begin{equation}
@@ -197,7 +197,7 @@ where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the *coefficient of variation* (CV) of the
 - \sqrt{\frac{\log(1+c_2^2)}{c_2^2}} \leq \rho_{Y_1, Y_2} \leq \sqrt{\frac{\log(1+c_2^2)}{c_2^2}}. 
 \end{equation}
 
-Plugging in the estimands of these quantities from Section \@ref(package), we see that 
+Plugging in the estimates of these quantities from Section \@ref(package), we see that 
 
 \begin{equation}
 \label{kram11}

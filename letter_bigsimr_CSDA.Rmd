@@ -22,7 +22,7 @@ to:
   short: "Alex"
 date: "`r format(Sys.Date(), format='%d %B %Y')`"
 opening: "Dear CSDA Annals of Statistical Data Science Editor(s):"
-closing: "Sincerely,"
+closing: "Best regards,"
 output:
   pdf_document:
     template: templateSingleSignature.tex
@@ -35,4 +35,4 @@ We feel that the work is well suited to the indicated themes and hope that it wi
 
 I hope that everything is in order. If not, or if you have any additional needs, please do not hesitate to contact me. Thank you and all those involved in this process.
 
-Best regards,
+

@@ -147,18 +147,26 @@ With information of our method's accuracy from a low-dimensional perspective, we
 To mimic the workflow, we first produce a synthetic "data set" by completing the following steps:
 
 
+\setstretch{1.5}
+
 1. Produce heterogeneous gamma marginals by randomly selecting the $j^{th}$ gamma shape parameter from $U_j \sim uniform(1,10), j=1,\ldots,d$ and the $j^{th}$ rate parameter from $V_j \sim exp(1/5), j=1,\ldots,d$, with the constant parameters determined arbitrarily.  
 2. Produce a random full-rank Pearson correlation matrix via `cor_randPD` of size $d \times d$.  
 3. Simulate a "data set" of $1,000 \times d$ random vectors via `rvec` (without matching the Pearson exactly).  
+
+\setstretch{2.0}
 
 
 With the synthetic data set in hand, we complete and time the following 4 steps:
 
 
+\setstretch{2.0}
+
 i. Estimate the correlation matrix from the "data" in the *Compute Correlation* step.  
 1. Map the correlations to initialize the algorithm (Pearson to Pearson, Spearman to Pearson, or Kendall to Pearson) in the *Adjust Correlation* step.  
 2. Check whether the mapping produces a valid correlation matrix and, if not, find the nearest PD correlation matrix in the *Check Admissibility* step.  
 3. Simulate $1,000$ vectors via the Inverse Transform method in the *Simulate Data* step.
+
+\setstretch{2.0}
 
 
 The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. The results for $d \leq 500$ are fast with all times (except Kendall) under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1 through 3, including estimation step i.

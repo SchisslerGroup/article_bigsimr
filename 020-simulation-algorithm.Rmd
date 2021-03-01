@@ -9,6 +9,7 @@ This section describes our methods involved in simulating a random vector $\bf Y
 
 The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceeds as:
 
+\setstretch{1.5}
 
 1. Simulate a random vector $\bf Z$ with $d$ *independent and identically distributed* (iid) standard normal components.
 2. Determine the input matrix $\Sigma_{\bf Z}$ that corresponds with the specified output $\Sigma_{\bf Y}$.
@@ -16,6 +17,7 @@ The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ wi
 4. Set $X$ by $X \gets MZ$.
 5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_i^{-1}[\Phi(X_i)], \; i=1,...,d$.
 
+\setstretch{2.0}
 
 With modern parallel computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multi-core and/or graphical-processing-unit (GPU) accelerated algorithms --- providing fast scalability using readily-available hardware.
 
@@ -49,18 +51,22 @@ There is hope, however, as @GH02 also showed that replacing an indefinite input 
 We now describe our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
 
+\setstretch{1.5}
+
 1. Mapping step
-    (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$. Alternatively,  
-    (i') Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$. Alternatively,  
-    (i'') Convert the target Pearson correlation matrix to $R_P$ to the corresponding, approximate MVN Pearson correlation $R_X$.  
+    * (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$. Alternatively,
+    * (i') Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$. Alternatively,
+    * (i'') Convert the target Pearson correlation matrix to $R_P$ to the corresponding, approximate MVN Pearson correlation $R_X$.
 2. Check admissibility and, if needed, compute the nearest correlation matrix.
-    (i) Check that $R_X$ is a correlation matrix, a positive definite matrix with 1's along the diagonal.   
-	(ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme. Otherwise
-    (ii') Replace $R_X$ with the nearest correlation matrix $\tilde{R}_X$, in the Frobenius norm.
+    * (i) Check that $R_X$ is a correlation matrix, a positive definite matrix with 1's along the diagonal.
+    * (ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme. Otherwise
+    * (ii') Replace $R_X$ with the nearest correlation matrix $\tilde{R}_X$, in the Frobenius norm.
 3. Gaussian copula
-    (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.  
-    (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz. $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
-    (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.  
+    * (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.
+    * (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz. $U_i=\Phi(X_i)$, $i=1, \ldots, d$.
+    * (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
+
+\setstretch{2.0}
 
 
 *Step 1*

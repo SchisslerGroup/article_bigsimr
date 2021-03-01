@@ -183,7 +183,7 @@ i. Estimate the correlation matrix from the "data" in the *Compute Correlation* 
 3. Simulate $1,000$ vectors via the Inverse Transform method in the *Simulate Data* step.
 
 
-The results for $d \leq 500$ are fast with all times under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1 through 3, including estimation step i.
+The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. The results for $d \leq 500$ are fast with all times under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1 through 3, including estimation step i.
 
 
 ```{r ch040-moderateDtab}

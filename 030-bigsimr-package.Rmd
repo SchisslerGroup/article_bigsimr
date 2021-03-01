@@ -159,7 +159,7 @@ bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 ```
 
 
-Our MC estimate of the bounds slightly underestimates the theoretic bounds of $(-0.881, 0.881)$. An analytic derivation is presented as an Appendix.
+Our MC estimate of the bounds slightly overestimates the theoretic bounds of $(-0.881, 0.881)$. An analytic derivation is presented as an Appendix.
 
 
 ## Simulating random vectors

@@ -209,7 +209,7 @@ dat_long %>%
     ggplot(aes(Correlation, `Time (minutes)`, fill=Step)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_fill_manual(values = myColors ) +
-    scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30),
+    scale_y_continuous(breaks = seq(0, 80, 10),
                      minor_breaks = NULL) +
     facet_grid(. ~ Dimensions) +
     theme(axis.text.x = element_text(angle = -90))

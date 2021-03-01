@@ -31,7 +31,9 @@ output:
 As an invited speaker at CMStatistics 2020, I was delighted to learn of the opportunity to have our work included in the first issue of CSDA Annals of Statistical Data Science. 
 
 On behalf of my co-authors, I'm pleased to submit our manuscript entitled *Simulating High-Dimensional Multivariate Data using the `Bigsimr` Package* for your consideration.
-We feel that the work is well suited to the indicated themes and hope that it will be considered a valuable contribution to this prestigious journal.
+We feel that the work is well suited to the indicated themes and hope that it will be considered a valuable contribution to this prestigious journal. 
+
+The entire article can be reproduced from code and is housed at [https://github.com/SchisslerGroup/article_bigsimr](https://github.com/SchisslerGroup/article_bigsimr), which we are glad to make available upon request to the reviewers and, after acceptance, the general public.
 
 I hope that everything is in order. If not, or if you have any additional needs, please do not hesitate to contact me. Thank you and all those involved in this process.
 

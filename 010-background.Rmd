@@ -70,7 +70,9 @@ To help visualize the bivariate relationships for these three selected genes acr
 ggpairs(
   data = example_brca[, gene_sample],
   upper = list(continuous = wrap('cor', method = "spearman"))
-) + theme_bw()
+) + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = -90, vjust = 0.5))
 ```
 
 
@@ -117,7 +119,7 @@ There is no closed form, general correspondence among the rank-based measures an
 
 *Discrete marginal considerations*
 
-Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale the Spearman correlation. For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
+Spearman's correlation for discrete marginal distributions suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale the Spearman correlation. For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
 
 \begin{equation}
@@ -126,7 +128,7 @@ Spearman's correlation for discrete marginal suffers issues whenever there is a 
 \end{equation}
 
 
-Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1). Further, the infinite sums must be approximated for count-valued data.
+Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over a large number of pairs becomes expensive (often violating desired property SP1). Further, the infinite sums must be approximated for count-valued data.
 
 
 Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$. A standard practice is to set

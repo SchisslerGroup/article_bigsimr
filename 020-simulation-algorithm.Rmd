@@ -7,7 +7,7 @@ This section describes our methods involved in simulating a random vector $\bf Y
 ## NORmal To Anything (NORTA)
 
 
-The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceeds as follows:
+The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceeds as:
 
 
 1. Simulate a random vector $\bf Z$ with $d$ *independent and identically distributed* (iid) standard normal components.

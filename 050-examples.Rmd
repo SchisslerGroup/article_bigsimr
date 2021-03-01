@@ -72,7 +72,7 @@ nb_margins <- make_nbinom_margins(sizes, probs)
 ```
 
 
-Notably, the estimated marginal NB probabilities $\{ \hat{p}_i \}$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of specified correlation matrix.
+Notably, the estimated marginal NB probabilities $\{ \hat{p}_i \}$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of the specified correlation matrix.
 
 
 ```{r ch050-cor-check, echo=TRUE}
@@ -126,7 +126,7 @@ include_graphics('fig/ch050-figBRCA.png')
 
 *Limitations, conclusions, and recommendations*
 
-The results show overall good simulation performance for our choice of parameters settings. Our settings were motivated by modeling high-expressing genes from TCGA BRCA data set. In general, the ability to match marginal and dependence parameters depends on the particular joint probability model. We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
+The results show overall good simulation performance for our choice of parameters settings. Our settings were motivated by modeling high-expressing genes from the TCGA BRCA data set. In general, the ability to match marginal and dependence parameters depends on the particular joint probability model. We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
 
 
 ## Simulation-based joint probability calculations

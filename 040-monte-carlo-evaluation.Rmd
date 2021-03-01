@@ -183,7 +183,7 @@ i. Estimate the correlation matrix from the "data" in the *Compute Correlation* 
 3. Simulate $1,000$ vectors via the Inverse Transform method in the *Simulate Data* step.
 
 
-The results for $d \leq 500$ are fast with all times under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1through 3, including estimation step i.
+The results for $d \leq 500$ are fast with all times under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1 through 3, including estimation step i.
 
 
 ```{r ch040-moderateDtab}
@@ -215,7 +215,7 @@ tabTimes %>%
 
 
 The results larger dimensional vectors show scalebility to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
-Figure \@ref(fig:ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ of 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster with total times under 5 minutes for $d=10,000$, making Spearman correlations the most computationally-friendly dependency type. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtaned the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps i, 1, and 2 only need to be computed once and the third step, *Simulate Data*, is fast under all schemes for all $d$ under consideration.
+Figure \@ref(fig:ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ equal to 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster, with total times under 5 minutes for $d=10,000$, making Spearman correlations the most computationally-friendly dependency type. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtaned the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps i, 1, and 2 only need to be computed once and the third step, *Simulate Data*, is fast under all schemes for all $d$ under consideration.
 
 
 ```{r ch040-largeDfig, fig.cap="Computation times as d increases."}

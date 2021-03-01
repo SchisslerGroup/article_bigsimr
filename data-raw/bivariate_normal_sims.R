@@ -1,20 +1,19 @@
 ## code to prepare `bivariate_normal_sims` dataset goes here
 
-library(bigsimr)
+box::use(
+  bigsimr[...],
+  ./R/utils[mom_norm]
+)
+
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
 bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
-
-mom_norm <- function(x) {
-  m <- mean(x)
-  s <- sd(x)
-  list(mean = m, sd = s)
-}
 
 mu <- 0
 sigma <- 1
 margins <- c(dist$Normal(mu, sigma),
              dist$Normal(mu, sigma))
+
 types <- c("Pearson", "Spearman", "Kendall")
 n <- c(1e3, 1e4, 1e5)
 eps <- 1e-2
@@ -64,8 +63,8 @@ for (i in 1:nrow(sim_pars)) {
     rho_hat <- Rho_hat[1, 2]
 
     norm_args_hat <- mom_norm(x[, 1])
-    mu_hat <- norm_args_hat$mean
-    sigma_hat <- norm_args_hat$sd
+    mu_hat <- norm_args_hat["mean"]
+    sd_hat <- norm_args_hat["sd"]
 
     ## Save the results
     res <- rbind(res, data.frame(
@@ -81,13 +80,12 @@ for (i in 1:nrow(sim_pars)) {
       mean = mu,
       sd = sigma,
       mean_hat = mu_hat,
-      sd_hat = sigma_hat,
+      sd_hat = sd_hat,
       sim_time = unname(time_data["elapsed"])
     ))
   }
 }
+
 res$type <- factor(res$type, levels = c("Pearson", "Spearman", "Kendall"))
-
 bivariate_normal_sims <- res
-
-usethis::use_data(bivariate_normal_sims, overwrite = TRUE)
+save(bivariate_normal_sims, file = "data/bivariate_normal_sims.rda")

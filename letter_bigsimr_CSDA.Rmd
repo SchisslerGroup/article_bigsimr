@@ -1,0 +1,40 @@
+---
+institution:
+  name: "University of Nevada, Reno"
+  department: "Mathematics and Statistics"
+  address:
+    line1: "1664 N. Virginia Street / 0084"
+    line2: "Reno, Nevada 89557"
+  phone: "(775) 784-6773"
+  fax: "(775) 784-6378"
+  url: https://www.unr.edu/math/
+  logo: "logos/blue.png"
+author:
+  first: "Alfred"
+  last: "Schissler"
+  short: "Grant"
+  title: "Ph.D."
+  position: "Assistant Professor, Statistics"
+  signature: "signature.jpg"
+to:
+  first: "Alexander"
+  last: "Knudson"
+  short: "Alex"
+date: "`r format(Sys.Date(), format='%d %B %Y')`"
+opening: "Dear CSDA Annals of Statistical Data Science Editor(s):"
+closing: "Best regards,"
+output:
+  pdf_document:
+    template: templateSingleSignature.tex
+---
+
+As an invited speaker at CMStatistics 2020, I was delighted to learn of the opportunity to have our work included in the first issue of CSDA Annals of Statistical Data Science. 
+
+On behalf of my co-authors, I'm pleased to submit our manuscript entitled *Simulating High-Dimensional Multivariate Data using the `Bigsimr` Package* for your consideration.
+We feel that the work is well suited to the indicated themes and hope that it will be considered a valuable contribution to this prestigious journal. 
+
+The entire article can be reproduced from code and is housed at [https://github.com/SchisslerGroup/article_bigsimr](https://github.com/SchisslerGroup/article_bigsimr), which we are glad to make available upon request to the reviewers and, after acceptance, the general public.
+
+I hope that everything is in order. If not, or if you have any additional needs, please do not hesitate to contact me. Thank you and all those involved in this process.
+
+

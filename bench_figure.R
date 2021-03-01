@@ -1,5 +1,10 @@
-devtools::load_all()
-library(tidyverse)
+box::use(
+  dplyr[...],
+  ggplot2[...],
+  tidyr[pivot_longer]
+)
+
+load("data/benchmark_dependences.rda")
 
 dat_long <- benchmark_dependences %>%
   select(-total_time, -n_sim, -needed_near_pd) %>%

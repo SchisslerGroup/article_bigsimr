@@ -1,47 +1,48 @@
 # Algorithms {#algorithms}
 
 
-```{r ch020-preview, eval=FALSE}
-bookdown::preview_chapter('020-simulation-algorithm.Rmd')
-```
-
-
-This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,2,\ldots,d$. Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$. To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$. The method can be described as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
+This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,\ldots,d$. Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$. To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$. The method can be described as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a high-dimensional NORTA-inspired algorithm.
 
 
 ## NORmal To Anything (NORTA)
 
 
-The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceedings as follows:
+The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceeds as:
 
+\setstretch{1.5}
 
 1. Simulate a random vector $\bf Z$ with $d$ *independent and identically distributed* (iid) standard normal components.
 2. Determine the input matrix $\Sigma_{\bf Z}$ that corresponds with the specified output $\Sigma_{\bf Y}$.
 3. Produce a Cholesky factor $M$ of $\Sigma_{\bf Z}$ such that $M M^{\prime}=\Sigma_{\bf Z}$.
 4. Set $X$ by $X \gets MZ$.
-5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_{Y_i}^{-1}[\Phi(X_i)], \; i=1,...,d$.
+5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_i^{-1}[\Phi(X_i)], \; i=1,...,d$.
+
+\setstretch{2.0}
+
+With modern parallel computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multi-core and/or graphical-processing-unit (GPU) accelerated algorithms --- providing fast scalability using readily-available hardware.
 
 
-With modern parallelized computing, steps 1, 3, 4, 5 are readily implemented as high-performance, multi-core and/or graphical-processing-unit (GPU) accelerated algorithms --- providing fast scalability using readily-available hardware.
+Matching specified Pearson correlation coefficients exactly (step 2 above), however, is computationally costly. In general, there is no closed-form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$. Matching the correlations involves evaluating or approximating $\binom{d}{2}$ integrals of the form 
 
 
-Matching specified Pearson correlation coefficients exactly (step 2 above), however, is problematic. In general, there is no closed-form correspondence between the components of the input $\Sigma_{\bf Z}$ and target $\Sigma_{\bf Y}$. Matching the correlations involves evaluating or approximating $\binom{d}{2}$ integrals of the form $EY_iY_j = \int \int y_i y_j f_{X}(F_i^{-1}(\Phi(z_i)), F_j^{-1}(\Phi(z_j))dy_idy_j$, for $i,j=1,\ldots, d, \; i \neq j$. For high-dimensional data, these evaluations are often too costly to enable feasible simulation studies. For low-dimensional problems, however, methods and tools exist to match Pearson correlations precisely [@Xia17] and the publicly available `nortaRA` R package [@Chen2001].
+\begin{equation}
+    \mathrm{E}\left[Y_i Y_j\right] = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} F_i^{-1}\left[\Phi(z_i)\right] F_j^{-1}\left[\Phi(z_j)\right] \phi(z_i, z_j, \rho_z) dz_i dz_j,
+    (\#eq:pearsonIntegralRelation)
+\end{equation}
 
 
-To maintain scalability (SP1), our solution is to essentially avoid this complication in Pearson matching. Since our goal is to simulate non-normal marginals, we greatly prefer the use of rank-based measures, such as $\rho_S$ and $\tau$, from a modeling standpoint. Further, $\rho_S$ and $\tau$'s invariance under monotone transformation (see [Background](#background)), preserves the correlation coefficients through steps 3, 4, and 5 in the NORTA algorithm above. This eliminates the need for computing the $\binom{d}{2}$ integrals to match exactly (nothing is for free, however, as discussed below in Section \@ref(rand-vec-gen)).
+where $\phi(\cdot)$ is the joint probability distribution function of two correlated standard normal variables. For HD data, (nearly) exact evaluation may become too costly to enable practical simulation studies. For low-dimensional problems, however, methods and tools exist to match Pearson correlations precisely; see [@Xia17] and the publicly available `nortaRA` R package [@Chen2001]. As described later, to enable HD Pearson matching we approximate these integrals.
 
 
-Now, if one does desire to characterize dependency using Pearson correlations, simply using the target Pearson correlation matrix as the initial conditions to our proposed algorithm will lead to approximate matching in the resultant distribution [@Song00] in many practical applications. The quality of this approximation depends on the setting, but in practice, for high-dimensional count data we find the accuracy to be adequate. Later, we study robustness of our method to this limitation in selected [Monte Carlo evaluations]({#simulations}).
+*NORTA in higher dimensions*
 
-
-*NORTA in higher dimensions*. 
 Sklar's theorem provides a useful characterization of multivariate distributions through copulas. Yet the choice of copula-based simulation algorithm affects which joint distributions may be simulated. Even in low-dimensional spaces (e.g., $d=3$), there exist valid multivariate distributions with *feasible* Pearson correlation matrices that NORTA cannot match exactly [@LH75]. This occurs when the bivariate transformations are applied to find the input correlation matrix, yet when combined the resultant matrix is indefinite. These situations do occur, even using exact analytic calculations. Such problematic target correlation matrices are termed *NORTA defective*.
 
 
-@GH02 conducted a Monte Carlo study to estimate the probability of encountering NORTA defective matrices while increasing the dimension $d$. They found for what is now considered low-to-moderate dimensions ($d \approx 20$) that almost *all* feasible matrices are NORTA defective. This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
+@GH02 conducted a Monte Carlo study to estimate the probability of encountering NORTA defective matrices while increasing the dimension $d$. They found that for what is now considered low-to-moderate dimensions ($d \approx 20$), almost *all* feasible matrices are NORTA defective. This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
 
 
-There is hope, however, as @GH02 also showed that replicating an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$. This provides evidence that our nearest positive definite (PD) augmented approach will maintain reasonable accuracy if our input matching scheme returns an indefinite matrix, at least for the rank-based matching scheme described above.
+There is hope, however, as @GH02 also showed that replacing an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$. This provides evidence that our nearest positive definite (PD) augmented approach will maintain reasonable accuracy if our input matching scheme returns an indefinite matrix, at least for the rank-based matching scheme described above.
 
 
 ## Random vector generator {#rand-vec-gen}
@@ -49,116 +50,63 @@ There is hope, however, as @GH02 also showed that replicating an indefinite inpu
 
 We now describe our algorithm to generate random vectors, which mirrors the classical NORTA algorithm above with some modifications for rank-based dependency matching:
 
+
+\setstretch{1.5}
+
 1. Mapping step
-  (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$.
-  or
-  (i$^\prime$) Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$.
+    * (i) Convert the target Spearman correlation matrix $R_S$ to the corresponding MVN Pearson correlation $R_X$. Alternatively,
+    * (i') Convert the target Kendall $\tau$ matrix $R_K$ to the corresponding MVN Pearson correlation $R_X$. Alternatively,
+    * (i'') Convert the target Pearson correlation matrix to $R_P$ to the corresponding, approximate MVN Pearson correlation $R_X$.
 2. Check admissibility and, if needed, compute the nearest correlation matrix.
-  (i) Check that $R_X$ is a correlation matrix, a positive [semi]definite matrix with 1's along the diagonal.   
-	(ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme.
-	Otherwise,
-  (ii$^\prime$) Replace $R_X$ with the nearest correlation matrix $R_X$, in the Frobenius norm.
-3. NORTA step
-  (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.  
-  (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$.  
-  (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
+    * (i) Check that $R_X$ is a correlation matrix, a positive definite matrix with 1's along the diagonal.
+    * (ii) If $R_X$ is a correlation matrix, the input matrix is *admissible* in this scheme. Otherwise
+    * (ii') Replace $R_X$ with the nearest correlation matrix $\tilde{R}_X$, in the Frobenius norm.
+3. Gaussian copula
+    * (i) Generate ${\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)$.
+    * (ii) Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz. $U_i=\Phi(X_i)$, $i=1, \ldots, d$.
+    * (iii) Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
+
+\setstretch{2.0}
 
 
-The "mapping step" takes advantage of the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) or \@ref(eq:convertSpearman), respectively (implemented as `cor_covert`).
+*Step 1*
+
+The first two descriptions of the *Mapping step* employ the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) and \@ref(eq:convertSpearman), respectively (implemented as `cor_covert`). Initializing our algorithm to match the nonparametric correlations by computing these equations for all pairs is computationally trivial. 
 
 
-Our algorithm allows the generation of high-dimensional multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN.
+For the computationally expensive process to match Pearson correlations, we approximate Equation \@ref(eq:pearsonIntegralRelation) for all pairs of margins. To this end, we implement the approximation scheme introduced by @xiao2019matching. Briefly, the many double integrals of the form in \@ref(eq:pearsonIntegralRelation) are approximated by weighted sums of Hermite polynomials. Matching coefficients for pairs of continuous distributions is made tractable by this method, but for discrete distributions (especially discrete distributions with large support sets or infinite support), the problem is not so simple or efficient.
 
 
-In particular, if we let $X$ be MVN with $d$ components and set
+Our solution is to approximate discrete distributions by a continuous distribution. The question then becomes that of which distribution to use. We found that Generalized S-Distributions [@muino2006gs] solve this problem by approximating a wide range of unimodal distributions, both continuous and discrete. Using the GS-Distribution approximation of discrete distributions in Pearson matching scheme above yields favorable results.
 
 
-$$
-\begin{aligned}
-\Omega_P &= \{ R_P : R_P \textrm{ is a correlation matrix for } X \} \\
-\Omega_K &= \{ R_K : R_K \textrm{ is a correlation matrix for } X \} \\
-\Omega_S &= \{ R_S : R_S \textrm{ is a correlation matrix for } X \} \\
-\end{aligned}
-$$
+*Step 2*
+
+Once $R_X$ has been determined, we check admissibility of the adjusted correlation via the steps described above. If $R_X$ is not a valid correlation matrix, then we compute the nearest correlation matrix. Finding the nearest correlation matrix is a common statistical computing problem. The defacto default function in `R` is `Matrix::nearPD`, an alternating projection algorithm due to @higham2002computing. As implemented the function fails to scale to HD. Instead, we provide the quadratically convergent algorithm based on the theory of strongly semi-smooth matrix functions (@qi2006quadratically). The nearest correlation matrix problem can be written down as the following convex optimization problem:
 
 
-then there are 1-1 mappings between these sets. We conjecture informally that the sets of admissible $R_S$ and $R_K$ are not highly restrictive. In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PSD matrix with 1's along the diagonal. We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$ (and similarly for $R_K$) and also for checking that each pairwise correlation value is admissible (via the MC estimation of the 2-dimensional Frechet bounds). 
-
-
-Yet this scheme still suffers similar issues as the original Pearson-matching NORTA algorithm regarding the increasing probability of encountering a non-admissible correlation matrix as dimension increases. In our experience, the mapping step for large $d$ almost always produces a $R_X$ that is not in $\Omega_P$ (or even a correlation matrix). The second step handles this issue by computing the nearest correlation matrix to $R_X$. In Section \@ref(package) we provide a basic description of how to quantify and potentially control the approximation error. Further, the RNA-seq example in Section \@ref(examples) provides an illustration of this in practice.
-
-
-The final step implements a high-performance NORTA algorithm. Specifically, step 3i uses a fast multi-core multivariate normal simulator, and steps 3ii, 3iii are parallelized over CPU cores.
-
-
-## Algorithm details
-
-*Correlation Conversion*
-
-Given:
-
-* A target Spearman's $\rho$ or Kendall's $\tau$ correlation
-
-Do:
-
-* Determine the Pearson correlation for use in a Gaussian copula such that the resulting random samples using the NORTA algorithm have an estimated Spearman or Kendall correlation that matches the target correlation
-
-From Proposition 22 (Lebrun and Dutfow, 2009), we have the result for Gaussian copula that the copula correlation $r$ is related to Spearman's $\rho$ and Kendall's $\tau$ by the following relations:
-
-$$
-r = 2 \sin \left(\frac{\pi}{6} \rho\right) \\
-r = \sin \left(\frac{\pi}{2} \tau\right)
-$$
-
-* Lebrun, R., & Dutfoy, A. (2009). An innovating analysis of the Nataf transformation from the copula viewpoint. Probabilistic Engineering Mechanics, 24(3), 312-320.
-
-*Pearson Matching*
-
-Given:
-
-* A target Pearson correlation matrix, $R$
-* A list of marginal distributions, $F$
-
-Do:
-
-* Determine the input correlation, $\tilde{R}$, such that the resulting random samples using the NORTA algorithm have an estimated Pearson correlation that matches $R$
-
-This method relies on Equations 19, 39, and 49 (Xiao and Zhou, 2019).
-
-* Xiao, Q., & Zhou, S. (2019). Matching a correlation coefficient by a Gaussian copula. Communications in Statistics-Theory and Methods, 48(7), 1728-1747.
-
-*Nearest Correlation Matrix*
-
-This algorithm is trying to find a correlation matrix $X$ close to $G$ in the convex optimization problem:
-
-$\begin{aligned}
+\begin{align*}
     \mathrm{min}\quad & \frac{1}{2} \Vert G - X \Vert^2 \\
     \mathrm{s.t.}\quad & X_{ii} = 1, \quad i = 1, \ldots , n, \\
     & X \in S_{+}^{n}
-\end{aligned}$
+\end{align*}
 
-* Qi, H., & Sun, D. (2006). A quadratically convergent Newton method for computing the nearest correlation matrix. SIAM journal on matrix analysis and applications, 28(2), 360-385.
 
-<!-- 
-## Other high-performance `bigsimr` algorithms
+For nonparametric correlation measures, our algorithm allows the generation of high-dimensional multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN. In particular, if we let $X$ be MVN with $d$ components and set
 
-<mark> ALEX, briefly discuss other algorithms here </mark>
-- `cor_bounds()`  
-- `cor_fast()`  
-- `cor_nearPSD()`  
+\begin{align*}
+\Omega_P &= \{ R_P : R_P \textrm{ is a correlation matrix for } X \} \\
+\Omega_K &= \{ R_K : R_K \textrm{ is a correlation matrix for } X \} \\
+\Omega_S &= \{ R_S : R_S \textrm{ is a correlation matrix for } X \} \\
+\end{align*}
 
-For discrete marginals, achieving a target Spearman correlation under this scheme is possible by using components from Equation \@ref(eq:spearmanRescaled) to further adjust the input correlation matrix. Let the unscaled Spearman correlation coefficients be $\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)$ for two marginal distributions and divide the target correlation by the product in the denominator of Equation \@ref(eq:spearmanRescaled). Let these adjustment factors be denoted as $a_i = \left[ 1 - \sum_y p_i(y)^3 \right]^{1/2}$ and specifically rescale the target Spearman correlation matrix by
+then there are 1-1 mappings between these sets. We conjecture informally that the sets of admissible $R_S$ and $R_K$ are not highly restrictive. In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PD matrix with 1's along the diagonal. We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$ (and similarly for $R_K$).
 
-\begin{equation}
-(\#eq:convertSpearmanDiscrete)
-\rho_{rs} \left(Y_{i}, Y_{i^\prime}\right) = \frac{\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)}{a_i \times a_{i^\prime}}.
-\end{equation}
 
-In a similar fashion, we rescale Kendall's $\tau$ to adjust the input correlation matrix. The conversion formula is given by
+There is an increasing probability of encountering a non-admissible correlation matrix as dimension increases. In our experience, the mapping step for large $d$ almost always produces a $R_X$ that is not a correlation matrix. In Section \@ref(package) we provide a basic description of how to quantify and control the approximation error. Further, the RNA-seq example in Section \@ref(examples) provides an illustration of this in practice.
 
-\begin{equation}
-(\#eq:convertKendallDiscrete)
-\rho_{rs} \left(Y_{i}, Y_{i^\prime}\right) = \frac{\rho_{s} \left(Y_{i}, Y_{i^\prime}\right)}{a_i \times a_{i^\prime}}.
-\end{equation}
 
-your comment -->
+*Step 3* 
+
+The final step implements a NORTA-inspired, Gaussian copula approach to produce the desired margins. Steps 1 and 2 determine the MVN Pearson correlation values that will eventually match the target correlation. Then all that is required is a fast MVN simulator, a standard normal CDF, and well-defined quantile functions for marginals. The MVN is transformed to a copula (distribution with standard uniform margins) by applying the normal CDF $\phi(\cdot)$. The quantile functions $F^{-1}$ are applied across the margins to return the desired random vector ${\bf Y}$.
+

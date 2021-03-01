@@ -1,18 +1,12 @@
 # Appendix {.unnumbered #appendix}
 
 
-\noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). 
-
-
-\vspace{0.1in}
-
-
-\noindent First, let us note that when we get such a vector from BigSimR package then in fact it can be represented as 
+\noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). First, let us note that when we get such a vector from BigSimR package then in fact it can be represented as 
 
 
 \begin{equation}
 \label{kram1}
-(Y_1, Y_2)^\top \stackrel{d}{=} \left(X_1, e^{X_2}\right)^\top
+(Y_1, Y_2)^\top \stackrel{d}{=} \left(X_1, e^{X_2}\right)^\top,
 \end{equation}
 
 
@@ -52,7 +46,7 @@ To see this, consider the three steps of the NORTA construction:
 
 \item Transform $(Z_1, Z_2)^\top$ to $(U_1, U_2)^\top$ viz. $U_i =\Phi(Z_i)$,  $i=1,2$, where $\Phi(\cdot)$ is the standard normal CDF. 
 
-\item Return $(Y_1, Y_2)^\top$, where $Y_i=F_i^{-1}(U_i)$, $i=1,2$, where $F_i(\cdot)$ is the CDF of $Y_i$ and $F_i^{-1}(\cdot)$ is its inverse (the quantile function). 
+\item Return $(Y_1, Y_2)^\top$, where $Y_i=F_i^{-1}(U_i)$, $i=1,2$, and $F_i(\cdot)$ is the CDF of $Y_i$ and $F_i^{-1}(\cdot)$ is its inverse (the quantile function). 
 
 \end{enumerate}
 
@@ -203,12 +197,7 @@ where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the *coefficient of variation* (CV) of the
 - \sqrt{\frac{\log(1+c_2^2)}{c_2^2}} \leq \rho_{Y_1, Y_2} \leq \sqrt{\frac{\log(1+c_2^2)}{c_2^2}}. 
 \end{equation}
 
- 
- \vspace{0.1in}
- 
- 
- \noindent {\bf Further notes on the basic example in Section 4.1}. Based on the above analysis, one may propose a model of the form (\ref{kram1}) for these data, where $Y_1$ is the temperature (normal) and $Y_2$ is the Ozone variable (lognormal). Then, $X_1=Y_1$ and $X_2=\log Y_2$ will be bivariate normal, and the parameters can be estimated  based on the bivariate normal model. One can again use the marginal estimates as discussed in the paper, although one could actually use the exact same method for both variables (based on normality, after converting the Ozone variable to normal through the logarithmic transformation). According to the analysis presented in the paper, the values of 3.419 and 0.6967 are the estimates (the MLEs) of the mean and the variance of the underlying normal random variable $X_2$, that is $\hat{\mu}_2 = 0.3.419$ and $\hat{\sigma}_2=0.6967$. When this estimate of $\sigma_2$ is used in (\ref{kram8}), the factor on the far right becomes 
-
+Plugging in the estimands of these quantities from Section \@ref(package), we see that 
 
 \begin{equation}
 \label{kram11}
@@ -216,4 +205,4 @@ where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the *coefficient of variation* (CV) of the
 \end{equation}
 
 
-Thus, the possible range of correlation becomes $(-0.881, 0.881)$. This approximately agrees with the MC results in Section \@ref(package).
+Thus, the possible range of correlation becomes $(-0.881, 0.881)$. This approximately agrees with the MC results provided.

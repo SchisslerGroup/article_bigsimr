@@ -20,7 +20,7 @@ abstract:  It is critical to realistically simulate data when employing Monte Ca
 
 *=Corresponding author. aschissler@unr.edu. 1664 N Virginia St, Reno, NV 89557
 
-```{r include=FALSE}
+```{r 000-setup, include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'

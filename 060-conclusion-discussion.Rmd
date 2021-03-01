@@ -5,29 +5,7 @@ We have introduced a general-purpose high-dimensional multivariate simulation al
 
 Researchers working in multivariate computation frequently encounter such difficulties and need to find a close or nearest correlation matrix. A widely-available routine for this task in `R` is `matrix::nearPD`, though it is not suitable for high dimensions. To overcome this issue, we introduce `cor_nearPD` --- an implementation of @QS2006's method that computes the nearest correlation matrix to a given symmetric matrix in the Frobenius norm. This routine as many applications beyond our primary goal of random vector generation.
 
-It is customary to compare new tools and algorithms directly to existing competing methods and software. In this study, however, we only employ our proposed methodology, as our previous work has shown that existing `R` tools are simply not designed to meet our high-dimensional goal (see @Li2019gpu for evaluations of the `R` `copula` package and others). For the bivariate simulations, existing packages such as [`nortaRA`](https://github.com/cran/NORTARA/blob/master/inst/doc/NORTARA.R) work well to match Pearson correlations exactly.
-
-<!-- 
-We advocate the use of Kendall's $\tau$ as it better captures correlation among components of non-normal, as well as non-linear patterns of association. Moreover, the matching Kendall's $\tau$ is nearly trivial due to the invariant of monotone transformations, after an adjustment to the input correlation matrix.
--->
-
-
-<!-- 
-We also show utility in our methodology through an application to differential gene expression analysis from RNA-sequencing data. The application results show that correlations indeed matter in the large-scale hypothesis testing, as many others have noted (for example, see @BE07, @Wu2012b). We also hope that the application provides an example workflow --- and other strategy to use in simulation design. Even the best-performing simulations we provide show a gap from the empirical distribution. To keep the demonstration straightforward, we did not attempt to match the empirical distribution of test statistics as precisely as possible. Yet our methodology could be more creatively applied to meet that goal. One could consider marginal distributions from different families, such as Poisson for a subset of genes. One could imagine finding a best fitting probability distribution among a class of distributions for each gene and this could perhaps a better fit. One could imagine additional structures/features in the data that an analyst could model to improve the correspondence with the empirical values, for example row correlations and high-dimensional covariance estimators (see @Won2013g).
--->
+It is customary to compare new tools and algorithms directly to existing competing methods and software. In this study, however, we only employ our proposed methodology, as our previous work has shown that existing `R` tools are simply not designed to meet our high-dimensional goal (see @Li2019gpu for evaluations of the `R` `copula` package and others). For the bivariate simulations, existing packages such as [`nortaRA`](https://github.com/superdesolator/NORTARA) work well to match Pearson correlations exactly.
 
 
 There are limitations to the methodology and implementation. We could only investigate selected multivariate distributions in our Monte Carlo studies. There may be instances that the methods do not perform well. Along those lines, we expect that correlation values close to the boundary of the feasible region could result in algorithm failure. Another issue is that for discrete distributions, we use continuous approximations when the support set is large. This could limit the scalability/accuracy for particular joint distributions.
-
-<!-- 
-The most obvious missing feature of the proposed methodology is the inability to match a Pearson correlation matrix exactly. As discussed in the [Algorithms](algorithms) section and extensively by @XZ19, this is a computationally intense procedure and Pearson's correlation is not a natural choice to describe dependency for non-normal marginals. While we do not provide an implementation directly supporting Pearson matching, users may supply their own input Pearson correlation after employing a supplementary matching scheme [@Cario1997; @XZ19].
--->
-
-<!-- 
-Further, while we provide the ability of the user to specify discrete marginals, exact matching a desired dependency measure is not yet obtained. One potential solution for this is *rescale* to account for ties [ref]. Finally we note, that the algorithm requires invertible marginal cdfs. This gives some restriction to the available marginal probability distributions (DOES IT? FOR EXAMPLE?). From a practical computing standpoint, the user's computing resource provides the ultimate limit on how large a dimension can be simulated using the `bigsimr` R package. A user must consider carefully the available memory and cores when conducting a Monte Carlo experiment. 
--->
-
-
-<!-- 
-Future work includes developing scaleable algorithms to match the Pearson correlation matrix more precisely, discrete-margin specific modifications including fast Spearman's correlation rescaling (see Equation \@ref(eq:spearmanRescaled)), and high-dimensional covariance estimation. From an implementation standpoint, `bigsimr` only supports Nvidia GPUs and redesigning the code using OpenCL would broaden the users who would benefit. As data-analytic problems grow to even larger dimension, multi-GPU support is a promising hardware-based future direction.
--->

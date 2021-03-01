@@ -1,5 +1,5 @@
 bookdown::pdf_book:
-  documentclass: elsarticle.cls
+  documentclass: elsarticle
   csl: elsevier-harvard.csl
   includes:
     in_header:  latex/preamble.tex

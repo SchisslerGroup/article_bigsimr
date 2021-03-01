@@ -2,4 +2,16 @@ book_filename: "article_bigsimr"
 delete_merged_file: true
 before_chapter_script: [_common.R]
 after_chapter_script: [_outgoing.R]
+rmd_files: [
+  "index.Rmd",
+  "010-background.Rmd",
+  "020-simulation-algorithm.Rmd",
+  "030-bigsimr-package.Rmd",
+  "040-monte-carlo-evaluation.Rmd",
+  "050-examples.Rmd",
+  "060-conclusion-discussion.Rmd",
+  "070-supplementary-materials.Rmd",
+  "080-appendix.Rmd",
+  "300-references.Rmd"
+]
 output_dir: "docs"

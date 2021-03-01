@@ -39,16 +39,6 @@ brca1000 <- example_brca %>%
 We begin by estimating the structure of the TCGA BRCA RNA-seq data set (see [Background](background)). Ultimately, we will simulate $B=10,000$ random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with $d=`r d`$. We assume a multivariate negative binomial (MVNB) model as RNA-seq counts are often over-dispersed and correlated. Since all $d$ selected genes exhibit over-dispersion (data not shown), we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$, to determine the target marginal PMFs $f_i$. To complete specification of the simulation algorithm inputs, we estimate the Spearman correlation matrix ${ \bf R}_{S}$ to characterize dependency.
 
 
-<!--
-This suggests simulating high-dimensional multivariate NB (MVB) with heterogeneous marginals would be useful tool in the development and evaluation of RNA-seq analytics. This procedure results in count data with infinite support, since RNA-sequencing platforms measure gene expression by enumerating the number of reads aligned to genomic regions. All these genes exhibit over-dispersion and, so, we proceed to estimate the NB parameters $(r_i, p_i), i=1,\ldots,d$ to determine the target marginal PMFs $g_i(y_i)$ (via method of moments). Notably, the $\hat{p}_i's$ are small --- ranging in $[3.934 \times 10^{-6} , 1.217 \times 10^{-2}]$. To complete the simulation algorithm inputs, we estimate the Pearson correlation matrix $\bf{R_Y}$ and set that as the target correlation.
--->
-
-
-<!--
-With the simulation targets specified, we proceed to simulate $N=10,000$ random vectors $\bf{Y}$ $=( Y_1,\ldots,Y_d)$ with target Pearson correlation $\bf{R_Y}$ and marginal PMFs $g_i(y_i)$ using a $\bf{T}$-Poisson hierarchy of Kind II. Specifically, we first employ the \emph{direct Gaussian copula} approach to generate $N$ random vectors following a standard multivariate Gamma distribution $\bf{T}$ with shape parameters $r_i$ equal to the target $n_i$ and Pearson correlation matrix $\bf{R_T}$. Care must be taken when setting the specifying $\bf{R}$ (refer to Equation \ref{gay.cop.pdf}) --- we employ Equation \ref{mix.poi.corr} to compute the scaling factors $c_{i,j}$ and adjust the underlying correlations to ultimately match the target $\bf{R_Y}$. Notably, of the $525,825$ pairwise correlations from the $1026$ genes, no scale factor was less than $0.9907$, indicating the model can produce essentially the entire range of possible correlations. Here we are satisfied with approximate matching of the specified Gamma correlation and set $\bf{R}$ = $\bf{R_T}$ in our Gaussian copula scheme ($\bf{R}$ indicating the specified multivariate Gaussian correlation matrix). Finally, we generate the desired random vector $Y_i=N_i(t_i)$ by simulating Poisson counts with expected value $\mu_i=\lambda_i \times T_i$, for $i=1,\ldots,d$ (with $\lambda_i=\frac{(1-p_i)}{p_i}$) and repeat $N=10,000$ times.
--->
-
-
 With this goal in mind, we first estimate the desired correlation matrix using the fast implementation provided by `bigsimr`:
 
 
@@ -59,11 +49,6 @@ R_S <- bs$cor(as.matrix(brca1000), bs$Spearman)
 
 
 Next, we estimate the marginal parameters. We use the method of moments (MoM) to estimate the marginal parameters for the multivariate negative binomial model. While, marginal distributions are from the same probability family (NB), they are heterogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$. The functions below support this estimation for later use in `rvec`.
-
-
-<!-- 
-TYPESTE MoM estimators here.
--->
 
 
 ```{r ch050-nbHelpers, echo=TRUE}
@@ -93,10 +78,8 @@ Notably, the estimated marginal NB probabilities $\{ \hat{p}_i \}$ are small ---
 ```{r ch050-cor-check, echo=TRUE}
 # 1. Mapping step first
 R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson)
-
 # 2a. Check admissibility
-(is_valid_corr <- julia_call("Bigsimr.iscorrelation", R_X))
-
+(is_valid_corr <- bs$iscorrelation(R_X))
 # 2b. compute nearest correlation
 if (!is_valid_corr) {
   R_X_pd <- bs$cor_nearPD(R_X)
@@ -107,6 +90,7 @@ if (!is_valid_corr) {
 }
 summary(abs(targets - approximates))
 ```
+
 
 While the exact $d \times d$ Spearman correlation matrix is not strictly admissible in our scheme (as seen by the non-positive definite result above), the approximation is close with a maximum absolute error of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))` across the `r choose(d,2)` correlations.
 
@@ -135,17 +119,13 @@ ggpairs(data = as.data.frame(sim_nbinom[, gene_sample]),
 Figure \@ref(fig:ch050-figBRCA) displays the aggregated results of our simulation by comparing the specified target parameter (horizontal axes) with the corresponding quantities estimated from the simulated data (vertical axes). The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlation from the data.
 
 
-<!-- 
-Utilizing 15 CPU threads in a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, the simulation completed in just over 2 minutes.
--->
-
-
 ```{r ch050-figBRCA, out.width='80%', fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes)."}
 include_graphics('fig/ch050-figBRCA.png')
 ```
 
 
-*Limitations, conclusions, and recommendations.*
+*Limitations, conclusions, and recommendations*
+
 The results show overall good simulation performance for our choice of parameters settings. Our settings were motivated by modeling high-expressing genes from TCGA BRCA data set. In general, the ability to match marginal and dependence parameters depends on the particular joint probability model. We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
 
 

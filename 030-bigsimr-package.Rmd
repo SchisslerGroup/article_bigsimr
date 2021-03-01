@@ -1,7 +1,7 @@
 # The `bigsimr` R package {#package}
 
 
-```{r ch030-basic-example-setup, echo=TRUE, cache=FALSE}
+```{r ch030-basic-example-setup, cache=FALSE}
 box::use(
   patchwork[...],
   dplyr[...],
@@ -44,9 +44,7 @@ For simplicity and to provide a minimal working example, we consider bivariate s
 
 
 ```{r ch030-air-quality-data, echo=TRUE}
-df <- airquality %>%
-  select(Temp, Ozone) %>%
-  drop_na()
+df <- airquality %>% select(Temp, Ozone) %>% drop_na()
 ```
 
 
@@ -93,8 +91,7 @@ Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we as
 
 
 ```{r ch030-aq-temp-pars, echo=TRUE}
-df %>% 
-  select(Temp) %>% 
+df %>% select(Temp) %>% 
   summarise_all(.funs = c(mean = mean, sd = sd))
 ```
 
@@ -102,7 +99,6 @@ df %>%
 ```{r ch030-aq-ozone-pars, echo=TRUE}
 mle_mean <- function(x) mean(log(x))
 mle_sd <- function(x) mean( sqrt( (log(x) - mean(log(x)))^2 ) )
-
 df %>% 
   select(Ozone) %>% 
   summarise_all(.funs = c(meanlog = mle_mean, sdlog = mle_sd))
@@ -113,10 +109,8 @@ Next, we configure the input marginals for later input into `rvec`. The marginal
 
 
 ```{r ch030-margins-alist, echo=TRUE}
-margins <- c(
-  dist$Normal(mean(df$Temp), sd(df$Temp)),
-  dist$LogNormal(mle_mean(df$Ozone), mle_sd(df$Ozone))
-)
+margins <- c(dist$Normal(mean(df$Temp), sd(df$Temp)),
+             dist$LogNormal(mle_mean(df$Ozone), mle_sd(df$Ozone)))
 ```
 
 
@@ -152,9 +146,8 @@ To provide higher dimensional feasibility/admissibility checking, we begin by ma
 ```{r ch030-cor-convert, echo=TRUE}
 # Step 1. Mapping
 (R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson))
-
 # Step 2. Check admissibility
-julia_call("Bigsimr.iscorrelation", R_X)
+bs$iscorrelation(R_X)
 ```
 
 

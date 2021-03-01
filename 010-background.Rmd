@@ -63,7 +63,7 @@ small_brca %>%
 ```
 
 
-To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) displays the marginal distributions and estimated Spearman's correlations (see Equation \@ref(eq:spearman) below).
+To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) displays the marginal distributions and estimated Spearman's correlations.
 
 
 ```{r ch010-realDataFig, cache=FALSE, fig.width=8, fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
@@ -82,8 +82,8 @@ The most widely-known is the Pearson (product-moment) correlation coefficient th
 
 
 \begin{equation}
-(\#eq:pearson)
 \rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ \mathrm{Var}(X)\mathrm{Var}(Y)\right]^{1/2}}.
+(\#eq:pearson)
 \end{equation}
 
 
@@ -117,7 +117,7 @@ There is no closed form, general correspondence among the rank-based measures an
 
 *Discrete marginal considerations*
 
-Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale Equation \@ref(eq:spearman). For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
+Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale the Spearman correlation. For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
 
 \begin{equation}

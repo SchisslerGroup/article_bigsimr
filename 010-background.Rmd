@@ -94,29 +94,12 @@ The most widely-known is the Pearson (product-moment) correlation coefficient th
 
 As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pearson correlation completely describes the dependency between the components. For non-normal marginals with monotone correlation patterns, however, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships [@MK01]. Alternatively in these settings, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
 
-
-Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. Define
-
-
-\begin{equation}
-(\#eq:spearman)
-\rho_S(X,Y) = 3 \left[ P\left[ (X_1 - X_2)(Y_1-Y_3) > 0 \right] - P\left[ (X_1 - X_2)(Y_1-Y_3) < 0 \right] \right],
-\end{equation}
-
-
-\noindent where $(X_1, Y_1) \overset{d}{=} (X,Y), X_2 \overset{d}{=} X, Y_3 \overset{d}{=} Y$ with $X_2$ and $Y_3$ are independent of one other and of $(X_1, Y_1)$. Spearman's $\rho_S$ has an appealing correspondence as the Pearson's correlation coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships.
-
-
-Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations $(X_i, Y_i)$ and $(X_j, Y_j)$.
-By concordance we mean that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$) and is determined by the ranks of the values, not the values themselves.
-
+Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. Spearman's $\rho_S$ has an appealing correspondence as the Pearson correlation coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships. Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations, $(X_i, Y_i)$ and $(X_j, Y_j)$, with concordance meaning that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$). Note that concordance is determined by the ranks of the values, not the values themselves.
 
 Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property enables matching rank-based correlations with speed (SP1) and accuracy (SP2).
 
-
-*Correspondence among Pearson, Spearman, Kendall correlations*.
+*Correspondence among Pearson, Spearman, and Kendall correlations*.
 There is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation. For *bivariate normal vectors*, however, the correspondence is well-known:
-
 
 \begin{equation}
 (\#eq:convertKendall)
@@ -142,10 +125,10 @@ Spearman's correlation for discrete marginal suffers issues whenever there is a 
 \end{equation}
 
 
-Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1). Further the infinite sums must be approximated for count-valued data.
+Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1). Further, the infinite sums must be approximated for count-valued data.
 
 
-Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$. Let 
+Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$. A standard practice is to set
 
 
 \begin{equation}
@@ -155,7 +138,7 @@ F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
 
 
 *Marginal-dependent bivariate correlation bounds*. 
-Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$. The so-called *Frechet-Hoeffding bounds* are well-studied ([@Nelsen2007; @BF17]). These constraints cannot be overcome through algorithm design. In general, the bounds are given by
+Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$. The so-called *Frechet-Hoeffding bounds* are well-studied [@Nelsen2007; @BF17]. These constraints cannot be overcome through algorithm design. In general, the bounds are given by
 
 
 \begin{equation}
@@ -164,9 +147,7 @@ Given two marginal distributions, $\rho_P$ is not free to vary over the entire r
 \end{equation}
 
 
-\noindent where $U$ is a uniform random variable in $(0,1)$, and $F^{-1}_1, F^{-1}_2$ are the inverse CDFs of random variables $X_1$ and $X_2$, respectively. 
-
-For discrete random variables, define $F^{-1}$ as in Equation \@ref(eq:inverseCDF).
+\noindent where $U$ is a uniform random variable on $(0,1)$ and $F^{-1}_1, F^{-1}_2$ are the inverse CDFs of $X_1$ and $X_2$, respectively, definitely by \@ref(eq:inverseCDF) when the variables are discrete.
 
 
 ## Gaussian copulas
@@ -187,7 +168,7 @@ F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \l
 $x_i \in \mathbb R, i=1,\ldots,d.$
 
 
-A Gaussian copula has marginal CDFs that are all normal, $F_i = \Phi, \forall \, i$. This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$. As the marginals are standardized to have unit variance, however, ${\bf R_P}$ is a Pearson correlation matrix. If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
+A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \forall \, i$. This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$. As the marginals are standardized to have unit variance, however, ${\bf R_P}$ is a Pearson correlation matrix. If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
 
 
 \begin{equation}
@@ -198,5 +179,6 @@ F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 
 where $\Phi(\cdot)$ is the standard normal CDF. Note that the copula $C_{{\bf R}}$ is the familiar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$. 
 
+Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$.
 
-Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$, via ${\bf U} = (U_1, \ldots,  U_d)^\top$ viz $U_i=\Phi(X_i)$, $i=1, \ldots, d$ provides $Y_i \sim F_i, \, \forall \, i$.
+

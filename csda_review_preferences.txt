@@ -1,0 +1,15 @@
+Please select 3-4 associate Editor names from the list of Associate editors available in the below link: http://www.journals.elsevier.com/computational-statistics-and-data-analysis/editorial-board Note: Please do not select names from the other columns Editorial Assistants and Advisory Board.
+
+T. Park, P. Breheny, M. de Carvalho, S.-K. Chao
+
+Please describe on how your paper fits in the aims and scopes of csda (100 characters)
+
+It contains algorithm/software for high-dimension multivariate simulation, motivated RNA-seq data.
+
+Please explain the novelty of the paper (500 characters)
+
+Our method is inspired by the NORmal To Anything (NORTA) algorithm. We employ well-known conversions between correlations types for multivariate normal distributions (Spearman/Kendall to Pearson). Others have used these relationships. To our knowledge, however, our method is the first to combine these ideas together for the intention of high-dimensional data analytics. Further we believe that no other software enables efficient flexible simulation at this a large dimension.
+
+What is the main contribution of the paper (1000 characters)
+
+The major contribution of this work is the introduction of our algorithm and high-performance software for flexible, scalable simulation of high-dimensional multivariate probability distributions. We justify and describe our Gaussian copula-based approach while discussing high-dimensional challenges and considerations. We report Monte Carlo studies to determine empirical accuracy and scalability at high dimensions. RNA-sequencing data motivate our study and guide our choice simulation settings and example applications.  Code chunks are provided that describe coding syntax and workflows. We conclude with a brief discussion of other applications and method limitations.

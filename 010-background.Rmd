@@ -14,7 +14,7 @@ d <- 1000
 ```
 
 
-The `bigsimr` `R` package presented here provides multiple algorithms that operate with high-dimensional multivariate data; however, all these algorithms were originally designed to support a single task: to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics. Specifically, our goal is to efficiently simulate a large number, $B$, of random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$, where $d$ can be very large and still be computed in a practical timescale.
+The `bigsimr` `R` package presented here provides multiple algorithms that operate with high-dimensional multivariate data; however, all these algorithms were originally designed to support a single task: to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics. Specifically, our goal is to efficiently simulate a large number, $B$, of HD random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i$.
 
 
 When designing this methodology, we developed the following properties to guide our effort. We divide the properties into two categories: (1) basic properties (BP) and "scalability" properties (SP). The BPs are adapted from an existing criteria due to @Nik13a. A suitable simulation strategy should possess the following properties:

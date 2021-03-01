@@ -48,24 +48,6 @@ Table: (\#tab:sims) Identical margin, bivariate simulation configurations to eva
 For each of the unique 9 simulation configurations described above, we estimate the correlation bounds and vary the correlations along a sequence of 100 points evenly placed within the bounds, aiming to explore $\Omega$. Specifically, we set correlations $\{ \rho_1 = ( \hat{l} + \epsilon), \rho_2 = (\hat{l} + \epsilon) + \delta, \ldots, \rho_{100} = (\hat{u} - \epsilon) \}$, with $\hat{l}$ and $\hat{u}$ being the estimated lower and upper bounds, respectively, and increment value $\delta$. The adjustment factor, $\epsilon=0.01$, is introduced to handle numeric issues when the bound is specified exactly.
 
 
-<!-- 
-*Bivariate Normal*.
-Let's simulate a bivariate normal and check our correlation matching performance as N increases.
-Standard bivariate normal 
-Here we have BVN( $\mu_1 = \mu_2 = 0, \rho_{type}$ ).
-We vary $\rho$ across the entire possible range of correlations for each correlation type.
-Figure \@ref(fig:ch040-biNormPlot) `bigsimr` recovers the Pearson specified correlations for MVN.
-
-*Bivariate Gamma*. 
-Similarly, let's check the performance for a non-symmetric continuous distribution: a standard (rate =1) bivariate gamma.
-Here we have a Bivariate Gamma with $shape_1 = shape_2 = 10, \rho_{type}$.
-We vary $\rho$ across the entire possible range of correlations for each correlation type.
-Figure \@ref(fig:ch040-biGammaPlot) `bigsimr` recovers the Pearson specified correlations for bivariate gamma.
-*Bivariate Negative Binomial*. 
-Figure \@ref(fig:ch040-biNegBinPlot) `bigsimr` recovers the Pearson specified correlations for bivariate negative binomial.
- -->
-
-
 ```{r ch040-biNormPlot, eval=FALSE, fig.height=5, fig.width=8, fig.cap="`bigsimr` recovers the Pearson specified correlations for MVN."}
 bivariate_normal_sims %>%
     ggplot(aes(rho, rho_hat, color = type)) +
@@ -166,7 +148,7 @@ See [Discussion](discussion) for future directions for fast Pearson matching and
 With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether the `bigsimr` can scale to larger dimensional problems with practical computation times. Specifically, we ultimately generate $B=1,000$ random vectors for $d=\{100, 250, 500, 1000, 2500, 5000, 10000\}$ for each correlation type, $\{Pearson, Spearman, Kendall\}$ while timing the algorithm's major steps.
 
 
-To mimick the workflow, we first produce a synthetic "data set" by completing the following steps:  
+To mimic the workflow, we first produce a synthetic "data set" by completing the following steps:  
 
 
 1. Produce heterogeneous gamma marginals by randomly selecting the $j^{th}$ gamma shape parameter from $U_j \sim uniform(1,10), j=1,\ldots,d$ and the $j^{th}$ rate parameter from $V_j \sim exp(1/5), j=1,\ldots,d$, with the constant parameters determined arbitrarily.  
@@ -214,8 +196,8 @@ tabTimes %>%
 ```
 
 
-The results larger dimensional vectors show scalebility to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
-Figure \@ref(fig:ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ equal to 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster, with total times under 5 minutes for $d=10,000$, making Spearman correlations the most computationally-friendly dependency type. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtaned the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps i, 1, and 2 only need to be computed once and the third step, *Simulate Data*, is fast under all schemes for all $d$ under consideration.
+The results larger dimensional vectors show scalability to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
+Figure \@ref(fig:ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ equal to 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster, with total times under 5 minutes for $d=10,000$, making Spearman correlations the most computationally-friendly dependency type. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtained the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps i, 1, and 2 only need to be computed once and the third step, *Simulate Data*, is fast under all schemes for all $d$ under consideration.
 
 
 ```{r ch040-largeDfig, fig.cap="Computation times as d increases."}

@@ -1,7 +1,7 @@
 # Supplementary Materials {.unnumbered #misc}
 
 
-We provide an open-source implementation of our methodology as the `bigsimr` R package, hosted on github, https://schisslergroup.github.io/bigsimr/.
+We provide an open-source implementation of our methodology as the `bigsimr` R package, hosted on github, https://github.com/SchisslerGroup/r-bigsimr.
 
 
 ```{r, out.width='5%'}

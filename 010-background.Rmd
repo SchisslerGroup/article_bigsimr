@@ -46,9 +46,8 @@ Simulating high-dimensional, non-normal, correlated data motivates this work ---
 
 
 We illustrate our methodology using a well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
-For simplicity, we only consider high expressing genes. In turn, we begin by filtering to retain the top `r d` of the highest-expressing genes (in terms of median expression) of the over 20,000 gene measurements from $N=`r nrow(example_brca)`$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters). Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. 
- 
- 
+For ease of modeling and simplicity of exposition, we only consider high expressing genes. In turn, we begin by filtering to retain the top `r d` of the highest-expressing genes (in terms of median expression) of the over 20,000 gene measurements from $N=`r nrow(example_brca)`$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters). Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) displays the marginal distributions and estimated Spearman's correlations.
+
 ```{r ch010-realDataTab}
 set.seed(2020-02-25)
 num_genes    <- 3
@@ -69,11 +68,7 @@ small_brca %>%
   kable(booktabs = TRUE, caption = cap)
 ```
 
-
-To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) displays the marginal distributions and estimated Spearman's correlations.
-
-
-```{r ch010-realDataFig, cache=FALSE, fig.width=8, fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
+```{r ch010-realDataFig, cache=FALSE, fig.width=8, fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess outliers, heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 ggpairs(
   data = example_brca[, gene_sample],
   upper = list(continuous = wrap('cor', method = "spearman"))
@@ -123,46 +118,23 @@ There is no closed form, general correspondence among the rank-based measures an
 \rho_P = 2 \times \sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
-
-*Discrete marginal considerations*
-
-Spearman's correlation for discrete marginal distributions suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale the Spearman correlation. For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
-
-
-\begin{equation}
-(\#eq:spearmanRescaled)
-\rho_{RS}(X,Y) = \frac{\rho_s(X,Y)}{ \left[ \left[ 1 - \sum_x p(x)^3 \right] \left[ 1 - \sum_y q(y)^3 \right] \right]^{1/2}}.
-\end{equation}
-
-
-Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over a large number of pairs becomes expensive (often violating desired property SP1). Further, the infinite sums must be approximated for count-valued data.
-
-
-Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$. A standard practice is to set
-
-
-\begin{equation}
-F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
-(\#eq:inverseCDF)
-\end{equation}
-
-
 *Marginal-dependent bivariate correlation bounds*
 
 Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$. The so-called *Frechet-Hoeffding bounds* are well-studied [@Nelsen2007; @BF17]. These constraints cannot be overcome through algorithm design. In general, the bounds are given by
-
 
 \begin{equation}
 (\#eq:frechet)
 \rho_P^{max} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho_P^{min} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
 \end{equation}
 
-
 \noindent where $U$ is a uniform random variable on $(0,1)$ and $F^{-1}_1, F^{-1}_2$ are the inverse CDFs of $X_1$ and $X_2$, respectively, definitely by \@ref(eq:inverseCDF) when the variables are discrete.
 
+\begin{equation}
+F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
+(\#eq:inverseCDF)
+\end{equation}
 
 ## Gaussian copulas
-
 
 There is a strong connection of our simulation strategy to Gaussian *copulas* (see @Nelsen2007 for a technical introduction). A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals. This provides a powerful, natural way to characterize joint probability structures. Consequently, the study of copulas is an important and active area of statistical theory and practice.
 

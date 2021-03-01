@@ -94,13 +94,11 @@ Once $R_X$ has been determined, we check admissibility of the adjusted correlati
 
 For nonparametric correlation measures, our algorithm allows the generation of high-dimensional multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN. In particular, if we let $X$ be MVN with $d$ components and set
 
-
 \begin{align*}
 \Omega_P &= \{ R_P : R_P \textrm{ is a correlation matrix for } X \} \\
 \Omega_K &= \{ R_K : R_K \textrm{ is a correlation matrix for } X \} \\
 \Omega_S &= \{ R_S : R_S \textrm{ is a correlation matrix for } X \} \\
 \end{align*}
-
 
 then there are 1-1 mappings between these sets. We conjecture informally that the sets of admissible $R_S$ and $R_K$ are not highly restrictive. In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PD matrix with 1's along the diagonal. We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$ (and similarly for $R_K$).
 

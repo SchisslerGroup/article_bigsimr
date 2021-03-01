@@ -1,6 +1,6 @@
 --- 
 title: "Simulating High-Dimensional Multivariate Data"
-subtitle: "using the `Bigsimr` Package"
+subtitle: "using the `bigsimr` Package"
 author:
   - Alfred G. Schissler*
   - Edward J. Bedrick

@@ -1,7 +1,7 @@
 # Appendix {.unnumbered #appendix}
 
 
-\noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). First, let us note that when we get such a vector from bigsimr package then in fact it can be represented as 
+\noindent Consider a bivariate example where we have a correlated $(Y_1, Y_2)^\top$ with $Y_1\sim N(\mu_1, \sigma_1^2)$ (normal) and $Y_2\sim LN(\mu_2, \sigma_2^2)$ (lognormal). First, let us note that when we get such a vector from the `bigsimr` package then in fact it can be represented as 
 
 
 \begin{equation}

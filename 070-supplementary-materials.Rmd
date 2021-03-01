@@ -1,7 +1,7 @@
 # Supplementary Materials {.unnumbered #misc}
 
 
-We provide an open-source implementation of our methodology as the `bigsimr` R package, hosted on github, https://github.com/SchisslerGroup/r-bigsimr.
+We provide an open-source implementation of our methodology as the `Bigsimr.jl` Julia package, hosted on github at https://github.com/adknudson/Bigsimr.jl. Additionally we provide R and Python interfaces to `Bigsimr`, respectively at https://github.com/SchisslerGroup/r-bigsimr and https://github.com/SchisslerGroup/python-bigsimr. `Bigsimr.jl` is an ongoing project, and feature requests or issues can be submitted to https://github.com/adknudson/Bigsimr.jl/issues.
 
 
 ```{r, out.width='5%'}

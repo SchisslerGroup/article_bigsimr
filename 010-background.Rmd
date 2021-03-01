@@ -32,15 +32,10 @@ Moreover, the simulation method must *scale* to high dimensions:
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
 
 
-<!-- 
-The next section describes the motivating data set we use to provide example applications.
--->
-
-
 ## Motivating example: RNA-seq data
 
 
-Simulating high-dimensional, non-normal, correlated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. The RNA-seq data-generating process involves counting how often a particular form of human messenger RNA (mRNA) is expressed in a biological sample. RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data. For human-derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted [@Schissler2019]. Importantly, due to inherent biological processes, gene expression data exhibit correlation --- co-expression --- across genes [@BE07; @Schissler2018]. 
+Simulating high-dimensional, non-normal, correlated data motivates this work --- in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. The RNA-seq data-generating process involves counting how often a particular form of human messenger RNA (mRNA) is expressed in a biological sample. RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in high-dimensional data. For human-derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted [@Schissler2019]. Importantly, due to inherent biological processes, gene expression data exhibit correlation (co-expression) across genes [@BE07; @Schissler2018]. 
 
 
 We illustrate our methodology using a well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
@@ -96,10 +91,14 @@ As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pe
 
 Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. Spearman's $\rho_S$ has an appealing correspondence as the Pearson correlation coefficient on *ranks* of the values, thereby captures nonlinear yet monotone relationships. Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations, $(X_i, Y_i)$ and $(X_j, Y_j)$, with concordance meaning that orderings have the same direction (e.g., if $X_i < X_j$, then $Y_i < Y_j$). Note that concordance is determined by the ranks of the values, not the values themselves.
 
+
 Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property enables matching rank-based correlations with speed (SP1) and accuracy (SP2).
 
-*Correspondence among Pearson, Spearman, and Kendall correlations*.
+
+*Correspondence among Pearson, Spearman, and Kendall correlations*
+
 There is no closed form, general correspondence among the rank-based measures and the Pearson correlation coefficient, as the marginal distributions $F_i$ are intrinsic in their calculation. For *bivariate normal vectors*, however, the correspondence is well-known:
+
 
 \begin{equation}
 (\#eq:convertKendall)
@@ -115,7 +114,9 @@ There is no closed form, general correspondence among the rank-based measures an
 \rho_P = 2 \times \sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
-*Discrete marginal considerations*.
+
+*Discrete marginal considerations*
+
 Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale Equation \@ref(eq:spearman). For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
 
@@ -137,7 +138,8 @@ F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
 \end{equation}
 
 
-*Marginal-dependent bivariate correlation bounds*. 
+*Marginal-dependent bivariate correlation bounds*
+
 Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$. The so-called *Frechet-Hoeffding bounds* are well-studied [@Nelsen2007; @BF17]. These constraints cannot be overcome through algorithm design. In general, the bounds are given by
 
 
@@ -179,6 +181,5 @@ F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 
 where $\Phi(\cdot)$ is the standard normal CDF. Note that the copula $C_{{\bf R}}$ is the familiar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$. 
 
+
 Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$.
-
-

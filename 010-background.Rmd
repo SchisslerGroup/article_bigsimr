@@ -19,17 +19,24 @@ The `bigsimr` `R` package presented here provides multiple algorithms that opera
 
 When designing this methodology, we developed the following properties to guide our effort. We divide the properties into two categories: (1) basic properties (BP) and "scalability" properties (SP). The BPs are adapted from an existing criteria due to @Nik13a. A suitable simulation strategy should possess the following properties:
 
+\setstretch{1.5}
 
 * BP1: A wide range of dependences, allowing both positive and negative values, and, ideally, admitting the full range of possible values.
 * BP2: Flexible dependence, meaning that the number of bivariate marginals can be equal to the number of dependence parameters.
 * BP3: Flexible marginal modeling, generating heterogeneous data --- possibly from differing probability families.
 
+\setstretch{2.0}
+
 
 Moreover, the simulation method must *scale* to high dimensions:
 
 
+\setstretch{1.5}
+
 * SP1: Procedure must scale to high dimensions with practical compute times.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
+
+\setstretch{2.0}
 
 
 ## Motivating example: RNA-seq data
@@ -70,7 +77,9 @@ To help visualize the bivariate relationships for these three selected genes acr
 ggpairs(
   data = example_brca[, gene_sample],
   upper = list(continuous = wrap('cor', method = "spearman"))
-) + theme_bw()
+) + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = -90, vjust = 0.5))
 ```
 
 
@@ -117,7 +126,7 @@ There is no closed form, general correspondence among the rank-based measures an
 
 *Discrete marginal considerations*
 
-Spearman's correlation for discrete marginal suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale the Spearman correlation. For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
+Spearman's correlation for discrete marginal distributions suffers issues whenever there is a nonzero probability of ties. For example, the Spearman's correlation of a discrete-valued random variable $X$ with itself could be less than 1 [@MB13]. One remedy for this issue is to rescale the Spearman correlation. For two random variables $X,Y$ with probability mass functions (PMFs) or probability densities functions (PDFs) $p(x)$ and $q(y)$, respectively, define the rescaled Spearman's correlation as
 
 
 \begin{equation}
@@ -126,7 +135,7 @@ Spearman's correlation for discrete marginal suffers issues whenever there is a 
 \end{equation}
 
 
-Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over all large number of pairs becomes expensive (often violating desired property SP1). Further, the infinite sums must be approximated for count-valued data.
+Note that with continuous marginals the rescaling returns $\rho_S$. For discrete marginals with large or infinite support, computing the adjustment factors $\sum_x p(x)^3$, $\sum_y p(y)^3$ over a large number of pairs becomes expensive (often violating desired property SP1). Further, the infinite sums must be approximated for count-valued data.
 
 
 Also, for a discrete random variable $Y_i$, some care must be taken to define the quantile function $F_{i}^{-1}$. A standard practice is to set

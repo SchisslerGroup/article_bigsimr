@@ -72,7 +72,7 @@ nb_margins <- make_nbinom_margins(sizes, probs)
 ```
 
 
-Notably, the estimated marginal NB probabilities $\{ \hat{p}_i \}$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of specified correlation matrix.
+Notably, the estimated marginal NB probabilities $\{ \hat{p}_i \}$ are small --- ranging in the interval $[`r min(probs)` , `r max(probs)`]$. This gives rise to highly variable counts and, typically, less restriction on potential pairwise correlation pairs. Once the functions are defined/executed to complete marginal estimation, we specify targets and generate the desired random vectors using `rvec`. Now we check admissibility of the specified correlation matrix.
 
 
 ```{r ch050-cor-check, echo=TRUE}
@@ -120,7 +120,7 @@ include_graphics('fig/ch050-figBRCA.png')
 
 *Limitations, conclusions, and recommendations*
 
-The results show overall good simulation performance for our choice of parameters settings. Our settings were motivated by modeling high-expressing genes from TCGA BRCA data set. In general, the ability to match marginal and dependence parameters depends on the particular joint probability model. We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
+The results show overall good simulation performance for our choice of parameters settings. Our settings were motivated by modeling high-expressing genes from the TCGA BRCA data set. In general, the ability to match marginal and dependence parameters depends on the particular joint probability model. We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
 
 
 ## Simulation-based joint probability calculations
@@ -134,11 +134,11 @@ P( {\bf Y} = {\bf y} ), \: y_i \in \chi_i.
 $$
 
 
-where $\chi_i$ is the sample space for the $i^{th}$ component of the random vector $\bf{Y}$. Compact representations with convenient computational forms are rare for high-dimensional constructions, especially with heterogeneous, correlated marginal distributions (or margins of mixed data types). Given a large number of simulated vectors as produced above, estimated probabilities are readily given by counting the proportion of simulated vectors meeting the desired condition. In our motivating application, one may ask what is the probability that all genes expressed greater than a certain threshold value ${ \bf y}_0$. This can be estimated as 
+where $\chi_i$ is the sample space for the $i^{th}$ component of the random vector $\bf{Y}$. Compact representations with convenient computational forms are rare for high-dimensional constructions, especially with heterogeneous, correlated marginal distributions (or margins of mixed data types). Given a large number of simulated vectors as produced above, estimated probabilities are readily given by counting the proportion of simulated vectors meeting the desired condition. In our motivating application, one may ask what is the probability that all genes expressed greater than a certain threshold value ${\bf y}_0$. This can be estimated as 
 
 
 $$
-\hat{P}( {\bf Y} \ge {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y}^{ (b) } \ge {\bf y_0 } ),
+\hat{P}( {\bf Y} \ge {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y}^{ (b) } \ge {\bf y_0} ),
 $$
 
 
@@ -152,7 +152,7 @@ pHat <- mean(apply(sim_nbinom, 1, function(Y) {
 ```
 
 
-where ${\bf Y}^{(b)} $ is the $b^{th}$ simulated vector from a total of $B$ simulation replicates and $I(\cdot)$ is the indicator function. For example, we can estimate from our $B=10,000$ simulated vectors that the probability of all genes expressing (i.e., ${\bf y}_i \geq 1, \forall \; i$) is $`r pHat`$.
+where ${\bf Y}^{(b)}$ is the $b^{th}$ simulated vector from a total of $B$ simulation replicates and $I(\cdot)$ is the indicator function. For example, we can estimate from our $B=10,000$ simulated vectors that the probability of all genes expressing (i.e., ${\bf y}_i \geq 1, \forall \; i$) is $`r pHat`$.
 
 
 ```{r ch050-densityEvaluationECHO, echo=TRUE}

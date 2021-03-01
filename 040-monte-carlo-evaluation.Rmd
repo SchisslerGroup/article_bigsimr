@@ -1,7 +1,7 @@
 # Monte Carlo evaluations {#simulations}
 
 
-```{r ch040-LoadLib040, include=FALSE}
+```{r ch040-LoadLib040, include=FALSE, cache=FALSE}
 box::use(
     dplyr[...],
     ggplot2[...],
@@ -100,6 +100,7 @@ tabMAE <- allDat %>%
     ungroup()
 
 kable(tabMAE, booktabs = TRUE,
+      linesep = c("", "", "\\addlinespace"),
       col.names = c("No. of random vectors",
                     "Correlation type",
                     "Distribution",
@@ -108,7 +109,7 @@ kable(tabMAE, booktabs = TRUE,
 ```
 
 
-Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation values all three dependency measures, at least in these limited simulation settings for the rank-based correlations. Our Pearson matching performs nearly as well as Spearman or Kendall, except a slight increase in error for negative binomial case. This is due the particularly large counts generated with our choice of parameters for $p$ and $r$.
+Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation values all three dependency measures, at least in these limited simulation settings for the rank-based correlations. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for negative binomial case. This is due the particularly large counts generated with our choice of parameters for $p$ and $r$.
 
 
 ```{r ch040-bPlot, cache=FALSE, fig.asp=1.30, fig.weight=4, fig.cap="Bivariate simulations match target correlations across the entire range of feasible correlations. The horizontal axis plots the specified target correlations for each bivariate margin. Normal margins are plotted in dark dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations."}
@@ -137,32 +138,31 @@ allDat %>%
 ```
 
 
-<!-- 
-See [Discussion](discussion) for future directions for fast Pearson matching and discrete-specific modifications.
--->
-
-
 ## Scale up to High Dimensions
 
 
-With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether the `bigsimr` can scale to larger dimensional problems with practical computation times. Specifically, we ultimately generate $B=1,000$ random vectors for $d=\{100, 250, 500, 1000, 2500, 5000, 10000\}$ for each correlation type, $\{Pearson, Spearman, Kendall\}$ while timing the algorithm's major steps.
+With information of our method's accuracy from a low-dimensional perspective, we now turn to assessing whether `bigsimr` can scale to larger dimensional problems with practical computation times. Specifically, we ultimately generate $B=1,000$ random vectors for $d=\{100, 250, 500, 1000, 2500, 5000, 10000\}$ for each correlation type, $\{Pearson, Spearman, Kendall\}$ while timing the algorithm's major steps.
 
 
-To mimic the workflow, we first produce a synthetic "data set" by completing the following steps:  
+To mimic the workflow, we first produce a synthetic "data set" by completing the following steps:
 
 
-1. Produce heterogeneous gamma marginals by randomly selecting the $j^{th}$ gamma shape parameter from $U_j \sim uniform(1,10), j=1,\ldots,d$ and the $j^{th}$ rate parameter from $V_j \sim exp(1/5), j=1,\ldots,d$, with the constant parameters determined arbitrarily.  
-2. Produce a random full-rank Pearson correlation matrix via `cor_randPD` of size $d \times d$.  
-3. Simulate a "data set" of $1,000 \times d$ random vectors via `rvec` (without matching the Pearson exactly).  
+\setstretch{1.5}
+1. Produce heterogeneous gamma marginals by randomly selecting the $j^{th}$ gamma shape parameter from $U_j \sim uniform(1,10), j=1,\ldots,d$ and the $j^{th}$ rate parameter from $V_j \sim exp(1/5), j=1,\ldots,d$, with the constant parameters determined arbitrarily.
+2. Produce a random full-rank Pearson correlation matrix via `cor_randPD` of size $d \times d$.
+3. Simulate a "data set" of $1,000 \times d$ random vectors via `rvec` (without matching the Pearson exactly).
+\setstretch{2.0}
 
 
 With the synthetic data set in hand, we complete and time the following 4 steps:
 
 
-i. Estimate the correlation matrix from the "data" in the *Compute Correlation* step.  
-1. Map the correlations to initialize the algorithm (Pearson to Pearson, Spearman to Pearson, or Kendall to Pearson) in the *Adjust Correlation* step.  
-2. Check whether the mapping produces a valid correlation matrix and, if not, find the nearest PD correlation matrix in the *Check Admissibility* step.  
+\setstretch{1.5}
+i. Estimate the correlation matrix from the "data" in the *Compute Correlation* step.
+1. Map the correlations to initialize the algorithm (Pearson to Pearson, Spearman to Pearson, or Kendall to Pearson) in the *Adjust Correlation* step.
+2. Check whether the mapping produces a valid correlation matrix and, if not, find the nearest PD correlation matrix in the *Check Admissibility* step.
 3. Simulate $1,000$ vectors via the Inverse Transform method in the *Simulate Data* step.
+\setstretch{2.0}
 
 
 The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. The results for $d \leq 500$ are fast with all times (except Kendall) under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1 through 3, including estimation step i.
@@ -189,6 +189,7 @@ tabTimes  <- dat_long %>%
 
 tabTimes %>%
     kable(booktabs = TRUE,
+          linesep = c("", "", "\\addlinespace"),
           col.names = c("Dimension",
                         "Correlation type",
                         "Total Time (Seconds)"),
@@ -196,7 +197,7 @@ tabTimes %>%
 ```
 
 
-The results larger dimensional vectors show scalability to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
+The results with larger dimensional vectors show scalability to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
 Figure \@ref(fig:ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ equal to 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster, with total times under 5 minutes for $d=10,000$, making Spearman correlations the most computationally-friendly dependency type. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtained the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps i, 1, and 2 only need to be computed once and the third step, *Simulate Data*, is fast under all schemes for all $d$ under consideration.
 
 
@@ -212,7 +213,7 @@ dat_long %>%
     ggplot(aes(Correlation, `Time (minutes)`, fill=Step)) +
     geom_bar(position = "stack", stat = "identity") +
     scale_fill_manual(values = myColors ) +
-    scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30),
+    scale_y_continuous(breaks = seq(0, 80, 10),
                      minor_breaks = NULL) +
     facet_grid(. ~ Dimensions) +
     theme(axis.text.x = element_text(angle = -90))

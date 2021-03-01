@@ -127,7 +127,7 @@ As mentioned, the user must decide how to describe correlation based on the part
 ## Checking target correlation matrix admissibility
 
 
-First we use `cor_bounds` to ensure that the pairwise target correlation values are valid prior to mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)). `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
+First we use `cor_bounds` to ensure that the pairwise target correlation values are valid prior to the mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)). `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
 
 
 ```{r ch030-cor-bounds, echo=TRUE}

@@ -52,14 +52,14 @@ s <- bs$cor_randPSD(100)
 p <- bs$cor_convert(s, bs$Spearman, bs$Pearson)
 r <- bs$cor_nearPD(p)
 bs$cor_nearPD(p, 1e-6)
-bs$cor_nearPD(p, 1e-6, 1e-6)
+bs$cor_nearPD(p, 1e-6, tol=1e-6)
 bs$cor_fastPD(p)
 
 k <- bs$cor_randPSD(10000)
 p <- bs$cor_convert(s, bs$Kendall, bs$Pearson)
 julia_call("Bigsimr.iscorrelation", p)
-system.time(r1 <- bs$cor_nearPD(p, 1e-6, 1e-2))
-system.time(r2 <- bs$cor_nearPD(p, 1e-6, 1e-6))
+system.time(r1 <- bs$cor_nearPD(p, 1e-6, tol=1e-2))
+system.time(r2 <- bs$cor_nearPD(p, 1e-6, tol=1e-6))
 system.time(r3 <- bs$cor_fastPD(p))
 julia_call("Bigsimr.iscorrelation", r1)
 julia_call("Bigsimr.iscorrelation", r2)
@@ -143,7 +143,7 @@ bench <- function(type, d, n=1000) {
     needed_near_pd <- FALSE
     if (!julia_call("Bigsimr.iscorrelation", adj_corr)) {
       needed_near_pd <- TRUE
-      adj_corr_pd <- bs$cor_nearPD(adj_corr, 1e-6, 0.005)
+      adj_corr_pd <- bs$cor_nearPD(adj_corr, 1e-6, tol=0.005)
     }
   })
 

@@ -1,4 +1,4 @@
-# The `bigsimr` R package {#package}
+# The \pkg{bigsimr} R package {short-title="bigsimr-pkg" #package}
 
 
 ```{r ch030-basic-example-setup, cache=FALSE}

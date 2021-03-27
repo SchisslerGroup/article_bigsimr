@@ -1,43 +1,58 @@
---- 
-title: "Simulating High-Dimensional Multivariate Data"
-subtitle: "using the `bigsimr` Package"
-author:
-  - Alfred G. Schissler*
-  - Edward J. Bedrick
-  - Alexander D. Knudson
-  - Tomasz J. Kozubowski
-  - Tin Nguyen
-  - Anna K. Panorska
-  - Juli Petereit
-  - Walter W. Piegorsch
-  - Duc Tran
+---
+documentclass: jss
 site: bookdown::bookdown_site
-bibliography: ["bigsimr.bib", "packages.bib", "alex.bib"]
-abstract:  It is critical to realistically simulate data when employing Monte Carlo techniques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. This article introduces the `bigsimr` R package. This high-level package provides a flexible and scalable procedure to simulate high-dimensional random vectors with arbitrary marginal distributions and known Pearson, Spearman, or Kendall correlation matrix. `bigsimr` contains additional high-performance features, including multi-core algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Monte Carlo studies quantify the accuracy and scalability of our approach, up to $d=10,000$. Finally, we demonstrate example applications enabled via `bigsimr` by applying these methods to a motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples.
+output:
+  bookdown::pdf_book:
+    base_format: rticles::jss_article
+    keep_tex: true
+    includes:
+      in_header: "preamble.tex"
+author:
+  - name: Alfred G. Schissler
+    affiliation: University of Nevada
+    address: |
+      | 1664 N Virginia St.
+      | Reno, NV 89557
+    email: \email{aschissler@unr.edu}
+  - name: Edward J. Bedrick
+    affiliation: University of Nevada
+  - name: Alexander D. Knudson
+    affiliation: University of Nevada \AND
+  - name: Tomasz J. Kozubowski
+    affiliation: University of Nevada
+  - name: Tin Nguyen
+    affiliation: University of Nevada
+  - name: Anna K. Panorska
+    affiliation: University of Nevada \AND
+  - name: Juli Petereit
+    affiliation: University of Nevada
+  - name: Walter W. Piegorsch
+    affiliation: University of Nevada
+  - name: Duc Tran
+    affiliation: University of Nevada
+title:
+  formatted: "Simulating High-Dimensional Multivariate Data using the \\pkg{Bigsimr} Package"
+  plain:     "Simulating High-Dimensional Multivariate Data using the Bigsimr Package"
+  short:     "\\pkg{Bigsimr}: Simulate High-Dimensional Data"
+abstract: >
+  It is critical to realistically simulate data when employing Monte Carlo techniques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. This article introduces the \\pkg{Bigsimr} R package. This high-level package provides a flexible and scalable procedure to simulate high-dimensional random vectors with arbitrary marginal distributions and known Pearson, Spearman, or Kendall correlation matrix. \\pkg{Bigsimr} contains additional high-performance features, including multi-core algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Monte Carlo studies quantify the accuracy and scalability of our approach, up to $d=10,000$. Finally, we demonstrate example applications enabled via \\pkg{Bigsimr} by applying these methods to a motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples.
+keywords:
+  formatted: [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]
+  plain:     [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]
+bibliography: [bigsimr.bib, packages.bib, alex.bib]
+biblio-style: jss
+link-citations: yes
 ---
 
-*Keywords:*  Multivariate simulation, High-dimensional data, Nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer
-
-*=Corresponding author. aschissler@unr.edu. 1664 N Virginia St, Reno, NV 89557
-
-```{r 000-setup, include=FALSE}
+```{r include=FALSE}
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
 ), 'packages.bib')
+
+options(prompt = 'R> ', 
+        continue = '+ ',
+        digits = 4)
 ```
 
-# Introduction
-
-Massive high-dimensional (HD) data sets are now commonplace in many areas of scientific inquiry. As new methods are developed for data, a fundamental challenge lies in designing and conducting simulation studies to assess the operating characteristics of analyzing such proposed methodology --- such as false positive rates, statistical power, interval coverage, and robustness --- often with comparison to existing methods. Further, efficient simulation empowers statistical computing strategies, such as the parametric bootstrap [@Chernick2008] to simulate from a hypothesized null model, providing inference in analytically challenging settings. Such Monte Carlo (MC) techniques become difficult for high-dimensional data using existing algorithms and tools. This is particularly true when simulating massive multivariate, non-normal distributions, arising naturally in many fields of study.
-
-As many have noted, it can be vexing to simulate dependent, non-normal/discrete data, even for low dimensional settings [@MB13; @XZ19]. For continuous non-normal multivariate data, the well-known NORmal To Anything (NORTA) algorithm [@Cario1997] and other copula approaches [@Nelsen2007] are well-studied, with flexible, robust software available [@Yan2007; @Chen2001]. Yet these approaches do not scale in a timely fashion to high-dimensional problems [@Li2019gpu]. For discrete data, early simulation strategies had major flaws, such as failing to obtain the full range of possible correlations (e.g., admitting only positive correlations: see @Park1996). While more recent approaches [@MB13; @Xia17; @BF17] have largely remedied this issue for low-dimensional problems, the existing tools are not designed to scale to high dimensions.
-
-
-Another central issue lies in characterizing dependence between components in the high-dimensional random vector. The choice of correlation in practice usually relates to the eventual analytic goal and distributional assumptions of the data (e.g., non-normal, discrete, infinite support, etc). For normal data, the Pearson product-moment correlation describes the dependency perfectly. As we will see, however, simulating arbitrary random vectors that match a target Pearson correlation matrix is computationally intense [@Chen2001; @Xia17]. On the other hand, an analyst might consider use of nonparametric correlation measures to better characterize monotone, non-linear dependence, such as Spearman's $\rho$ and Kendall's $\tau$. Throughout, we focus on matching these nonparametric dependence measures, as our aim lies in modeling non-normal data and these rank-based measures possess invariance properties favorable in our proposed methodology. We do, however, provide Pearson matching with some caveats.
-
-
-With all this in mind, we present a scalable, flexible multivariate simulation algorithm. The crux of the method lies in the construction of a Gaussian copula in the spirit of the NORTA procedure. Further, we introduce the `bigsimr` R package that provides high-performance software implementing our algorithm. The algorithm design leverages useful properties of nonparametric correlation measures, namely invariance under monotone transformation and well-known closed-form relationships between dependence measures for the multivariate normal (MVN) distribution. 
-
-
-Our study proceeds by providing background information, including a description of a motivating example application: RNA-sequencing (RNA-seq) breast cancer data. Then we describe and justify our simulation methodology and related algorithms. Next, we detail an illustrative low-dimensional example of basic use of the `bigsimr` R package. Then we proceed with Monte Carlo studies under various bivariate distributional assumptions to assess accuracy. We conclude the Monte Carlo evaluations by summarizing the computation time for increasingly higher dimensional vectors. After the MC evaluations, we simulate random vectors motivated by our RNA-seq example, evaluate the accuracy, and provide example statistical computing tasks, namely MC estimation of joint probabilities and evaluating HD correlation estimation efficiency. Finally, we discuss the method's utility, limitations, and future directions.
+\newpage

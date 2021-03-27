@@ -24,5 +24,5 @@ knitr::opts_chunk$set(
 
 # options(dplyr.print_min = 6, dplyr.print_max = 6)
 
-seed_number <- 2020-02-25
+seed_number <- 2021-03-23
 set.seed(seed = seed_number)

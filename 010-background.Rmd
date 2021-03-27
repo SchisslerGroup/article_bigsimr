@@ -8,6 +8,7 @@ box::use(
   GGally[ggpairs, wrap],
   knitr[kable]
 )
+
 load("data/example_genes.rda")
 load("data/example_brca.rda")
 d <- 1000
@@ -48,6 +49,7 @@ Simulating high-dimensional, non-normal, correlated data motivates this work ---
 We illustrate our methodology using a well-studied Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
 For ease of modeling and simplicity of exposition, we only consider high expressing genes. In turn, we begin by filtering to retain the top `r d` of the highest-expressing genes (in terms of median expression) of the over 20,000 gene measurements from $N=`r nrow(example_brca)`$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $`r choose(d,2)`$ correlation parameters). Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) displays the marginal distributions and estimated Spearman's correlations.
 
+
 ```{r ch010-realDataTab}
 set.seed(2020-02-25)
 num_genes    <- 3
@@ -65,8 +67,9 @@ small_brca <- example_brca %>%
   mutate(`Patient ID` = str_sub(`Patient ID`, end = 12))
 
 small_brca %>%
-  kable(booktabs = TRUE, caption = cap)
+  kable(format = "latex", booktabs = TRUE, caption = cap)
 ```
+
 
 ```{r ch010-realDataFig, cache=FALSE, fig.width=8, fig.cap="Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess outliers, heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology."}
 ggpairs(
@@ -118,6 +121,7 @@ There is no closed form, general correspondence among the rank-based measures an
 \rho_P = 2 \times \sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
+
 *Marginal-dependent bivariate correlation bounds*
 
 Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$. The so-called *Frechet-Hoeffding bounds* are well-studied [@Nelsen2007; @BF17]. These constraints cannot be overcome through algorithm design. In general, the bounds are given by
@@ -143,12 +147,12 @@ For any random vector ${\bf X}=(X_1, \ldots, X_d)^\top$ with CDF $F$ and margina
 
 
 \begin{equation}
+F(x_1, \ldots, x_d) = {\mathbb P}(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), 
 (\#eq:copula)
-F(x_1, \ldots,x_d) = \mathbb P(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), 
 \end{equation}
 
 
-$x_i \in \mathbb R, i=1,\ldots,d.$
+$x_i \in {\mathbb R}, i=1,\ldots,d.$
 
 
 A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \forall \, i$. This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$. As the marginals are standardized to have unit variance, however, ${\bf R_P}$ is a Pearson correlation matrix. If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through

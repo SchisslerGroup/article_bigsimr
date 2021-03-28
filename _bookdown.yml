@@ -1,6 +1,0 @@
-book_filename: "article_bigsimr"
-output_dir: "_article"
-delete_merged_file: true
-language:
-  ui:
-    chapter_name: ""

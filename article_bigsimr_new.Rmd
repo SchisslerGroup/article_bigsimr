@@ -1,12 +1,5 @@
 ---
 documentclass: jss
-site: bookdown::bookdown_site
-output:
-  bookdown::pdf_book:
-    base_format: rticles::jss_article
-    keep_tex: true
-    includes:
-      in_header: "preamble.tex"
 author:
   - name: Alfred G. Schissler
     affiliation: University of Nevada
@@ -41,11 +34,12 @@ keywords:
   plain:     [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]
 bibliography: [bigsimr.bib, packages.bib, alex.bib]
 biblio-style: jss
-link-citations: yes
+preamble: >
+  \usepackage{amsmath}
+output: rticles::jss_article
 ---
 
-```{r include=FALSE}
-# automatically create a bib database for R packages
+```{r, setup, include=FALSE}
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
 ), 'packages.bib')
@@ -53,6 +47,39 @@ knitr::write_bib(c(
 options(prompt = 'R> ', 
         continue = '+ ',
         digits = 4)
+
+get_rmd <- function(str_no = "") list.files(path = ".", pattern = str_no)
+
+knitr::opts_chunk$set(
+  # Text Results
+  eval = TRUE,
+  echo = FALSE,
+  results = 'markup',
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE,
+  # Code Decoration
+  comment = NA,
+  background = '#F7F7F7',
+  # Cache
+  cache = TRUE,
+  # Plots
+  fig.show = "hold",
+  fig.width = 6.5,
+  fig.asp = 0.618,  # 1 / phi
+  out.width = "85%",
+  fig.align = 'center'
+)
+
+# options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+seed_number <- 2021-03-23
+set.seed(seed = seed_number)
 ```
 
 \newpage
+
+```{r, child=get_rmd("000")}
+```
+

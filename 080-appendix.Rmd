@@ -5,8 +5,8 @@
 
 
 \begin{equation}
+\label{eq:kram1}
 (Y_1, Y_2)^\top \stackrel{d}{=} \left(X_1, e^{X_2}\right)^\top,
-(\#eq:kram1)
 \end{equation}
 
 
@@ -15,12 +15,12 @@ where $(X_1, X_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$, which is 
 
 
 \begin{equation}
+\label{eq:kram2}
 \boldsymbol \Sigma = 
 \begin{bmatrix}
 \sigma_1^2 & \rho \sigma_1\sigma_2\\
 \rho \sigma_1\sigma_2 & \sigma_2^2
 \end{bmatrix}
-(\#eq:kram2)
 \end{equation}
 
 
@@ -32,6 +32,7 @@ To see this, consider the three steps of the NORTA construction:
 \item Generate $(Z_1, Z_2)^\top \sim N_2(\boldsymbol 0, \boldsymbol R)$, where 
 
 \begin{equation}
+\label{eq:kram3}
 \boldsymbol R = 
 \left[
 \begin{array}{cc}
@@ -39,7 +40,6 @@ To see this, consider the three steps of the NORTA construction:
 \rho & 1
 \end{array}
 \right].
-(\#eq:kram3)
 \end{equation}
 
 
@@ -54,8 +54,8 @@ In this example, $F_1$ is the CDF of $N(\mu_1, \sigma_1^2)$ while $F_2$ is the C
 
 
 \begin{equation}
+\label{eq:kram4}
 F_1^{-1}(u) = \mu_1+\sigma_1 \Phi^{-1}(u)\,\,\, \mbox{and} \,\,\, F_2^{-1}(u) = e^{\mu_2+\sigma_2 \Phi^{-1}(u)}, 
-(\#eq:kram4)
 \end{equation}
 
 
@@ -63,37 +63,37 @@ as can be seen by standard calculation. Thus, when we apply Step 3 of the NORTA 
 
 
 \begin{equation}
+\label{eq:kram5}
 F_1^{-1}(U_1) = \mu_1+\sigma_1 \Phi^{-1}(\Phi(Z_1)) =  \mu_1+\sigma_1 Z_1 \,\,\, \mbox{and} \,\,\, F_2^{-1}(U_2) = e^{\mu_2+\sigma_2 \Phi^{-1}(\Phi(Z_2))} = e^{\mu_2+\sigma_2 Z_2}, 
-(\#eq:kram5)
 \end{equation}
 
 
-where $(X_1, X_2)^\top =  (\mu_1+\sigma_1 Z_1, \mu_2+\sigma_2 Z_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$. Consequently, the vector $(Y_1, Y_2)^\top$ obtained in Step 3 of the algorithm has the structure provided by (\ref{kram1}). 
+where $(X_1, X_2)^\top = (\mu_1+\sigma_1 Z_1, \mu_2+\sigma_2 Z_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$. Consequently, the vector $(Y_1, Y_2)^\top$ obtained in Step 3 of the algorithm has the structure provided by (\ref{eq:kram1}). 
 
 
 \vspace{0.1in}
 
 
-\noindent Next, we provide the exact covariance structure of the random vector $(Y_1, Y_2)^\top$ given by (\ref{kram1}), and relate the correlation of $Y_1$ and $Y_2$ to $\rho$, which is the correlation of the normal variables $Z_1$, $Z_2$ (and also $X_1$ and $X_2$). A straightforward albeit somewhat tedious algebra produces the following result. 
+\noindent Next, we provide the exact covariance structure of the random vector $(Y_1, Y_2)^\top$ given by (\ref{eq:kram1}), and relate the correlation of $Y_1$ and $Y_2$ to $\rho$, which is the correlation of the normal variables $Z_1$, $Z_2$ (and also $X_1$ and $X_2$). A straightforward albeit somewhat tedious algebra produces the following result. 
 
 
 \begin{lemma}
-Let ${\bf Y} = (Y_1, Y_2)^\top$ admit the stochastic representation (\ref{kram1}), where ${\bf X} = (X_1, X_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$ with $\boldsymbol \mu$ and $\boldsymbol \Sigma$ as above. Then the mean vector and the variance-covariance matrix of ${\bf Y}$ are given by 
+Let ${\bf Y} = (Y_1, Y_2)^\top$ admit the stochastic representation (\ref{eq:kram1}), where ${\bf X} = (X_1, X_2)^\top \sim N_2(\boldsymbol \mu, \boldsymbol \Sigma)$ with $\boldsymbol \mu$ and $\boldsymbol \Sigma$ as above. Then the mean vector and the variance-covariance matrix of ${\bf Y}$ are given by 
 
 \begin{equation}
+\label{eq:kram6}
 \boldsymbol \mu_{{\bf Y}} = \left(\mu_1, e^{\mu_2+\sigma_2^2/2}\right)^\top
-(\#eq:kram6)
 \end{equation}
 
 and 
 
 \begin{equation}
+\label{eq:kram7}
 \boldsymbol \Sigma = 
 \begin{bmatrix}
 \sigma_1^2 & \rho \sigma_1\sigma_2  e^{\mu_2+\sigma_2^2/2}  \\
 \rho \sigma_1\sigma_2 e^{\mu_2+\sigma_2^2/2} & \left[ e^{\mu_2+\sigma_2^2/2}\right]^2 \left[e^{\sigma_2^2} -1 \right],
 \end{bmatrix}
-(\#eq:kram7)
 \end{equation}
 
 respectively. 
@@ -104,64 +104,64 @@ respectively.
 The values of the means and the variances are obtained immediately from normal marginal distribution of $Y_1$ and lognormal marginal distribution of $Y_2$. It remains to establish the covariance of $Y_1$ and $Y_2$, 
 
 \begin{equation}
+\label{eq:covy1y2}
 \mbox{Cov}(Y_1, Y_2) = \mathbb E(Y_1 Y_2) - \mathbb E(Y_1)\mathbb E(Y_2), 
-(\#eq:covy1y2)
 \end{equation}
 
 and in particular the first expectation on the right-hand-side above. By using the tower property of expectations, the latter expectation can be expressed as 
 
 \begin{equation}
+\label{eq:kre1}
 \mathbb E(Y_1 Y_2)  =  \mathbb E\left(X_1 e^{X_2}\right)  =  \mathbb E \left\{ \mathbb E \left(X_1 e^{X_2} | X_1 \right) \right\} = \mathbb E \left\{ X_1 \mathbb E \left(e^{X_2} | X_1 \right) \right\}.
-(\#eq:kre1)
 \end{equation}
 
-Further, by using the fact that the conditional distribution of $X_2$ given $X_1=x_1$ is normal with mean $\mathbb E(X_2|X_1=x_1) = \mu_2+\rho\sigma_2(x_1-\mu_1)/\sigma_1$ and variance $\sigma_2^2(1-\rho^2)$, one can relate the inner expectation on the far right in (\ref{kre1}) to the moment generating function $M(t)$ of this conditional distribution evaluated at $t=1$, leading to 
+Further, by using the fact that the conditional distribution of $X_2$ given $X_1=x_1$ is normal with mean $\mathbb E(X_2|X_1=x_1) = \mu_2+\rho\sigma_2(x_1-\mu_1)/\sigma_1$ and variance $\sigma_2^2(1-\rho^2)$, one can relate the inner expectation on the far right in (\ref{eq:kre1}) to the moment generating function $M(t)$ of this conditional distribution evaluated at $t=1$, leading to 
 
 \begin{equation}
+\label{eq:kre2}
 E \left(e^{X_2} | X_1 \right) = e^{ \mu_2+\rho\sigma_2(x_1-\mu_1)/\sigma_1 + \sigma_2^2(1-\rho^2)/2},
-(\#eq:kre2)
 \end{equation}
 
 so that 
 
 \begin{equation}
+\label{eq:kre3}
 \mathbb E(Y_1 Y_2)  =  e^{ \mu_2+ \frac{1}{2} \sigma_2^2(1-\rho^2)} \mathbb E \left\{ X_1 e^{ \rho\frac{\sigma_2}{\sigma_1} (X_1-\mu_1)} \right\}.
-(\#eq:kre3)
 \end{equation}
 
-Since $X_1$ is normal with mean $\mu_1$ and variance $\sigma_1^2$, the expectation in (\ref{kre3}) becomes 
+Since $X_1$ is normal with mean $\mu_1$ and variance $\sigma_1^2$, the expectation in (\ref{eq:kre3}) becomes 
 
 \begin{equation}
+\label{eq:kre4}
 \mathbb E \left\{ X_1 e^{ \rho\frac{\sigma_2}{\sigma_1} (X_1-\mu_1)} \right\} = \int_{-\infty}^\infty x_1 e^{ \rho\frac{\sigma_2}{\sigma_1} (x_1-\mu_1)} \frac{1}{\sqrt{2\pi}\sigma_1} e^{-\frac{1}{2\sigma_1^2}(x_1-\mu_1)^2}.
-(\#eq:kre4)
 \end{equation}
 
 Upon substituting $u=x_1-\mu_1$, followed by some algebra, we arrive at 
 
 \begin{equation}
+\label{eq:kre5}
 \mathbb E \left\{ X_1 e^{ \rho\frac{\sigma_2}{\sigma_1} (X_1-\mu_1)} \right\} = e^{\frac{1}{2}\sigma_2^2\rho^2} \int_{-\infty}^\infty (u+\mu_1)  \frac{1}{\sqrt{2\pi}\sigma_1} e^{-\frac{1}{2\sigma_1^2}(u-\rho\sigma_1\sigma_2)^2}.
-(\#eq:kre5)
 \end{equation}
 
-Since the integral in (\ref{kre5}) is the expectation $\mathbb E(X+\mu_1)$, where $X$ is normal with mean $\rho\sigma_1\sigma_2$ and variance $\sigma_1^2$, we conclude that 
+Since the integral in (\ref{eq:kre5}) is the expectation $\mathbb E(X+\mu_1)$, where $X$ is normal with mean $\rho\sigma_1\sigma_2$ and variance $\sigma_1^2$, we conclude that 
 
 \begin{equation}
+\label{eq:kre6}
 \mathbb E \left\{ X_1 e^{ \rho\frac{\sigma_2}{\sigma_1} (X_1-\mu_1)} \right\} = e^{\frac{1}{2}\sigma_2^2\rho^2} (\rho\sigma_1\sigma_2 +\mu_1),
-(\#eq:kre6)
 \end{equation}
 
-which, in view of (\ref{kre3}), leads to 
+which, in view of (\ref{eq:kre3}), leads to 
 
 \begin{equation}
+\label{eq:kre7}
 \mathbb E (Y_1Y_2) = e^{\mu_2 + \frac{1}{2}\sigma_2^2} (\rho\sigma_1\sigma_2 +\mu_1).
-(\#eq:kre7)
 \end{equation}
 
-Finally, (\ref{covy1y2}), along with the expressions for the means of $Y_1$ and $Y_2$, produce the covariance of $Y_1$ and $Y_2$:
+Finally, (\ref{eq:covy1y2}), along with the expressions for the means of $Y_1$ and $Y_2$, produce the covariance of $Y_1$ and $Y_2$:
 
 \begin{equation}
+\label{eq:kre8}
 \mbox{Cov}(Y_1, Y_2) = e^{\mu_2 + \frac{1}{2}\sigma_2^2} (\rho\sigma_1\sigma_2 +\mu_1) - \mu_1 e^{\mu_2 + \frac{1}{2}\sigma_2^2} = \rho\sigma_1\sigma_2 e^{\mu_2 + \frac{1}{2}\sigma_2^2}.
-(\#eq:kre8)
 \end{equation}
 
 This concludes the proof
@@ -172,17 +172,17 @@ Using the above result, we can directly relate the correlation coefficient of $Y
 
 
 \begin{equation}
+\label{eq:kram8}
 \rho_{Y_1, Y_2} = \rho \frac{\sigma_2}{\sqrt{e^{\sigma_2^2} -1}},
-(\#eq:kram8)
 \end{equation}
 
 
-where $\rho$ is the correlation of $X_1$ and $X_2$. The above result is useful when studying the possible range of correlation of $Y_1$ and $Y_2$ in the above example. It can be shown that the factor on the far right in (\ref{kram8}) is a monotonically decreasing function of $\sigma_2$ on $(0,\infty)$, with the limits of 1 and 0 at zero and infinity, respectively. Thus, in principle, the range of correlation of $Y_1$ and $Y_2$ is the same as that of $X_1$ and $X_2$, as the factor on the far right in (\ref{kram8}) can be made arbitrarily close to 1. However, by changing this factor we may affect the marginal distributions of $Y_1$ and $Y_2$. It can be shown that if the marginal distributions of $Y_1$ and $Y_2$ are fixed, then the relation (\ref{kram8}) becomes 
+where $\rho$ is the correlation of $X_1$ and $X_2$. The above result is useful when studying the possible range of correlation of $Y_1$ and $Y_2$ in the above example. It can be shown that the factor on the far right in (\ref{eq:kram8}) is a monotonically decreasing function of $\sigma_2$ on $(0,\infty)$, with the limits of 1 and 0 at zero and infinity, respectively. Thus, in principle, the range of correlation of $Y_1$ and $Y_2$ is the same as that of $X_1$ and $X_2$, as the factor on the far right in (\ref{eq:kram8}) can be made arbitrarily close to 1. However, by changing this factor we may affect the marginal distributions of $Y_1$ and $Y_2$. It can be shown that if the marginal distributions of $Y_1$ and $Y_2$ are fixed, then the relation (\ref{eq:kram8}) becomes 
 
 
 \begin{equation}
+\label{eq:kram9}
 \rho_{Y_1, Y_2} = \rho \sqrt{\frac{\log(1+c_2^2)}{c_2^2}},
-(\#eq:kram9)
 \end{equation}
 
 
@@ -190,15 +190,15 @@ where $c_2=\sigma_{Y_2}/\mu_{Y_2}$ is the *coefficient of variation* (CV) of the
 
 
 \begin{equation}
+\label{eq:kram10}
 - \sqrt{\frac{\log(1+c_2^2)}{c_2^2}} \leq \rho_{Y_1, Y_2} \leq \sqrt{\frac{\log(1+c_2^2)}{c_2^2}}. 
-(\#eq:kram10)
 \end{equation}
 
 Plugging in the estimates of these quantities from Section \@ref(package), we see that 
 
 \begin{equation}
+\label{eq:kram11}
 \frac{\hat{\sigma}_2}{\sqrt{e^{\hat{\sigma}_2^2} -1}} = 0.881.
-(\#eq:kram11)
 \end{equation}
 
 

@@ -36,6 +36,16 @@ bibliography: [bigsimr.bib, packages.bib, alex.bib]
 biblio-style: jss
 preamble: >
   \usepackage{amsmath}
+  \usepackage{amssymb}
+  \usepackage{amsfonts}
+  \usepackage{amsthm}
+  \newtheorem{theorem}{Theorem}
+  \newtheorem{lemma}[theorem]{Lemma}
+  \usepackage{booktabs}
+  \usepackage{longtable}
+  \usepackage{array}
+  \usepackage{ragged2e}
+  \usepackage{setspace}
 output: rticles::jss_article
 ---
 
@@ -78,8 +88,47 @@ seed_number <- 2021-03-23
 set.seed(seed = seed_number)
 ```
 
+<!-- New page after title and abstract -->
 \newpage
+
+
+<!-- Set double spaces -->
+\setstretch{2.0}
+
+<!-- Main content -->
 
 ```{r, child=get_rmd("000")}
 ```
 
+```{r, child=get_rmd("010")}
+```
+
+```{r, child=get_rmd("020")}
+```
+
+```{r, child=get_rmd("030")}
+```
+
+```{r, child=get_rmd("040")}
+```
+
+```{r, child=get_rmd("050")}
+```
+
+```{r, child=get_rmd("060")}
+```
+
+<!-- Supplementary materials -->
+\newpage
+
+```{r, child=get_rmd("070")}
+```
+
+<!-- Appendix -->
+\newpage
+
+```{r, child=get_rmd("080")}
+```
+
+<!-- Turn off double spaces -->
+\setstretch{1.0}

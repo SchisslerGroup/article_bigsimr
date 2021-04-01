@@ -27,7 +27,7 @@ Matching specified Pearson correlation coefficients exactly (step 2 above), howe
 
 \begin{equation}
     \mathrm{E}\left[Y_i Y_j\right] = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} F_i^{-1}\left[\Phi(z_i)\right] F_j^{-1}\left[\Phi(z_j)\right] \phi(z_i, z_j, \rho_z) dz_i dz_j,
-    (\#eq:pearsonIntegralRelation)
+    \label{eq:pearsonIntegralRelation}
 \end{equation}
 
 

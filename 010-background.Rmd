@@ -90,7 +90,7 @@ The most widely-known is the Pearson (product-moment) correlation coefficient th
 
 \begin{equation}
 \rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ \mathrm{Var}(X)\mathrm{Var}(Y)\right]^{1/2}}.
-(\#eq:pearson)
+\label{eq:pearson}
 \end{equation}
 
 
@@ -108,7 +108,7 @@ There is no closed form, general correspondence among the rank-based measures an
 
 
 \begin{equation}
-(\#eq:convertKendall)
+\label{eq:convertKendall}
 \rho_{P} = \sin \left( \tau \times \frac{\pi}{2} \right), 
 \end{equation}
 
@@ -117,7 +117,7 @@ There is no closed form, general correspondence among the rank-based measures an
 
 
 \begin{equation}
-(\#eq:convertSpearman)
+\label{eq:convertSpearman}
 \rho_P = 2 \times \sin \left( \rho_S \times \frac{\pi}{6} \right).
 \end{equation}
 
@@ -127,7 +127,7 @@ There is no closed form, general correspondence among the rank-based measures an
 Given two marginal distributions, $\rho_P$ is not free to vary over the entire range of possible correlations $[-1,1]$. The so-called *Frechet-Hoeffding bounds* are well-studied [@Nelsen2007; @BF17]. These constraints cannot be overcome through algorithm design. In general, the bounds are given by
 
 \begin{equation}
-(\#eq:frechet)
+\label{eq:frechet}
 \rho_P^{max} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho_P^{min} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
 \end{equation}
 
@@ -135,7 +135,7 @@ Given two marginal distributions, $\rho_P$ is not free to vary over the entire r
 
 \begin{equation}
 F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
-(\#eq:inverseCDF)
+\label{eq:inverseCDF}
 \end{equation}
 
 ## Gaussian copulas
@@ -148,7 +148,7 @@ For any random vector ${\bf X}=(X_1, \ldots, X_d)^\top$ with CDF $F$ and margina
 
 \begin{equation}
 F(x_1, \ldots, x_d) = {\mathbb P}(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), 
-(\#eq:copula)
+\label{eq:copula}
 \end{equation}
 
 
@@ -159,7 +159,7 @@ A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \
 
 
 \begin{equation}
-(\#eq:gauss)
+\label{eq:gauss}
 F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 \end{equation}
 

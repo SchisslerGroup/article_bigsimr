@@ -409,33 +409,44 @@ where \((X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})\).
 \subsection{Relevant Multivariate Simulation software
 Comparison}\label{relevant-multivariate-simulation-software-comparison}}
 
-\begin{CodeChunk}
-\begin{table}
+To place \texttt{Bigsimr}'s implementation and algorithms in context
+with existing approaches, as well as make this work's contribution more
+evident, we make some qualitative comparisons to other \texttt{R}
+multivariate simulation packages. The \texttt{MASS} packages
+\texttt{mvnorm()} has long been available to produce random vectors from
+multivariate normal (and \(t\)) distributions. This familiar procedure
+cannot simulate from arbitrary margins and dependency measures, as well
+as fails to readily scale to high dimensions. Recently, the
+high-performance package \texttt{mvnfast} has been released that
+provides scaleable multivariate normal generation, but this doesn't
+completely satistify our goals of flexible margins and dependency
+modeling. For dependent discrete data, small-dimesional packages exist,
+such as \texttt{GenOrd}. The full-featured package \texttt{copula}
+provides many different copulas and a fairly general random generator
+\texttt{rCopula}. For low-dimensional modeling situtations, copula is
+suitable, yet the entent of exact matching of margins automatically is
+unclear. High-dimesional random vectors via \texttt{copula} takes an
+impractical amount of computing time \citep{Li2019gpu}. The
+\texttt{nortaRA} R package matches Pearson coefficients near exactly and
+is reasonable for low-dimenional settings. In sum, we know of no other
+\texttt{R} package that can produce HD random vectors with flexible
+margins and dependence modeling. Table (\#tab:compare-table) summarizes
+the above discussion.
 
-\caption{\label{tab:tab:compare-table}A table of the first 10 rows of the mtcars data.}
+\begin{table}[]
 \centering
-\begin{tabular}[t]{lrrrrrrrr}
-\toprule
-  & mpg & cyl & disp & hp & drat & wt & qsec & vs\\
-\midrule
-Mazda RX4 & 21.0 & 6 & 160.0 & 110 & 3.90 & 2.620 & 16.46 & 0\\
-Mazda RX4 Wag & 21.0 & 6 & 160.0 & 110 & 3.90 & 2.875 & 17.02 & 0\\
-Datsun 710 & 22.8 & 4 & 108.0 & 93 & 3.85 & 2.320 & 18.61 & 1\\
-\addlinespace
-Hornet 4 Drive & 21.4 & 6 & 258.0 & 110 & 3.08 & 3.215 & 19.44 & 1\\
-Hornet Sportabout & 18.7 & 8 & 360.0 & 175 & 3.15 & 3.440 & 17.02 & 0\\
-Valiant & 18.1 & 6 & 225.0 & 105 & 2.76 & 3.460 & 20.22 & 1\\
-\addlinespace
-Duster 360 & 14.3 & 8 & 360.0 & 245 & 3.21 & 3.570 & 15.84 & 0\\
-Merc 240D & 24.4 & 4 & 146.7 & 62 & 3.69 & 3.190 & 20.00 & 1\\
-Merc 230 & 22.8 & 4 & 140.8 & 95 & 3.92 & 3.150 & 22.90 & 1\\
-\addlinespace
-Merc 280 & 19.2 & 6 & 167.6 & 123 & 3.92 & 3.440 & 18.30 & 1\\
-\bottomrule
+\caption{Selected feature comparison of `bigsimr` to other existing `R` multivariate simulation packages.}
+\label{tab:compare-table}
+\begin{tabular}{@{}llll@{}}
+R Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \midrule
+MASS      & No           & No                    & No                  \\
+mvnfast   & Yes          & No                    & No                  \\
+GenOrd    & No           & Discrete margins      & Yes                 \\
+copula    & No           & Yes                   & No                  \\
+nortaRA   & No           & Yes                   & No                  \\
+bigsimr   & Yes          & Yes                   & Yes                
 \end{tabular}
 \end{table}
-
-\end{CodeChunk}
 
 \hypertarget{algorithms}{%
 \section{Algorithms}\label{algorithms}}
@@ -1034,7 +1045,7 @@ configurations to evaluate correlation matching accuracy and efficiency.
 \begin{tabular}{@{}lcr@{}}
 \toprule
 Simulation Reps $B$ & Correlation Types & Identical-margin 2D distribution \\ \midrule
-$1000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
+$1,000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
 $10,000$ & Spearman ($\rho_S$) & ${\bf Y} \sim MVG( shape = 10, rate = 1, \rho_i ), i=1,\ldots,100$ \\
 $100,000$ & Kendall ($\tau$) & ${\bf Y} \sim MVNB(p = 3\times10^{-4}, r = 4,\rho_i), i=1,\ldots,100$ \\ \bottomrule
 \end{tabular}
@@ -1164,20 +1175,25 @@ With the synthetic data set in hand, we complete and time the following
 \setstretch{1.5}
 
 \begin{enumerate}
-\def\labelenumi{\roman{enumi}.}
-\tightlist
-\item
-  Estimate the correlation matrix from the ``data'' in the \emph{Compute
-  Correlation} step.
-\end{enumerate}
-
-\begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
-  Map the correlations to initialize the algorithm (Pearson to Pearson,
-  Spearman to Pearson, or Kendall to Pearson) in the \emph{Adjust
-  Correlation} step.
+  \begin{enumerate}
+  \def\labelenumii{\alph{enumii})}
+  \tightlist
+  \item
+    Estimate the correlation matrix from the ``data'' in the
+    \emph{Compute Correlation} step.
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumii{\alph{enumii})}
+  \setcounter{enumii}{1}
+  \tightlist
+  \item
+    Map the correlations to initialize the algorithm (Pearson to
+    Pearson, Spearman to Pearson, or Kendall to Pearson) in the
+    \emph{Adjust Correlation} step.
+  \end{enumerate}
 \item
   Check whether the mapping produces a valid correlation matrix and, if
   not, find the nearest PD correlation matrix in the \emph{Check
@@ -1195,21 +1211,28 @@ displays the total computation time of the algorithms steps 1 through 3,
 including estimation step i.
 
 \begin{CodeChunk}
+\begin{table}
 
-
-Table: Total time to produce 10,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.
-
-|Dimension |Correlation type | Total Time (Seconds)|
-|:---------|:----------------|--------------------:|
-|100       |Pearson          |                0.081|
-|100       |Spearman         |                0.027|
-|100       |Kendall          |                0.075|
-|250       |Pearson          |                0.378|
-|250       |Spearman         |                0.062|
-|250       |Kendall          |                0.375|
-|500       |Pearson          |                1.425|
-|500       |Spearman         |                0.135|
-|500       |Kendall          |                1.495|
+\caption{\label{tab:tab:ch040-moderateDtab}Total time to produce 10,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.}
+\centering
+\begin{tabular}[t]{llr}
+\toprule
+Dimension & Correlation type & Total Time (Seconds)\\
+\midrule
+100 & Pearson & 0.081\\
+100 & Spearman & 0.027\\
+100 & Kendall & 0.075\\
+\addlinespace
+250 & Pearson & 0.378\\
+250 & Spearman & 0.062\\
+250 & Kendall & 0.375\\
+\addlinespace
+500 & Pearson & 1.425\\
+500 & Spearman & 0.135\\
+500 & Kendall & 1.495\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \end{CodeChunk}
 
@@ -1271,7 +1294,7 @@ sets. Finally, we note that one could use our single-pass algorithm
 even higher dimensions with greater loss of accuracy.
 
 \hypertarget{examples}{%
-\section{RNA-seq data applications}\label{examples}}
+\section{RNA-seq data application}\label{examples}}
 
 This section demonstrates how to simulate multivariate data using
 \texttt{bigsimr}, aiming to replicate the structure of high-dimensional

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.5.5)  5 MAY 2021 17:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.5.5)  6 MAY 2021 16:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -581,7 +581,12 @@ Overfull \hbox (5.47499pt too wide) has occurred while \output is active
  []
 
 [9]
-Underfull \vbox (badness 4608) has occurred while \output is active []
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 436.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -594,9 +599,6 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [11]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 12 []
  []
@@ -607,15 +609,12 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [13]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 14 []
  []
 
 [14]
-Overfull \hbox (10.85672pt too wide) in paragraph at lines 676--682
+Overfull \hbox (10.85672pt too wide) in paragraph at lines 687--693
 []\T1/lmr/m/n/10.95 For non-para-met-ric cor-re-la-tion mea-sures, our al-go-ri
 thm al-lows the gen-er-a-tion of high-dimensional
  []
@@ -629,14 +628,7 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [15]
-Overfull \hbox (13.74979pt too wide) in paragraph at lines 719--732
-\T1/lmtt/m/n/10.95 bigsimr R \T1/lmr/m/n/10.95 pack-age ([][]$\T1/lmtt/m/n/10.9
-5 https : / / github . com / SchisslerGroup / r-[]bigsimr$[][]\T1/lmr/m/n/10.95
- ). The pack-age \T1/lmtt/m/n/10.95 bigsimr
- []
-
-
-Underfull \vbox (badness 1286) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -644,33 +636,40 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [16]
+Overfull \hbox (13.74979pt too wide) in paragraph at lines 730--743
+\T1/lmtt/m/n/10.95 bigsimr R \T1/lmr/m/n/10.95 pack-age ([][]$\T1/lmtt/m/n/10.9
+5 https : / / github . com / SchisslerGroup / r-[]bigsimr$[][]\T1/lmr/m/n/10.95
+ ). The pack-age \T1/lmtt/m/n/10.95 bigsimr
+ []
+
+
+Underfull \vbox (badness 5288) has occurred while \output is active []
+
+
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 17
  []
 
 [17]
-<article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf, id=378, 578.16pt
+<article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf, id=379, 578.16pt
  x 356.33125pt>
 File: article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf Graphic file
  (type pdf)
 <use article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf>
 Package pdftex.def Info: article_bigsimr_files/figure-latex/ch030-aq-joint-dist
--1.pdf  used on input line 793.
+-1.pdf  used on input line 804.
 (pdftex.def)             Requested size: 376.25838pt x 231.8953pt.
-
-Underfull \vbox (badness 1360) has occurred while \output is active []
-
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 18 []
  []
 
-[18 <./article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf>]
+[18]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 19
  []
 
-[19]
+[19 <./article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf>]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 20 []
  []
@@ -681,62 +680,55 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [21]
-<article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf, id=419, 469.755pt x 2
-90.08376pt>
-File: article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf Graphic file (typ
-e pdf)
-<use article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf>
-Package pdftex.def Info: article_bigsimr_files/figure-latex/ch030-plot-sim-1.pd
-f  used on input line 979.
-(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 22 []
  []
 
 [22]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
+<article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf, id=428, 469.755pt x 2
+90.08376pt>
+File: article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf Graphic file (typ
+e pdf)
+<use article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf>
+Package pdftex.def Info: article_bigsimr_files/figure-latex/ch030-plot-sim-1.pd
+f  used on input line 990.
+(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 23
  []
 
 [23 <./article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf>]
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 1033.
-
-
-Overfull \hbox (6.10406pt too wide) in paragraph at lines 1034--1041
-[][] 
- []
-
-
-Overfull \hbox (45.00706pt too wide) in paragraph at lines 1053--1057
-[]\T1/lmr/m/n/10.95 Figure @ref(fig:ch040-bPlot) dis-plays the ag-gre-gated bi-
-vari-ate sim-u-la-tion re-sults. Ta-ble @ref(tab:ch040-
- []
-
-
-Underfull \vbox (badness 4699) has occurred while \output is active []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 24 []
  []
 
 [24]
-<article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf, id=448, 469.755pt x 610.
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 1044.
+
+
+Overfull \hbox (6.10406pt too wide) in paragraph at lines 1045--1052
+[][] 
+ []
+
+
+Overfull \hbox (45.00706pt too wide) in paragraph at lines 1064--1068
+[]\T1/lmr/m/n/10.95 Figure @ref(fig:ch040-bPlot) dis-plays the ag-gre-gated bi-
+vari-ate sim-u-la-tion re-sults. Ta-ble @ref(tab:ch040-
+ []
+
+<article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf, id=450, 469.755pt x 610.
 28pt>
 File: article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf Graphic file (type p
 df)
 <use article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf>
 Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf  
-used on input line 1119.
+used on input line 1130.
 (pdftex.def)             Requested size: 376.25838pt x 488.81133pt.
 
-Overfull \hbox (15.08934pt too wide) in paragraph at lines 1131--1138
+Overfull \hbox (15.08934pt too wide) in paragraph at lines 1142--1149
 \OMS/lmsy/m/n/10.95 f\OT1/lmr/m/n/10.95 100\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/1
 0.95 250\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 500\OML/lmm/m/it/10.95 ; \OT1/
 lmr/m/n/10.95 1000\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 2500\OML/lmm/m/it/10
@@ -761,73 +753,74 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [27 <./article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf>]
-Overfull \hbox (2.66646pt too wide) in paragraph at lines 1216--1235
+Overfull \hbox (2.66646pt too wide) in paragraph at lines 1239--1258
 \T1/lmr/m/n/10.95 three cor-re-la-tion types, al-though the to-tal times do be-
 come much larger. Fig-ure @ref(fig:ch040-
  []
 
-<article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf, id=474, 469.755pt x 
-290.08376pt>
-File: article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf Graphic file (ty
-pe pdf)
-<use article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>
-Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-largeDfig-1.p
-df  used on input line 1239.
-(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 28 []
  []
 
 [28]
-Underfull \vbox (badness 3557) has occurred while \output is active []
+<article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf, id=486, 469.755pt x 
+290.08376pt>
+File: article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf Graphic file (ty
+pe pdf)
+<use article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>
+Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-largeDfig-1.p
+df  used on input line 1262.
+(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
+
+Underfull \vbox (badness 1675) has occurred while \output is active []
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 29
  []
 
-[29 <./article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>]
+[29]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 30 []
  []
 
-[30]
+[30 <./article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 31
  []
 
 [31]
-<article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf, id=521, 469.755pt x
- 290.08376pt>
-File: article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf Graphic file (t
-ype pdf)
-<use article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf>
-Package pdftex.def Info: article_bigsimr_files/figure-latex/ch050-simDataFig-1.
-pdf  used on input line 1412.
-(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
-<fig/ch050-figBRCA.png, id=522, 578.16pt x 289.08pt>
-File: fig/ch050-figBRCA.png Graphic file (type png)
-<use fig/ch050-figBRCA.png>
-Package pdftex.def Info: fig/ch050-figBRCA.png  used on input line 1423.
-(pdftex.def)             Requested size: 354.12434pt x 177.06194pt.
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 32 []
  []
 
 [32]
+<article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf, id=530, 469.755pt x
+ 290.08376pt>
+File: article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf Graphic file (t
+ype pdf)
+<use article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf>
+Package pdftex.def Info: article_bigsimr_files/figure-latex/ch050-simDataFig-1.
+pdf  used on input line 1435.
+(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
+<fig/ch050-figBRCA.png, id=531, 578.16pt x 289.08pt>
+File: fig/ch050-figBRCA.png Graphic file (type png)
+<use fig/ch050-figBRCA.png>
+Package pdftex.def Info: fig/ch050-figBRCA.png  used on input line 1446.
+(pdftex.def)             Requested size: 354.12434pt x 177.06194pt.
+
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 33
  []
 
-[33 <./article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf> <./fig/ch050-
-figBRCA.png (PNG copy)>]
+[33]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 34 []
  []
 
-[34]
+[34 <./article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf> <./fig/ch050-
+figBRCA.png (PNG copy)>]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 35
  []
@@ -838,29 +831,34 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [36]
-Overfull \hbox (19.46587pt too wide) in paragraph at lines 1587--1596
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 37
+ []
+
+[37]
+Overfull \hbox (19.46587pt too wide) in paragraph at lines 1610--1619
 \T1/lmr/m/n/10.95 vide R and Python in-ter-faces to \T1/lmtt/m/n/10.95 Bigsimr\
 T1/lmr/m/n/10.95 , re-spec-tively at [][]$\T1/lmtt/m/n/10.95 https : / / github
  . com / SchisslerGroup /
  []
 
-<images/hex-bigsimr.png, id=578, 120.45pt x 120.45pt>
+<images/hex-bigsimr.png, id=588, 120.45pt x 120.45pt>
 File: images/hex-bigsimr.png Graphic file (type png)
 <use images/hex-bigsimr.png>
-Package pdftex.def Info: images/hex-bigsimr.png  used on input line 1600.
+Package pdftex.def Info: images/hex-bigsimr.png  used on input line 1623.
 (pdftex.def)             Requested size: 22.13403pt x 22.13402pt.
 
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 37
- []
-
-[37 <./images/hex-bigsimr.png>]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 38 []
  []
 
-[38]
-Overfull \hbox (2.6103pt too wide) in paragraph at lines 1713--1714
+[38 <./images/hex-bigsimr.png>]
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 39
+ []
+
+[39]
+Overfull \hbox (2.6103pt too wide) in paragraph at lines 1736--1737
 [][]\T1/lmr/bx/n/10.95 Lemma 1. []\T1/lmr/m/it/10.95 Let $\OT1/lmr/bx/n/10.95 Y
  \OT1/lmr/m/n/10.95 = (\OML/lmm/m/it/10.95 Y[]; Y[]\OT1/lmr/m/n/10.95 )[]$ \T1/
 lmr/m/it/10.95 ad-mit the stochas-tic rep-re-sen-ta-tion ([][]9[][]), where $\O
@@ -870,20 +868,15 @@ m/n/10.95 )[] \OMS/lmsy/m/n/10.95 ^^X
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 39
- []
-
-[39]
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 40 []
  []
 
-[40] (./article_bigsimr.bbl
+[40]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 41
  []
 
-[41]
+[41] (./article_bigsimr.bbl
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 42 []
  []
@@ -893,30 +886,35 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 43
  []
 
-[43])
-Underfull \hbox (badness 10000) in paragraph at lines 1853--1853
-
- []
-
-LaTeX Font Info:    Font shape `T1/pzc/m/n' in size <13> not available
-(Font)              Font shape `T1/pzc/m/it' tried instead on input line 1853.
-
+[43]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 44 []
  []
 
-[44] (./article_bigsimr.aux)
+[44])
+Underfull \hbox (badness 10000) in paragraph at lines 1876--1876
+
+ []
+
+LaTeX Font Info:    Font shape `T1/pzc/m/n' in size <13> not available
+(Font)              Font shape `T1/pzc/m/it' tried instead on input line 1876.
+
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 45
+ []
+
+[45] (./article_bigsimr.aux)
 Package rerunfilecheck Info: File `article_bigsimr.out' has not changed.
-(rerunfilecheck)             Checksum: C50DEECE36E83162C7C20C150E6344EA;6090.
+(rerunfilecheck)             Checksum: 4388C4CB1BD34EEA6E18ACE0AFF30FAF;6081.
  ) 
 Here is how much of TeX's memory you used:
- 10914 strings out of 480954
- 162475 string characters out of 5906622
- 455616 words of memory out of 5000000
- 27695 multiletter control sequences out of 15000+600000
+ 10919 strings out of 480954
+ 162525 string characters out of 5906622
+ 456795 words of memory out of 5000000
+ 27696 multiletter control sequences out of 15000+600000
  499845 words of font info for 94 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 86i,10n,88p,681b,513s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 86i,10n,88p,681b,503s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/Users/alfred/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/
 Users/alfred/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/User
 s/alfred/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/Users/alfred
@@ -945,10 +943,10 @@ ts/type1/public/lm/lmtt10.pfb></Users/alfred/Library/TinyTeX/texmf-dist/fonts/t
 ype1/public/lm/lmtto10.pfb></Users/alfred/Library/TinyTeX/texmf-dist/fonts/type
 1/public/amsfonts/symbols/msbm10.pfb></Users/alfred/Library/TinyTeX/texmf-dist/
 fonts/type1/urw/zapfchan/uzcmi8a.pfb>
-Output written on article_bigsimr.pdf (44 pages, 2733106 bytes).
+Output written on article_bigsimr.pdf (45 pages, 2735592 bytes).
 PDF statistics:
- 830 PDF objects out of 1000 (max. 8388607)
- 738 compressed objects within 8 object streams
- 214 named destinations out of 1000 (max. 500000)
+ 843 PDF objects out of 1000 (max. 8388607)
+ 750 compressed objects within 8 object streams
+ 218 named destinations out of 1000 (max. 500000)
  270 words of extra memory for PDF output out of 10000 (max. 10000000)
 

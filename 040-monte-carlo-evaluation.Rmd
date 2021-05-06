@@ -43,7 +43,7 @@ Table: (\#tab:sims) Identical margin, bivariate simulation configurations to eva
 \begin{tabular}{@{}lcr@{}}
 \toprule
 Simulation Reps $B$ & Correlation Types & Identical-margin 2D distribution \\ \midrule
-$1000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
+$1,000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
 $10,000$ & Spearman ($\rho_S$) & ${\bf Y} \sim MVG( shape = 10, rate = 1, \rho_i ), i=1,\ldots,100$ \\
 $100,000$ & Kendall ($\tau$) & ${\bf Y} \sim MVNB(p = 3\times10^{-4}, r = 4,\rho_i), i=1,\ldots,100$ \\ \bottomrule
 \end{tabular}
@@ -163,8 +163,8 @@ With the synthetic data set in hand, we complete and time the following 4 steps:
 
 
 \setstretch{1.5}
-i. Estimate the correlation matrix from the "data" in the *Compute Correlation* step.
-1. Map the correlations to initialize the algorithm (Pearson to Pearson, Spearman to Pearson, or Kendall to Pearson) in the *Adjust Correlation* step.
+1. a) Estimate the correlation matrix from the "data" in the *Compute Correlation* step.
+1. b) Map the correlations to initialize the algorithm (Pearson to Pearson, Spearman to Pearson, or Kendall to Pearson) in the *Adjust Correlation* step.
 2. Check whether the mapping produces a valid correlation matrix and, if not, find the nearest PD correlation matrix in the *Check Admissibility* step.
 3. Simulate $1,000$ vectors via the Inverse Transform method in the *Simulate Data* step.
 \setstretch{2.0}
@@ -173,7 +173,7 @@ i. Estimate the correlation matrix from the "data" in the *Compute Correlation* 
 The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. The results for $d \leq 500$ are fast with all times (except Kendall) under 3 seconds. Table \@ref(tab:ch040-moderateDtab) displays the total computation time of the algorithms steps 1 through 3, including estimation step i.
 
 
-```{r ch040-moderateDtab}
+```{r tab:ch040-moderateDtab}
 dat_long <- benchmark_dependences %>%
   select(-total_time, -n_sim, -needed_near_pd) %>%
   pivot_longer(cols = c(corr_time:sim_time), names_to = "Step", values_to = "Time") %>%
@@ -194,7 +194,7 @@ tabTimes  <- dat_long %>%
 
 tabTimes %>%
     kable(booktabs = TRUE,
-          linesep = c("", "", "\\addlinespace"),
+          linesep = c("", "", "\\addlinespace"), format="latex",
           col.names = c("Dimension",
                         "Correlation type",
                         "Total Time (Seconds)"),

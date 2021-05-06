@@ -171,24 +171,22 @@ Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CD
 
 ## Relevant Multivariate Simulation software Comparison
 
-```{r tab:compare-table}
-knitr::kable(
-           head(mtcars[, 1:8], 10),  booktabs = TRUE, format = "latex",
-                 linesep = c("", "", "\\addlinespace"),
-           caption = 'A table of the first 10 rows of the mtcars data.'
-  )
-```
+To place `Bigsimr`'s implementation and algorithms in context with existing approaches, as well as make this work's contribution more evident, we make some qualitative comparisons to other `R` multivariate simulation packages.  The `MASS` packages `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This familiar procedure cannot simulate from arbitrary margins and dependency measures, as well as fails to readily scale to high dimensions. Recently, the high-performance package `mvnfast` has been released that provides scaleable multivariate normal generation, but this doesn't completely satistify our goals of flexible margins and dependency modeling. For dependent discrete data, small-dimesional packages exist, such as `GenOrd`. The full-featured package `copula` provides many different copulas and a fairly general random generator `rCopula`. For low-dimensional modeling situtations, copula is suitable, yet the entent of exact matching of margins automatically is unclear. High-dimesional random vectors via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for low-dimenional settings. In sum, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence modeling. Table (\#tab:compare-table) summarizes the above discussion.
 
-<!-- 
-| Software | Designed for | Scales to Large P | Hetereogenous Margins | Flexible Dependence |
-|----------|--------------|-------------------|-----------------------|---------------------|
-|`copula`|              |                   |                       |                     |
-|`genord`|              |                   |                       |                     |
-|`mvnfast`|              |                   |                       |                     |
-
-your comment -->
-
-
+\begin{table}[]
+\centering
+\caption{Selected feature comparison of `bigsimr` to other existing `R` multivariate simulation packages.}
+\label{tab:compare-table}
+\begin{tabular}{@{}llll@{}}
+R Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \midrule
+MASS      & No           & No                    & No                  \\
+mvnfast   & Yes          & No                    & No                  \\
+GenOrd    & No           & Discrete margins      & Yes                 \\
+copula    & No           & Yes                   & No                  \\
+nortaRA   & No           & Yes                   & No                  \\
+bigsimr   & Yes          & Yes                   & Yes                
+\end{tabular}
+\end{table}
 
 
 

@@ -168,3 +168,27 @@ where $\Phi(\cdot)$ is the standard normal CDF. Note that the copula $C_{{\bf R}
 
 
 Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$.
+
+## Relevant Multivariate Simulation software Comparison
+
+```{r tab:compare-table}
+knitr::kable(
+           head(mtcars[, 1:8], 10),  booktabs = TRUE, format = "latex",
+                 linesep = c("", "", "\\addlinespace"),
+           caption = 'A table of the first 10 rows of the mtcars data.'
+  )
+```
+
+<!-- 
+| Software | Designed for | Scales to Large P | Hetereogenous Margins | Flexible Dependence |
+|----------|--------------|-------------------|-----------------------|---------------------|
+|`copula`|              |                   |                       |                     |
+|`genord`|              |                   |                       |                     |
+|`mvnfast`|              |                   |                       |                     |
+
+your comment -->
+
+
+
+
+

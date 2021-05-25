@@ -8,7 +8,7 @@ author:
       | Reno, NV 89557
     email: \email{aschissler@unr.edu}
   - name: Edward J. Bedrick
-    affiliation: University of Nevada
+    affiliation: University of Arizona
   - name: Alexander D. Knudson
     affiliation: University of Nevada \AND
   - name: Tomasz J. Kozubowski
@@ -20,15 +20,15 @@ author:
   - name: Juli Petereit
     affiliation: University of Nevada
   - name: Walter W. Piegorsch
-    affiliation: University of Nevada
+    affiliation: University of Arizona
   - name: Duc Tran
     affiliation: University of Nevada
 title:
-  formatted: "Simulating High-Dimensional Multivariate Data using the \\pkg{Bigsimr} Package"
-  plain:     "Simulating High-Dimensional Multivariate Data using the Bigsimr Package"
-  short:     "\\pkg{Bigsimr}: Simulate High-Dimensional Data"
+  formatted: "Simulating High-Dimensional Multivariate Data using the \\pkg{bigsimr} Package"
+  plain:     "Simulating High-Dimensional Multivariate Data using the bigsimr Package"
+  short:     "\\pkg{bigsimr}: Simulate High-Dimensional Data"
 abstract: >
-  It is critical to realistically simulate data when employing Monte Carlo techniques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. This article introduces the \\pkg{Bigsimr} R package. This high-level package provides a flexible and scalable procedure to simulate high-dimensional random vectors with arbitrary marginal distributions and known Pearson, Spearman, or Kendall correlation matrix. \\pkg{Bigsimr} contains additional high-performance features, including multi-core algorithms to simulate random vectors, estimate correlation, and compute the nearest correlation matrix. Monte Carlo studies quantify the accuracy and scalability of our approach, up to $d=10,000$. Finally, we demonstrate example applications enabled via \\pkg{Bigsimr} by applying these methods to a motivating dataset --- RNA-sequencing data obtained from breast cancer tumor samples.
+  It is critical to accurately simulate data when employing Monte Carlo techniques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. To meet this gap, we developed the bigsimr R package for high-dimensional random vector simulation with arbitrary marginal distributions and known Pearson, Spearman, or Kendall correlation matrix. bigsimr contains additional high-performance features, including multi-core algorithms to estimate correlation and compute the nearest correlation matrix. Monte Carlo studies quantify the accuracy and scalability of our approach, up to $d=10,000$. Finally, we describe example workflows and apply to a motivating high-dimensional data set --- RNA-sequencing data obtained from breast cancer tumor samples.
 keywords:
   formatted: [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]
   plain:     [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]

@@ -8,43 +8,39 @@
 
 \author{
 Alfred G. Schissler\\University of Nevada \And Edward J.
-Bedrick\\University of Nevada \And Alexander D. Knudson\\University of
+Bedrick\\University of Arizona \And Alexander D. Knudson\\University of
 Nevada \AND Tomasz J. Kozubowski\\University of Nevada \And Tin
 Nguyen\\University of Nevada \And Anna K. Panorska\\University of Nevada
 \AND Juli Petereit\\University of Nevada \And Walter W.
-Piegorsch\\University of Nevada \And Duc Tran\\University of Nevada
+Piegorsch\\University of Arizona \And Duc Tran\\University of Nevada
 }
 \title{Simulating High-Dimensional Multivariate Data using the
-\pkg{Bigsimr} Package}
+\pkg{bigsimr} Package}
 
 \Plainauthor{Alfred G. Schissler, Edward J. Bedrick, Alexander D.
 Knudson, Tomasz J. Kozubowski, Tin Nguyen, Anna K. Panorska, Juli
 Petereit, Walter W. Piegorsch, Duc Tran}
 \Plaintitle{Simulating High-Dimensional Multivariate Data using the
-Bigsimr Package}
-\Shorttitle{\pkg{Bigsimr}: Simulate High-Dimensional Data}
+bigsimr Package}
+\Shorttitle{\pkg{bigsimr}: Simulate High-Dimensional Data}
 
 \Abstract{
-It is critical to realistically simulate data when employing Monte Carlo
+It is critical to accurately simulate data when employing Monte Carlo
 techniques and evaluating statistical methodology. Measurements are
 often correlated and high dimensional in this era of big data, such as
 data obtained through high-throughput biomedical experiments. Due to
 computational complexity and a lack of user-friendly software available
 to simulate these massive multivariate constructions, researchers resort
 to simulation designs that posit independence or perform arbitrary data
-transformations. This article introduces the
-\textbackslash pkg\{Bigsimr\} R package. This high-level package
-provides a flexible and scalable procedure to simulate high-dimensional
-random vectors with arbitrary marginal distributions and known Pearson,
-Spearman, or Kendall correlation matrix. \textbackslash pkg\{Bigsimr\}
-contains additional high-performance features, including multi-core
-algorithms to simulate random vectors, estimate correlation, and compute
-the nearest correlation matrix. Monte Carlo studies quantify the
-accuracy and scalability of our approach, up to \(d=10,000\). Finally,
-we demonstrate example applications enabled via
-\textbackslash pkg\{Bigsimr\} by applying these methods to a motivating
-dataset --- RNA-sequencing data obtained from breast cancer tumor
-samples.
+transformations. To meet this gap, we developed the bigsimr R package
+for high-dimensional random vector simulation with arbitrary marginal
+distributions and known Pearson, Spearman, or Kendall correlation
+matrix. bigsimr contains additional high-performance features, including
+multi-core algorithms to estimate correlation and compute the nearest
+correlation matrix. Monte Carlo studies quantify the accuracy and
+scalability of our approach, up to \(d=10,000\). Finally, we describe
+example workflows and apply to a motivating high-dimensional data set
+--- RNA-sequencing data obtained from breast cancer tumor samples.
 }
 
 \Keywords{multivariate simulation, high-dimensional data, nonparametric
@@ -86,39 +82,38 @@ Reno, NV 89557\\
 \section{Introduction}\label{introduction}}
 
 Massive high-dimensional (HD) data sets are now commonplace in many
-areas of scientific inquiry. As new methods are developed for data, a
-fundamental challenge lies in designing and conducting simulation
-studies to assess the operating characteristics of analyzing such
-proposed methodology --- such as false positive rates, statistical
-power, interval coverage, and robustness --- often with comparison to
-existing methods. Further, efficient simulation empowers statistical
-computing strategies, such as the parametric bootstrap
-\citep{Chernick2008} to simulate from a hypothesized null model,
-providing inference in analytically challenging settings. Such Monte
-Carlo (MC) techniques become difficult for high-dimensional data using
-existing algorithms and tools. This is particularly true when simulating
-massive multivariate, non-normal distributions, arising naturally in
-many fields of study.
+areas of scientific inquiry. As new methods are developed for data
+analysis, a fundamental challenge lies in designing and conducting
+simulation studies to assess the operating characteristics of proposed
+methodology --- such as false positive rates, statistical power,
+interval coverage, and robustness --- often to compare to methods.
+Further, efficient simulation empowers statistical computing strategies,
+such as the parametric bootstrap \citep{Chernick2008} to simulate from a
+hypothesized null model, providing inference in analytically challenging
+settings. Such Monte Carlo (MC) techniques become difficult for HD
+dependent data using existing algorithms and tools. This is particularly
+true when simulating massive multivariate, non-normal distributions,
+arising in many fields of study.
 
 As many have noted, it can be vexing to simulate dependent,
-non-normal/discrete data, even for low dimensional settings
-\citep{MB13, XZ19}. For continuous non-normal multivariate data, the
+non-normal/discrete data, even for low-dimensional (LD) settings
+\citep{MB13, XZ19}. For continuous non-normal LD multivariate data, the
 well-known NORmal To Anything (NORTA) algorithm \citep{Cario1997} and
 other copula approaches \citep{Nelsen2007} are well-studied, with
 flexible, robust software available \citep{Yan2007, Chen2001}. Yet these
-approaches do not scale in a timely fashion to high-dimensional problems
+approaches do not scale in a timely fashion to HD problems
 \citep{Li2019gpu}. For discrete data, early simulation strategies had
 major flaws, such as failing to obtain the full range of possible
 correlations (e.g., admitting only positive correlations: see
 \citet{Park1996}). While more recent approaches
-\citep{MB13, Xia17, BF17} have largely remedied this issue for
-low-dimensional problems, the existing tools are not designed to scale
-to high dimensions.
+\citep{MB13, Xia17, BF17} have largely remedied this issue for LD
+problems, the existing tools are not designed to scale to high
+dimensions for discrete marginal distributions.
 
 Another central issue lies in characterizing dependence between
-components in the high-dimensional random vector. The choice of
-correlation in practice usually relates to the eventual analytic goal
-and distributional assumptions of the data (e.g., non-normal, discrete,
+components in the HD random vector. The choice of correlation in
+practice usually relates to the eventual analytic goal and
+distributional assumptions of the data (e.g., non-normal, discrete,
 infinite support, etc). For normal data, the Pearson product-moment
 correlation describes the dependency perfectly. As we will see, however,
 simulating arbitrary random vectors that match a target Pearson
@@ -129,47 +124,46 @@ dependence, such as Spearman's \(\rho\) and Kendall's \(\tau\).
 Throughout, we focus on matching these nonparametric dependence
 measures, as our aim lies in modeling non-normal data and these
 rank-based measures possess invariance properties favorable in our
-proposed methodology. We do, however, provide Pearson matching with some
-caveats.
+proposed methodology. We do, however, implement Pearson matching, but
+several layers of approximation is required.
 
 With all this in mind, we present a scalable, flexible multivariate
 simulation algorithm. The crux of the method lies in the construction of
-a Gaussian copula in the spirit of the NORTA procedure. Further, we
-introduce the \texttt{bigsimr} R package that provides high-performance
-software implementing our algorithm. The algorithm design leverages
-useful properties of nonparametric correlation measures, namely
-invariance under monotone transformation and well-known closed-form
-relationships between dependence measures for the multivariate normal
-(MVN) distribution.
+a Gaussian copula in the spirit of the NORTA procedure. As we will
+describe in more detail, the algorithm's design leverages useful
+properties of nonparametric correlation measures, namely invariance
+under monotone transformation and well-known closed-form relationships
+between dependence measures for the multivariate normal (MVN)
+distribution. For our method, we developed a high-performance
+implementation: the \texttt{bigsimr} R package, written in native Julia
+code.
 
 Our study proceeds by providing background information, including a
 description of a motivating example application: RNA-sequencing
 (RNA-seq) breast cancer data. Then we describe and justify our
-simulation methodology and related algorithms. Next, we detail an
-illustrative low-dimensional example of basic use of the
-\texttt{bigsimr} R package. Then we proceed with Monte Carlo studies
-under various bivariate distributional assumptions to assess accuracy.
-We conclude the Monte Carlo evaluations by summarizing the computation
-time for increasingly higher dimensional vectors. After the MC
-evaluations, we simulate random vectors motivated by our RNA-seq
-example, evaluate the accuracy, and provide example statistical
-computing tasks, namely MC estimation of joint probabilities and
-evaluating HD correlation estimation efficiency. Finally, we discuss the
-method's utility, limitations, and future directions.
+simulation methodology and related algorithms. We proceed by providing
+an illustrative LD \texttt{bigsimr} workflow. Next we conduct MC studies
+under various bivariate distributional assumptions to evaluate
+performance and accuracy. After the MC evaluations, we simulate random
+vectors motivated by our RNA-seq example, evaluate the accuracy, and
+provide example statistical computing tasks, namely MC estimation of
+joint probabilities and evaluating HD correlation estimation efficiency.
+Finally, we discuss the method's utility, limitations, and future
+directions.
 
 \hypertarget{background}{%
 \section{Background}\label{background}}
 
 The \texttt{bigsimr} \texttt{R} package presented here provides multiple
-algorithms that operate with high-dimensional multivariate data;
-however, all these algorithms were originally designed to support a
-single task: to generate random vectors drawn from multivariate
-probability distributions with given marginal distributions and
-dependency metrics. Specifically, our goal is to efficiently simulate a
-large number, \(B\), of HD random vectors
-\({\bf Y}=(Y_1, \ldots, Y_d)^\top\) with \emph{correlated} components
-and heterogeneous marginal distributions, described via cumulative
-distribution functions (CDFs) \(F_i\).
+algorithms that operate with HD multivariate data; however, all these
+algorithms were originally designed to support a single task: to
+generate random vectors drawn from multivariate probability
+distributions with given marginal distributions and dependency metrics.
+Specifically, our goal is to efficiently simulate a large number, \(B\),
+of HD random vectors \({\bf Y}=(Y_1, \ldots, Y_d)^\top\) with
+\emph{correlated} components and heterogeneous marginal distributions,
+described via cumulative distribution functions (CDFs)
+\(F_i, i=1,\ldots,d\).
 
 When designing this methodology, we developed the following properties
 to guide our effort. We divide the properties into two categories: (1)
@@ -189,7 +183,7 @@ simulation strategy should possess the following properties:
   marginals can be equal to the number of dependence parameters.
 \item
   BP3: Flexible marginal modeling, generating heterogeneous data ---
-  possibly from differing probability families.
+  including mixed continuous and discrete margins.
 \end{itemize}
 
 \setstretch{2.0}
@@ -214,39 +208,38 @@ Moreover, the simulation method must \emph{scale} to high dimensions:
 \subsection{Motivating example: RNA-seq
 data}\label{motivating-example-rna-seq-data}}
 
-Simulating high-dimensional, non-normal, correlated data motivates this
-work --- in pursuit of modeling RNA-sequencing (RNA-seq) data
+Simulating HD, non-normal, correlated data motivates this work, in
+pursuit of modeling RNA-sequencing (RNA-seq) data
 \citep{Wang2009b, Conesa2016b} derived from breast cancer patients. The
 RNA-seq data-generating process involves counting how often a particular
-form of human messenger RNA (mRNA) is expressed in a biological sample.
+form of messenger RNA (mRNA) is expressed in a biological sample.
 RNA-seq platforms typically quantify the entire transcriptome in one
-experimental run, resulting in high-dimensional data. For human-derived
-samples, this results in count data corresponding to over 20,000 genes
-(protein-coding genomic regions) or even over 77,000 isoforms when
-alternatively-spliced mRNA are counted \citep{Schissler2019}.
-Importantly, due to inherent biological processes, gene expression data
-exhibit correlation (co-expression) across genes
-\citep{BE07, Schissler2018}.
+experimental run, resulting in HD data. For human-derived samples, this
+results in count data corresponding to over 20,000 genes (protein-coding
+genomic regions) or even over 77,000 isoforms when alternatively-spliced
+mRNA are counted \citep{Schissler2019}. Importantly, due to inherent
+biological processes, gene expression data exhibit correlation
+(co-expression) across genes \citep{BE07, Schissler2018}.
 
-We illustrate our methodology using a well-studied Breast Invasive
-Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see
-Acknowledgments). For ease of modeling and simplicity of exposition, we
-only consider high expressing genes. In turn, we begin by filtering to
-retain the top 1000 of the highest-expressing genes (in terms of median
-expression) of the over 20,000 gene measurements from \(N=878\)
-patients' tumor samples. This gives a great number of pairwise
-dependencies among the marginals (specifically,
-\(\ensuremath{4.995\times 10^{5}}\) correlation parameters). Table
-@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected
-high-expressing genes for the first five patients' breast tumor samples.
-To help visualize the bivariate relationships for these three selected
-genes across all patients, Figure @ref(fig:ch010-realDataFig) displays
-the marginal distributions and estimated Spearman's correlations.
+We illustrate our methodology using the Breast Invasive Carcinoma (BRCA)
+data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments).
+For ease of modeling and simplicity of exposition, we only consider high
+expressing genes. In turn, we begin by filtering to retain the top 1000
+of the highest-expressing genes (in terms of median expression) of the
+over 20,000 gene measurements from \(N=878\) patients' tumor samples.
+This gives a great number of pairwise dependencies among the marginals
+(specifically, \(\ensuremath{4.995\times 10^{5}}\) correlation
+parameters). Table @ref(tab:ch010-realDataTab) displays RNA-seq counts
+for three selected high-expressing genes for the first five patients'
+breast tumor samples. To help visualize the bivariate relationships for
+these three selected genes across all patients, Figure
+@ref(fig:ch010-realDataFig) displays the marginal distributions and
+estimated Spearman's correlations.
 
 \begin{CodeChunk}
 \begin{table}
 
-\caption{\label{tab:ch010-realDataTab}mRNA expression for three selected high-expressing genes, STAU1, FKBP1A, NME2, for the first five patients in the TCGA BRCA data set.}
+\caption{\label{tab:tab:ch010-realDataTab}mRNA expression for three selected high-expressing genes, STAU1, FKBP1A, NME2, for the first five patients in the TCGA BRCA data set.}
 \centering
 \begin{tabular}[t]{lrrr}
 \toprule
@@ -270,7 +263,7 @@ TCGA-A1-A0SG & 12486 & 12089 & 10434\\
 
 }
 
-\caption[Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1]{Marginal scatterplots, densities, and estimated pairwise Spearman's correlations for three example genes from Table 1. The data possess outliers, heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology.}\label{fig:ch010-realDataFig}
+\caption[Pairwise scatterplots for three example genes (Table 1), with estimated Spearman's correlations and marginal density estimates displayed]{Pairwise scatterplots for three example genes (Table 1), with estimated Spearman's correlations and marginal density estimates displayed. The data possess outliers, heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology.}\label{fig:ch010-realDataFig}
 \end{figure}
 \end{CodeChunk}
 
@@ -278,9 +271,9 @@ TCGA-A1-A0SG & 12486 & 12089 & 10434\\
 \subsection{Measures of dependency}\label{measures-of-dependency}}
 
 In multivariate analysis, an analyst must select a metric to quantify
-dependency. The most widely-known is the Pearson (product-moment)
-correlation coefficient that describes the linear association between
-two random variables \(X\) and \(Y\), and, it is given by
+dependency. The most widely-known is the Pearson correlation coefficient
+that describes the linear association between two random variables \(X\)
+and \(Y\), and, it is given by
 
 \begin{equation}
 \rho_P(X,Y) = \frac{E(XY) - E(X)E(Y)}{\left[ \mathrm{Var}(X)\mathrm{Var}(Y)\right]^{1/2}}.
@@ -292,20 +285,19 @@ As \citet{MB13} and \citet{MK01} discuss, for a bivariate normal
 the dependency between the components. For non-normal marginals with
 monotone correlation patterns, however, \(\rho_P\) suffers some
 drawbacks and may mislead or fail to capture important relationships
-\citep{MK01}. Alternatively in these settings, analysts often prefer
-rank-based correlation measures to describe the degree of monotonic
-association.
+\citep{MK01}. Alternatively, analysts often prefer rank-based
+correlation measures to describe the degree of monotonic association.
 
 Two nonparametric, rank-based measures common in practice are Spearman's
 correlation (denoted \(\rho_S\)) and Kendall's \(\tau\). Spearman's
 \(\rho_S\) has an appealing correspondence as the Pearson correlation
-coefficient on \emph{ranks} of the values, thereby captures nonlinear
+coefficient on \emph{ranks} of the values, thereby capturing nonlinear
 yet monotone relationships. Kendall's \(\tau\), on the other hand, is
 the difference in probabilities of concordant and discordant pairs of
-observations, \((X_i, Y_i)\) and \((X_j, Y_j)\), with concordance
-meaning that orderings have the same direction (e.g., if \(X_i < X_j\),
-then \(Y_i < Y_j\)). Note that concordance is determined by the ranks of
-the values, not the values themselves.
+observations, \((X_i, Y_i)\) and \((X_j, Y_j)\) (concordance meaning
+that orderings have the same direction, e.g., if \(X_i < X_j\), then
+\(Y_i < Y_j\)). Note that concordance is determined by the ranks of the
+values, not the values themselves.
 
 Both \(\tau\) and \(\rho_S\) are \emph{invariant under monotone
 transformations} of the underlying random variates. As we will describe
@@ -336,7 +328,7 @@ well-known:
 \emph{Marginal-dependent bivariate correlation bounds}
 
 Given two marginal distributions, \(\rho_P\) is not free to vary over
-the entire range of possible correlations \([-1,1]\). The so-called
+the entire range of possible correlations \([-1,1]\). The
 \emph{Frechet-Hoeffding bounds} are well-studied
 \citep{Nelsen2007, BF17}. These constraints cannot be overcome through
 algorithm design. In general, the bounds are given by
@@ -359,13 +351,12 @@ F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
 \hypertarget{gaussian-copulas}{%
 \subsection{Gaussian copulas}\label{gaussian-copulas}}
 
-There is a strong connection of our simulation strategy to Gaussian
-\emph{copulas} (see \citet{Nelsen2007} for a technical introduction). A
-copula is a distribution function on \([0,1]^d\) that describes a
-multivariate probability distribution with standard uniform marginals.
-This provides a powerful, natural way to characterize joint probability
-structures. Consequently, the study of copulas is an important and
-active area of statistical theory and practice.
+There is a connection of our simulation strategy to Gaussian
+\emph{copulas} \citep{Nelsen2007}. A copula is a distribution function
+on \([0,1]^d\) that describes a multivariate probability distribution
+with standard uniform marginals. This provides a powerful, natural way
+to characterize joint probability. Consequently, the study of copulas is
+an important and active area of statistical theory and practice.
 
 For any random vector \({\bf X}=(X_1, \ldots, X_d)^\top\) with CDF \(F\)
 and marginal CDFs \(F_i\) there is a copula function
@@ -379,23 +370,23 @@ F(x_1, \ldots, x_d) = {\mathbb P}(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1),
 \(x_i \in {\mathbb R}, i=1,\ldots,d.\)
 
 A Gaussian copula has marginal CDFs that are all standard normal,
-\(F_i = \Phi, \forall \, i\). This representation corresponds to a
-multivariate normal (MVN) distribution with standard normal marginal
-distributions and covariance matrix \({\bf R_P}\). As the marginals are
-standardized to have unit variance, however, \({\bf R_P}\) is a Pearson
-correlation matrix. If \(F_{{\bf R}}\) is the CDF of such a multivariate
-normal distribution, then the corresponding Gaussian copula
-\(C_{{\bf R}}\) is defined through
+\(F_i = \Phi, \forall \, i\), where \(\Phi(\cdot)\) is the standard
+normal CDF. This representation corresponds to a multivariate normal
+(MVN) distribution with standard normal marginal distributions and
+covariance matrix \({\bf R_P}\). Since the marginals are standardized to
+have unit variance, however, \({\bf R_P}\) is a Pearson correlation
+matrix. If \(F_{{\bf R}}\) is the CDF of such a multivariate normal
+distribution, then the corresponding Gaussian copula \(C_{{\bf R}}\) is
+defined through
 
 \begin{equation}
 \label{eq:gauss}
 F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
 \end{equation}
 
-where \(\Phi(\cdot)\) is the standard normal CDF. Note that the copula
-\(C_{{\bf R}}\) is the familiar multivariate normal CDF of the random
-vector \((\Phi(X_1), \ldots, \Phi(X_d))\), where
-\((X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})\).
+Here the copula function \(C_{{\bf R}}\) is the familiar multivariate
+normal CDF of the random vector \((\Phi(X_1), \ldots, \Phi(X_d))\),
+where \((X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})\).
 
 Sklar's Theorem \citep{Sklar1959, Ubeda-Flores2017} guarantees that
 given inverse CDFs \(F_i^{-1}\)s and a valid correlation matrix (within
@@ -405,37 +396,34 @@ construct a random vector \({\bf Y} = (Y_1, \ldots, Y_d)^\top\) with
 \(Y_i \sim F_i\), viz.~\(Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d\),
 where \((X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})\).
 
-\hypertarget{relevant-multivariate-simulation-software-comparison}{%
-\subsection{Relevant Multivariate Simulation software
-Comparison}\label{relevant-multivariate-simulation-software-comparison}}
+\hypertarget{other-multivariate-simulation-r-packages}{%
+\subsection{Other Multivariate Simulation R
+Packages}\label{other-multivariate-simulation-r-packages}}
 
-To place \texttt{Bigsimr}'s implementation and algorithms in context
-with existing approaches, as well as make this work's contribution more
-evident, we make some qualitative comparisons to other \texttt{R}
-multivariate simulation packages. The \texttt{MASS} packages
+To place \texttt{bigsimr}'s implementation and algorithms in context
+with existing approaches, here we qualitatively compare to other
+\texttt{R} multivariate simulation packages. The \texttt{MASS} packages
 \texttt{mvnorm()} has long been available to produce random vectors from
 multivariate normal (and \(t\)) distributions. This familiar procedure
 cannot simulate from arbitrary margins and dependency measures, as well
 as fails to readily scale to high dimensions. Recently, the
-high-performance package \texttt{mvnfast} has been released that
-provides scaleable multivariate normal generation, but this doesn't
-completely satistify our goals of flexible margins and dependency
-modeling. For dependent discrete data, small-dimesional packages exist,
-such as \texttt{GenOrd}. The full-featured package \texttt{copula}
-provides many different copulas and a fairly general random generator
-\texttt{rCopula}. For low-dimensional modeling situtations, copula is
-suitable, yet the entent of exact matching of margins automatically is
-unclear. High-dimesional random vectors via \texttt{copula} takes an
-impractical amount of computing time \citep{Li2019gpu}. The
+high-performance package \texttt{mvnfast} \citep{Fasiolo2016} has been
+released that provides HD multivariate normal generation, but this lacks
+flexibility in marginal models and dependency modeling. For dependent
+discrete data, LD packages exist, such as \texttt{GenOrd}. For copula
+computation, the full-featured package \texttt{copula} provides many
+different copulas and a fairly general LD random generator
+\texttt{rCopula()}. High-dimesional random vectors via \texttt{copula}
+takes an impractical amount of computing time \citep{Li2019gpu}. The
 \texttt{nortaRA} R package matches Pearson coefficients near exactly and
-is reasonable for low-dimenional settings. In sum, we know of no other
-\texttt{R} package that can produce HD random vectors with flexible
-margins and dependence modeling. Table (\#tab:compare-table) summarizes
-the above discussion.
+is reasonable for LD settings. Finally, we know of no other \texttt{R}
+package that can produce HD random vectors with flexible margins and
+dependence modeling. Table (\#tab:compare-table) summarizes the above
+discussion.
 
 \begin{table}[]
 \centering
-\caption{Selected feature comparison of `bigsimr` to other existing `R` multivariate simulation packages.}
+\caption{Selected feature comparison of bigsimr to existing R packages for multivariate simulation.}
 \label{tab:compare-table}
 \begin{tabular}{@{}llll@{}}
 R Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \midrule
@@ -458,7 +446,7 @@ vector \(\bf Y\) with \(Y_i\) components for \(i=1,\ldots,d\). Each
 a given Pearson correlation \(\rho_P\), Spearman correlation \(\rho_S\),
 and/or Kendall's \(\tau\). The method can be described as a
 \emph{high-performance Gaussian copula} (Equation @ref(eq:gauss))
-providing a high-dimensional NORTA-inspired algorithm.
+providing a HD NORTA-inspired algorithm.
 
 \hypertarget{normal-to-anything-norta}{%
 \subsection{NORmal To Anything (NORTA)}\label{normal-to-anything-norta}}
@@ -473,8 +461,8 @@ Specifically, NORTA algorithm proceeds as:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Simulate a random vector \(\bf Z\) with \(d\) \emph{independent and
-  identically distributed} (iid) standard normal components.
+  Simulate a random vector \(\bf Z\) with \(d\) independent and
+  identically distributed (iid) standard normal components.
 \item
   Determine the input matrix \(\Sigma_{\bf Z}\) that corresponds with
   the specified output \(\Sigma_{\bf Y}\).
@@ -491,12 +479,11 @@ Specifically, NORTA algorithm proceeds as:
 
 With modern parallel computing, steps 1, 3, 4, 5 are readily implemented
 as high-performance, multi-core and/or graphical-processing-unit (GPU)
-accelerated algorithms --- providing fast scalability using
-readily-available hardware.
+accelerated algorithms --- providing fast scalability to HD.
 
 Matching specified Pearson correlation coefficients exactly (step 2
 above), however, is computationally costly. In general, there is no
-closed-form correspondence between the components of the input
+convenient correspondence between the components of the input
 \(\Sigma_{\bf Z}\) and target \(\Sigma_{\bf Y}\). Matching the
 correlations involves evaluating or approximating \(\binom{d}{2}\)
 integrals of the form
@@ -507,21 +494,20 @@ integrals of the form
 \end{equation}
 
 where \(\phi(\cdot)\) is the joint probability distribution function of
-two correlated standard normal variables. For HD data, (nearly) exact
+two correlated standard normal variables. For HD simulation, exact
 evaluation may become too costly to enable practical simulation studies.
-For low-dimensional problems, however, methods and tools exist to match
-Pearson correlations precisely; see \citep{Xia17} and the publicly
-available \texttt{nortaRA} R package \citep{Chen2001}. As described
-later, to enable HD Pearson matching we approximate these integrals.
+Our remedy to enable HD Pearson matching in \texttt{bigsimr} is Hermite
+polynomial approximation of these \(\choose{d}{2}\) double integrals, as
+suggested by \citet{XZ19}.
 
 \emph{NORTA in higher dimensions}
 
 Sklar's theorem provides a useful characterization of multivariate
 distributions through copulas. Yet the choice of copula-based simulation
-algorithm affects which joint distributions may be simulated. Even in
-low-dimensional spaces (e.g., \(d=3\)), there exist valid multivariate
-distributions with \emph{feasible} Pearson correlation matrices that
-NORTA cannot match exactly \citep{LH75}. This occurs when the bivariate
+algorithm affects which joint distributions may be simulated. Even in LD
+spaces (e.g., \(d=3\)), there exist valid multivariate distributions
+with \emph{feasible} Pearson correlation matrices that NORTA cannot
+match exactly \citep{LH75}. This occurs when the bivariate
 transformations are applied to find the input correlation matrix, yet
 when combined the resultant matrix is indefinite. These situations do
 occur, even using exact analytic calculations. Such problematic target
@@ -539,16 +525,15 @@ defective matrices reside.
 There is hope, however, as \citet{GH02} also showed that replacing an
 indefinite input correlation matrix with a close proxy will give
 approximate matching to the target --- with adequate performance for
-moderate \(d\). This provides evidence that our nearest positive
-definite (PD) augmented approach will maintain reasonable accuracy if
-our input matching scheme returns an indefinite matrix, at least for the
-rank-based matching scheme described above.
+moderate \(d\). This provides guidance that our nearest positive
+definite (PD) augmented approach has promise provide adequate accuracy
+if our input matching scheme returns an indefinite matrix.
 
 \hypertarget{rand-vec-gen}{%
-\subsection{Random vector generator}\label{rand-vec-gen}}
+\subsection{bigsimr rvec: Random vector generator}\label{rand-vec-gen}}
 
-We now describe our algorithm to generate random vectors, which mirrors
-the classical NORTA algorithm above with some modifications for
+We now describe our algorithm to generate random vectors, which extends
+NORTA to HD via nearest correlation matrix replacement and provides
 rank-based dependency matching:
 
 \setstretch{1.5}
@@ -557,93 +542,59 @@ rank-based dependency matching:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Mapping step
+  Mapping step, either
 
   \begin{itemize}
+  \tightlist
   \item
-    \begin{enumerate}
-    \def\labelenumii{(\roman{enumii})}
-    \tightlist
-    \item
-      Convert the target Spearman correlation matrix \(R_S\) to the
-      corresponding MVN Pearson correlation \(R_X\). Alternatively,
-    \end{enumerate}
-  \item
-    (i') Convert the target Kendall \(\tau\) matrix \(R_K\) to the
+    Convert the target Spearman correlation matrix \(R_S\) to the
     corresponding MVN Pearson correlation \(R_X\). Alternatively,
   \item
-    (i'\,') Convert the target Pearson correlation matrix to \(R_P\) to
-    the corresponding, approximate MVN Pearson correlation \(R_X\).
+    Convert the target Kendall \(\tau\) matrix \(R_K\) to the
+    corresponding MVN Pearson correlation \(R_X\). Alternatively,
+  \item
+    Convert the target Pearson correlation matrix to \(R_P\) to the
+    corresponding, approximate MVN Pearson correlation \(R_X\).
   \end{itemize}
 \item
   Check admissibility and, if needed, compute the nearest correlation
   matrix.
 
   \begin{itemize}
+  \tightlist
   \item
-    \begin{enumerate}
-    \def\labelenumii{(\roman{enumii})}
-    \tightlist
-    \item
-      Check that \(R_X\) is a correlation matrix, a positive definite
-      matrix with 1's along the diagonal.
-    \end{enumerate}
+    Check that \(R_X\) is a correlation matrix, a positive definite
+    matrix with 1's along the diagonal.
   \item
-    \begin{enumerate}
-    \def\labelenumii{(\roman{enumii})}
-    \setcounter{enumii}{1}
-    \tightlist
-    \item
-      If \(R_X\) is a correlation matrix, the input matrix is
-      \emph{admissible} in this scheme. Otherwise
-    \end{enumerate}
+    If \(R_X\) is a correlation matrix, the input matrix is
+    \emph{admissible} in this scheme. Otherwise,
   \item
-    (ii') Replace \(R_X\) with the nearest correlation matrix
-    \(\tilde{R}_X\), in the Frobenius norm.
+    Replace \(R_X\) with the nearest correlation matrix \(\tilde{R}_X\),
+    in the Frobenius norm.
   \end{itemize}
 \item
   Gaussian copula
 
   \begin{itemize}
+  \tightlist
   \item
-    \begin{enumerate}
-    \def\labelenumii{(\roman{enumii})}
-    \tightlist
-    \item
-      Generate \({\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)\).
-    \end{enumerate}
+    Generate \({\bf X}=(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_X)\).
   \item
-    \begin{enumerate}
-    \def\labelenumii{(\roman{enumii})}
-    \setcounter{enumii}{1}
-    \tightlist
-    \item
-      Transform \({\bf X}\) to \({\bf U} = (U_1, \ldots, U_d)\)
-      viz.~\(U_i=\Phi(X_i)\), \(i=1, \ldots, d\).
-    \end{enumerate}
+    Transform \({\bf X}\) to \({\bf U} = (U_1, \ldots, U_d)\)
+    viz.~\(U_i=\Phi(X_i)\), \(i=1, \ldots, d\).
   \item
-    \begin{enumerate}
-    \def\labelenumii{(\roman{enumii})}
-    \setcounter{enumii}{2}
-    \tightlist
-    \item
-      Return \({\bf Y} = (Y_1, \ldots, Y_d)\), where
-      \(Y_i=F_i^{-1}(U_i)\), \(i=1, \ldots, d\).
-    \end{enumerate}
+    Return \({\bf Y} = (Y_1, \ldots, Y_d)\), where
+    \(Y_i=F_i^{-1}(U_i)\), \(i=1, \ldots, d\).
   \end{itemize}
 \end{enumerate}
 
-\setstretch{2.0}
-
-\emph{Step 1}
-
-The first two descriptions of the \emph{Mapping step} employ the
-closed-form relationships between \(\rho_S\) and \(\tau\) with
-\(\rho_P\) for bivariate normal random variables via Equations
-@ref(eq:convertKendall) and @ref(eq:convertSpearman), respectively
-(implemented as \texttt{cor\_covert}). Initializing our algorithm to
-match the nonparametric correlations by computing these equations for
-all pairs is computationally trivial.
+\emph{Step 1: Mapping step.} We first employ the closed-form
+relationships between \(\rho_S\) and \(\tau\) with \(\rho_P\) for
+bivariate normal random variables via Equations @ref(eq:convertKendall)
+and @ref(eq:convertSpearman), respectively (implemented as
+\texttt{cor\_covert()}). Initializing our algorithm to match the
+nonparametric correlations by computing these equations for all pairs is
+computationally trivial.
 
 For the computationally expensive process to match Pearson correlations,
 we approximate Equation @ref(eq:pearsonIntegralRelation) for all pairs
@@ -653,59 +604,41 @@ integrals of the form in @ref(eq:pearsonIntegralRelation) are
 approximated by weighted sums of Hermite polynomials. Matching
 coefficients for pairs of continuous distributions is made tractable by
 this method, but for discrete distributions (especially discrete
-distributions with large support sets or infinite support), the problem
-is not so simple or efficient.
+distributions with large support sets or infinite support), the
+approximation is computationally expensive. To remedy this, we further
+approximate discrete distributions by a continuous distribution using
+Generalized S-Distributions \citep{muino2006gs}.
 
-Our solution is to approximate discrete distributions by a continuous
-distribution. The question then becomes that of which distribution to
-use. We found that Generalized S-Distributions \citep{muino2006gs} solve
-this problem by approximating a wide range of unimodal distributions,
-both continuous and discrete. Using the GS-Distribution approximation of
-discrete distributions in Pearson matching scheme above yields favorable
-results.
-
-\emph{Step 2}
-
-Once \(R_X\) has been determined, we check admissibility of the adjusted
-correlation via the steps described above. If \(R_X\) is not a valid
-correlation matrix, then we compute the nearest correlation matrix.
-Finding the nearest correlation matrix is a common statistical computing
-problem. The defacto default function in \texttt{R} is
+\emph{Step 2: Admissibility check and nearest correlation matrix
+computation.} Once \(R_X\) has been determined, we check admissibility
+of the adjusted correlation via the steps described above. If \(R_X\) is
+not a valid correlation matrix, then we compute the nearest correlation
+matrix. Finding the nearest correlation matrix is a common statistical
+computing problem. The defacto function in \texttt{R} is
 \texttt{Matrix::nearPD}, an alternating projection algorithm due to
 \citet{higham2002computing}. As implemented the function fails to scale
-to HD. Instead, we provide the quadratically convergent algorithm based
+to HD. Instead, we provide the quadratically-convergent algorithm based
 on the theory of strongly semi-smooth matrix functions
 (\citet{qi2006quadratically}). The nearest correlation matrix problem
 can be written down as the following convex optimization problem:
-
-\begin{align*}
-    \mathrm{min}\quad & \frac{1}{2} \Vert G - X \Vert^2 \\
-    \mathrm{s.t.}\quad & X_{ii} = 1, \quad i = 1, \ldots , n, \\
-    & X \in S_{+}^{n}
-\end{align*}
+\(\mathrm{min} \quad \frac{1}{2} \Vert G - X \Vert^2, \quad \mathrm{s.t.} \quad X_{ii} = 1, \quad i = 1, \ldots , n, \quad X \in S_{+}^{n}\).
 
 For nonparametric correlation measures, our algorithm allows the
-generation of high-dimensional multivariate data with arbitrary marginal
-distributions with a broad class of admissible Spearman correlation
-matrices and Kendall \(\tau\) matrices. The admissible classes consist
-of the matrices that map to a Pearson correlation matrix for a MVN. In
-particular, if we let \(X\) be MVN with \(d\) components and set
+generation of HD multivariate data with arbitrary marginal distributions
+with a broad class of admissible Spearman correlation matrices and
+Kendall \(\tau\) matrices. The admissible classes consist of the
+matrices that map to a Pearson correlation matrix for a MVN. In
+particular, if we let \(X\) be MVN with \(d\) components and denote
+\(\Omega_P = \{ R_P : R_P \textrm{ is a correlation matrix for } X \}, \quad \Omega_K = \{ R_K : R_K \textrm{ is a correlation matrix for } X \}, \quad \Omega_S = \{ R_S : R_S \textrm{ is a correlation matrix for } X \}\).
+There are 1-1 mappings between these sets. We conjecture that the sets
+of admissible \(R_S\) and \(R_K\) are not highly restrictive. In
+particular, \(R_P\) is approximately \(R_S\) for a MVN, suggesting that
+the admissible set \(\Omega_S\) should be flexible as \(R_P\) can be any
+PD matrix with 1's along the diagonal. We provide methods to check
+whether a target \(R_S\) is an element of the \emph{admissible set}
+\(\Omega_S\).
 
-\begin{align*}
-\Omega_P &= \{ R_P : R_P \textrm{ is a correlation matrix for } X \} \\
-\Omega_K &= \{ R_K : R_K \textrm{ is a correlation matrix for } X \} \\
-\Omega_S &= \{ R_S : R_S \textrm{ is a correlation matrix for } X \} \\
-\end{align*}
-
-then there are 1-1 mappings between these sets. We conjecture informally
-that the sets of admissible \(R_S\) and \(R_K\) are not highly
-restrictive. In particular, \(R_P\) is approximately \(R_S\) for a MVN,
-suggesting that the admissible set \(\Omega_S\) should be flexible as
-\(R_P\) can be any PD matrix with 1's along the diagonal. We provide
-methods to check whether a target \(R_S\) is an element of the
-\emph{admissible set} \(\Omega_S\) (and similarly for \(R_K\)).
-
-There is an increasing probability of encountering a non-admissible
+There is an increasing probability of encountering a inadmissible
 correlation matrix as dimension increases. In our experience, the
 mapping step for large \(d\) almost always produces a \(R_X\) that is
 not a correlation matrix. In Section @ref(package) we provide a basic
@@ -713,17 +646,15 @@ description of how to quantify and control the approximation error.
 Further, the RNA-seq example in Section @ref(examples) provides an
 illustration of this in practice.
 
-\emph{Step 3}
-
-The final step implements a NORTA-inspired, Gaussian copula approach to
-produce the desired margins. Steps 1 and 2 determine the MVN Pearson
-correlation values that will eventually match the target correlation.
-Then all that is required is a fast MVN simulator, a standard normal
-CDF, and well-defined quantile functions for marginals. The MVN is
-transformed to a copula (distribution with standard uniform margins) by
-applying the normal CDF \(\phi(\cdot)\). The quantile functions
-\(F^{-1}\) are applied across the margins to return the desired random
-vector \({\bf Y}\).
+\emph{Step 3: Gaussian copula.} The final step implements a
+NORTA-inspired, Gaussian copula approach to produce the desired margins.
+Steps 1 and 2 determine the MVN Pearson correlation values that will
+eventually match the target correlation. Step 3 requires a fast MVN
+simulator, a standard normal CDF, and well-defined quantile functions
+for marginals. The MVN is transformed to a copula (distribution with
+standard uniform margins) by applying the normal CDF \(\Phi(\cdot)\).
+Finally, the quantile functions \(F^{-1}\) are applied across the
+margins to return the desired random vector \({\bf Y}\).
 
 \section[bigsimr-pkg]{The \pkg{bigsimr} R package}\label{package}
 
@@ -907,17 +838,17 @@ R> bounds <- bs$cor_bounds(margins)
 R> bounds$lower
 \end{CodeInput}
 \begin{CodeOutput}
-       [,1]   [,2]
-[1,]  1.000 -0.878
-[2,] -0.878  1.000
+        [,1]    [,2]
+[1,]  1.0000 -0.8815
+[2,] -0.8815  1.0000
 \end{CodeOutput}
 \begin{CodeInput}
 R> bounds$upper
 \end{CodeInput}
 \begin{CodeOutput}
-      [,1]  [,2]
-[1,] 1.000 0.879
-[2,] 0.879 1.000
+       [,1]   [,2]
+[1,] 1.0000 0.8803
+[2,] 0.8803 1.0000
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -959,7 +890,7 @@ R> bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 \end{CodeInput}
 \begin{CodeOutput}
 Julia Object of type NamedTuple{(:lower, :upper),Tuple{Float64,Float64}}.
-(lower = -0.8801373451421908, upper = 0.8801357032571077)
+(lower = -0.8818561157816974, upper = 0.8818503162627974)
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1565,29 +1496,19 @@ and computation time are warranted.
 \hypertarget{discussion}{%
 \section{Conclusion and discussion}\label{discussion}}
 
-We have introduced a general-purpose high-dimensional multivariate
-simulation algorithm and provide a user-friendly, high-performance
-\texttt{R} package {[}\texttt{bigsimr}{]}. The random vector generation
-method is inspired by NORTA \citep{Cario1997} and Gaussian copula-based
-approaches \citep[\citet{BF17}, \citet{Xia17}]{MB13}. The major
-contributions of this work are methods and software for flexible,
-scalable simulation of HD multivariate probability distributions with
-broad potential data analytic applications for modern, big-data
-statistical computing. For example, one could simulate high-resolution
-time series data, such as those consistent with an auto-regressive
-moving average model exhibiting a specified Spearman structure. Or our
-methods could be used to simulate sparsely correlated data, as many HD
-methods assume, via specifying a \emph{spiked correlation matrix}.
-
-It is customary to compare new tools and algorithms directly to existing
-competing methods and software. In this study, however, we only employ
-our proposed methodology, as our previous work has shown that existing
-\texttt{R} tools are simply not designed to meet our high-dimensional
-goal (see \citet{Li2019gpu} for evaluations of the \texttt{R}
-\texttt{copula} package and others). For the bivariate simulations,
-existing packages such as
-\href{https://github.com/superdesolator/NORTARA}{\texttt{nortaRA}} work
-well to match Pearson correlations exactly.
+We introduced a general-purpose high-dimensional multivariate simulation
+algorithm and provide a user-friendly, high-performance \texttt{R}
+package {[}\texttt{bigsimr}{]}. The random vector generation method is
+inspired by NORTA \citep{Cario1997} and Gaussian copula-based approaches
+\citep[\citet{BF17}, \citet{Xia17}]{MB13}. The major contributions of
+this work are methods and software for flexible, scalable simulation of
+HD multivariate probability distributions with broad potential data
+analytic applications for modern, big-data statistical computing. For
+example, one could simulate high-resolution time series data, such as
+those consistent with an auto-regressive moving average model exhibiting
+a specified Spearman structure. Or our methods could be used to simulate
+sparsely correlated data, as many HD methods assume, via specifying a
+\emph{spiked correlation matrix}.
 
 There are limitations to the methodology and implementation. We could
 only investigate selected multivariate distributions in our Monte Carlo

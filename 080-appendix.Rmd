@@ -202,4 +202,4 @@ Plugging in the estimates of these quantities from Section \@ref(package), we se
 \end{equation}
 
 
-Thus, the possible range of correlation becomes $(-0.881, 0.881)$. This approximately agrees with the MC results provided.
+Thus, the possible range of correlation becomes $(-0.881, 0.881)$. This agrees with the MC results provided.

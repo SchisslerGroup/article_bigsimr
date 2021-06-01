@@ -17,16 +17,15 @@ dist <- distributions_setup()
 ```
 
 
-This section describes a low-dimensional (2D) random vector simulation workflow via the `bigsimr` `R` package (https://github.com/SchisslerGroup/r-bigsimr). The package `bigsimr` provides an interface to the native code written in Julia, registered as the `Bigsimr` Julia package (https://github.com/adknudson/Bigsimr.jl). In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` (https://github.com/SchisslerGroup/python-bigsimr/) that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
+This section describes a LD random vector simulation workflow via the `bigsimr` `R` package. Our `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package. In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 
 
 The subsections below describe the basic use of `bigsimr` by stepping through an example workflow using the data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from setting up the computing environment, to data wrangling, estimation, simulation configuration, random vector generation, and, finally, result visualization.
 
 
-## Bivariate example description
+## Bivariate example
 
-
-We illustrate the use of `bigsimr` motivated by the New York air quality data set (`airquality`) included in the R `datasets` package. First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages. The code chunk below prepares the computing environment:
+We illustrate the use of `bigsimr` using the New York air quality data set (`airquality`) included in the R `datasets` package. First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages. The code chunk below prepares the computing environment:
 
 
 ```{r ch030-computeEnvironmentSetup, eval=FALSE, echo=TRUE}
@@ -40,7 +39,7 @@ dist <- distributions_setup()
 ```
 
 
-For simplicity and to provide a minimal working example, we consider bivariate simulation of the two `airquality` variables `Temperature`, in degrees Fahrenheit, and `Ozone` level, in parts per billion.
+Below, we describe a minimal working example --- a bivariate simulation of two airquality variables: `Temperature`, in degrees Fahrenheit, and `Ozone` level, in parts per billion.
 
 
 ```{r ch030-air-quality-data, echo=TRUE}
@@ -53,10 +52,10 @@ glimpse(df)
 ```
 
 
-Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between Ozone and Temperature. We aim to simulate random two-component vectors mimicking this structure. The margins are not normally distributed; particularly the Ozone level exhibits a strong positive skew.
+Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between `Ozone` and `Temperature`. We aim to simulate random two-component vectors mimicking this structure. The margins are not normally distributed; `Ozone` level exhibits a strong positive skew.
 
 
-```{r ch030-aq-joint-dist, cache=FALSE, fig.width= 8, fig.cap="Bivariate scatterplot of Ozone vs. Temp with estimated marginal densities. We model the Ozone data as marginally log-normal and the Temperature data as normal."}
+```{r ch030-aq-joint-dist, cache=FALSE, fig.width= 8, fig.cap="Bivariate scatterplot of Ozone versus Temp with estimated marginal densities. The Ozone data are modeled marginally as log-normal and the Temperature data as normal."}
 p0 <- ggplot(df, aes(Temp, Ozone)) +
   geom_point(size = 1) +
   theme(legend.position = "none") + 
@@ -82,12 +81,12 @@ pTemp + plot_spacer() + p0 + pOzone +
 ```
 
 
-Next, we specify the marginal distributions and correlation coefficient (both type and magnitude). Here the analyst is free to be creative. For this example, we avoid goodness-of-fit considerations to determine the marginal distributions. But it seems sensible without domain knowledge to estimate these quantities from the data, and `bigsimr` contains fast functions designed for this task.
+Next, we specify the marginal distributions and correlation coefficient (both type and magnitude). Here the analyst is free to be creative. For this example, we avoid goodness-of-fit considerations to determine the marginal distributions. It is sensible without domain knowledge to estimate these quantities from the data, and `bigsimr` contains fast functions designed for this task.
 
 
 ## Specifying marginal distributions 
 
-Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we assume `Temp` is normally distributed and `Ozone` is log-normally distributed, as the latter values are positive and skewed. We use the well-known, unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the log-normal parameters:
+Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we assume `Temp` is normally distributed and `Ozone` is log-normally distributed, as the latter values are positive and skewed. We use the classical unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the log-normal parameters:
 
 
 ```{r ch030-aq-temp-pars, echo=TRUE}
@@ -105,7 +104,7 @@ df %>%
 ```
 
 
-Next, we configure the input marginals for later input into `rvec`. The marginal distributions are specified using `Julia`'s `Distributions` package and stored in a vector.
+Now, we configure the input marginals for later input into `rvec`. The marginal distributions are specified using `Julia`'s `Distributions` package and stored in a vector.
 
 
 ```{r ch030-margins-alist, echo=TRUE}
@@ -116,7 +115,7 @@ margins <- c(dist$Normal(mean(df$Temp), sd(df$Temp)),
 
 ## Specifying correlation
 
-As mentioned, the user must decide how to describe correlation based on the particulars of the problem. For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ and Kendall's $\tau$ correlation matrix $R_K$. We also support Pearson correlation coefficient matching, while cautioning the user to check the performance for their parametric multivariate model (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance). These estimation methods are classical approaches, not designed for high-dimensional correlation estimation (see the [Conclusion and Discussion]({#discussion) sections for more on this).
+As mentioned, the user must decide how to describe correlation based on the particulars of the problem. For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ and Kendall's $\tau$ correlation matrix $R_K$. We also support Pearson correlation coefficient matching, while cautioning the user to check the performance for the distribution at hand (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance). Note that hese estimation methods are classical approaches, not specifically designed for high-dimensional correlation estimation.
 
 
 ```{r ch030-aq-cor, echo=TRUE}
@@ -126,47 +125,27 @@ As mentioned, the user must decide how to describe correlation based on the part
 
 ## Checking target correlation matrix admissibility
 
-
-First we use `cor_bounds` to ensure that the pairwise target correlation values are valid prior to the mapping step which constructs $R_X$ for the MVN input into NORTA (see Section \@ref(algorithms)). `cor_bounds` estimates the pairwise lower and upper correlation bounds using the Generate, Sort, and Correlate algorithm of @DH2011.
-
-
-```{r ch030-cor-bounds, echo=TRUE}
-bounds <- bs$cor_bounds(margins)
-bounds$lower
-bounds$upper
-```
-
-
-Since our single estimated Spearman correlation is within the theoretical bounds, the correlation is valid as input to `rvec`. But even if the 2-dimensional bounds are satisfied for each pair of margins, this does not guarantee the feasibility of a $d-$variate distribution [@BF17].
-
-
-To provide higher dimensional feasibility/admissibility checking, we begin by mapping using `cor_convert` and check admissibility.
-
+Once a target correlation matrix is specified, first convert the dependency type to Pearson to correctly specify the MVN inputs. Then, check that the converted matrix $R_X$ is a valid correlation matrix (PD and 1s on the diagonal). For this bivariate example, $R_X$ is a valid correlation matrix. Typically in HD the resultant MVN Pearson correlation matrix is indefinite and requires approximation (see the HD examples in subsequent sections). 
 
 ```{r ch030-cor-convert, echo=TRUE}
 # Step 1. Mapping
 (R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson))
+```
+
+```{r ch030-cor-check, echo=TRUE}
 # Step 2. Check admissibility
 bs$iscorrelation(R_X)
 ```
 
-
-The bounds on the Pearson correlation coefficient $R_P$ between these margins are restricted as seen below in our MC estimated correlation bounds:
-
+Despite being a valid correlation matrix under this definition, marginal distributions induce Frechet bounds on the possible Pearson correlation values. To check that the converted correlation values fall within these bounds, use `bigsimr::cor_bounds` to estimate the pairwise lower and upper correlation bounds. `cor_bounds` uses the Generate, Sort, and Correlate algorithm of @DH2011. For the assumed marginals, the Pearson correlation coefficient is not free to vary in [-1,1], as seen below. Our MC estimate of the bounds slightly underestimates the theoretic bounds of $(-0.881, 0.881)$. (See an analytic derivation presented in the Appendix). Since our single Pearson correlation coefficient is within the theoretical bounds, the correlation matrix is valid for our simulation strategy.
 
 ```{r ch030-cor-bounds-pearson, echo=TRUE}
 bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 ```
 
-
-Our MC estimate of the bounds slightly overestimates the theoretic bounds of $(-0.881, 0.881)$. An analytic derivation is presented as an Appendix.
-
-
 ## Simulating random vectors
 
-
-Finally, we arrive at the main function of `bigsimr`: `rvec`. We now simulate $B=10,000$ random vectors from the assumed joint distribution of Ozone levels and Temp.
-
+A single `rvec` execution simulates the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input in specified using the pre-computed MVN correlation matrix.
 
 ```{r ch030-sim-margins, echo=TRUE}
 x <- bs$rvec(10000, R_X, margins)

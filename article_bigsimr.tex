@@ -658,19 +658,15 @@ margins to return the desired random vector \({\bf Y}\).
 
 \section[bigsimr-pkg]{The \pkg{bigsimr} R package}\label{package}
 
-This section describes a low-dimensional (2D) random vector simulation
-workflow via the \texttt{bigsimr} \texttt{R} package
-(\url{https://github.com/SchisslerGroup/r-bigsimr}). The package
-\texttt{bigsimr} provides an interface to the native code written in
-Julia, registered as the \texttt{Bigsimr} Julia package
-(\url{https://github.com/adknudson/Bigsimr.jl}). In addition to the
-native Julia \texttt{Bigsimr} package and \texttt{R} interface
-\texttt{bigsimr}, we also provide a python interface \texttt{bigsimr}
-(\url{https://github.com/SchisslerGroup/python-bigsimr/}) that
-interfaces with the Julia \texttt{Bigsimr} package. The Julia package
-provides a high-performance implementation of our proposed random vector
-generation algorithm and associated functions (see Section
-@ref(algorithms)).
+This section describes a LD random vector simulation workflow via the
+\texttt{bigsimr} \texttt{R} package. Our \texttt{R} package provides an
+interface to the native code written in Julia (registered as the
+\texttt{Bigsimr} Julia package. In addition to the native Julia
+\texttt{Bigsimr} package and \texttt{R} interface \texttt{bigsimr}, we
+also provide a python interface \texttt{bigsimr} that interfaces with
+the Julia \texttt{Bigsimr} package. The Julia package provides a
+high-performance implementation of our proposed random vector generation
+algorithm and associated functions (see Section @ref(algorithms)).
 
 The subsections below describe the basic use of \texttt{bigsimr} by
 stepping through an example workflow using the data set
@@ -680,16 +676,15 @@ from setting up the computing environment, to data wrangling,
 estimation, simulation configuration, random vector generation, and,
 finally, result visualization.
 
-\hypertarget{bivariate-example-description}{%
-\subsection{Bivariate example
-description}\label{bivariate-example-description}}
+\hypertarget{bivariate-example}{%
+\subsection{Bivariate example}\label{bivariate-example}}
 
-We illustrate the use of \texttt{bigsimr} motivated by the New York air
-quality data set (\texttt{airquality}) included in the R
-\texttt{datasets} package. First, we load the \texttt{bigsimr} library
-and a few other convenient data science packages, including the
-syntactically-elegant \texttt{tidyverse} suite of \texttt{R} packages.
-The code chunk below prepares the computing environment:
+We illustrate the use of \texttt{bigsimr} using the New York air quality
+data set (\texttt{airquality}) included in the R \texttt{datasets}
+package. First, we load the \texttt{bigsimr} library and a few other
+convenient data science packages, including the syntactically-elegant
+\texttt{tidyverse} suite of \texttt{R} packages. The code chunk below
+prepares the computing environment:
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -703,10 +698,9 @@ R> dist <- distributions_setup()
 \end{CodeInput}
 \end{CodeChunk}
 
-For simplicity and to provide a minimal working example, we consider
-bivariate simulation of the two \texttt{airquality} variables
-\texttt{Temperature}, in degrees Fahrenheit, and \texttt{Ozone} level,
-in parts per billion.
+Below, we describe a minimal working example --- a bivariate simulation
+of two airquality variables: \texttt{Temperature}, in degrees
+Fahrenheit, and \texttt{Ozone} level, in parts per billion.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -724,10 +718,10 @@ $ Ozone <int> 41, 36, 12, 18, 28, 23, 19, 8, 7, 16, 11, 14, 18, 14, 34, 6, 30,~
 \end{CodeChunk}
 
 Figure @ref(fig:ch030-aq-joint-dist) visualizes the bivariate
-relationship between Ozone and Temperature. We aim to simulate random
-two-component vectors mimicking this structure. The margins are not
-normally distributed; particularly the Ozone level exhibits a strong
-positive skew.
+relationship between \texttt{Ozone} and \texttt{Temperature}. We aim to
+simulate random two-component vectors mimicking this structure. The
+margins are not normally distributed; \texttt{Ozone} level exhibits a
+strong positive skew.
 
 \begin{CodeChunk}
 \begin{figure}
@@ -736,16 +730,16 @@ positive skew.
 
 }
 
-\caption[Bivariate scatterplot of Ozone vs]{Bivariate scatterplot of Ozone vs. Temp with estimated marginal densities. We model the Ozone data as marginally log-normal and the Temperature data as normal.}\label{fig:ch030-aq-joint-dist}
+\caption[Bivariate scatterplot of Ozone versus Temp with estimated marginal densities]{Bivariate scatterplot of Ozone versus Temp with estimated marginal densities. The Ozone data are modeled marginally as log-normal and the Temperature data as normal.}\label{fig:ch030-aq-joint-dist}
 \end{figure}
 \end{CodeChunk}
 
 Next, we specify the marginal distributions and correlation coefficient
 (both type and magnitude). Here the analyst is free to be creative. For
 this example, we avoid goodness-of-fit considerations to determine the
-marginal distributions. But it seems sensible without domain knowledge
-to estimate these quantities from the data, and \texttt{bigsimr}
-contains fast functions designed for this task.
+marginal distributions. It is sensible without domain knowledge to
+estimate these quantities from the data, and \texttt{bigsimr} contains
+fast functions designed for this task.
 
 \hypertarget{specifying-marginal-distributions}{%
 \subsection{Specifying marginal
@@ -754,7 +748,7 @@ distributions}\label{specifying-marginal-distributions}}
 Based on the estimated densities in Figure
 @ref(fig:ch030-aq-joint-dist), we assume \texttt{Temp} is normally
 distributed and \texttt{Ozone} is log-normally distributed, as the
-latter values are positive and skewed. We use the well-known, unbiased
+latter values are positive and skewed. We use the classical unbiased
 estimators for the normal distribution's parameters and maximum
 likelihood estimators for the log-normal parameters:
 
@@ -783,7 +777,7 @@ R> df %>%
 \end{CodeOutput}
 \end{CodeChunk}
 
-Next, we configure the input marginals for later input into
+Now, we configure the input marginals for later input into
 \texttt{rvec}. The marginal distributions are specified using
 \texttt{Julia}'s \texttt{Distributions} package and stored in a vector.
 
@@ -803,12 +797,10 @@ simulation accuracy/scalability in our scheme, we advocate the use of
 Spearman's \(\rho\) correlation matrix \(R_S\) and Kendall's \(\tau\)
 correlation matrix \(R_K\). We also support Pearson correlation
 coefficient matching, while cautioning the user to check the performance
-for their parametric multivariate model (see
-\protect\hyperlink{simulations}{Monte Carlo evaluations} below for
-evaluation strategies and guidance). These estimation methods are
-classical approaches, not designed for high-dimensional correlation
-estimation (see the \href{\%7B\#discussion}{Conclusion and Discussion}
-sections for more on this).
+for the distribution at hand (see \protect\hyperlink{simulations}{Monte
+Carlo evaluations} below for evaluation strategies and guidance). Note
+that hese estimation methods are classical approaches, not specifically
+designed for high-dimensional correlation estimation.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -825,41 +817,13 @@ R> (R_S <- bs$cor(as.matrix(df), bs$Spearman))
 \subsection{Checking target correlation matrix
 admissibility}\label{checking-target-correlation-matrix-admissibility}}
 
-First we use \texttt{cor\_bounds} to ensure that the pairwise target
-correlation values are valid prior to the mapping step which constructs
-\(R_X\) for the MVN input into NORTA (see Section @ref(algorithms)).
-\texttt{cor\_bounds} estimates the pairwise lower and upper correlation
-bounds using the Generate, Sort, and Correlate algorithm of
-\citet{DH2011}.
-
-\begin{CodeChunk}
-\begin{CodeInput}
-R> bounds <- bs$cor_bounds(margins)
-R> bounds$lower
-\end{CodeInput}
-\begin{CodeOutput}
-        [,1]    [,2]
-[1,]  1.0000 -0.8815
-[2,] -0.8815  1.0000
-\end{CodeOutput}
-\begin{CodeInput}
-R> bounds$upper
-\end{CodeInput}
-\begin{CodeOutput}
-       [,1]   [,2]
-[1,] 1.0000 0.8803
-[2,] 0.8803 1.0000
-\end{CodeOutput}
-\end{CodeChunk}
-
-Since our single estimated Spearman correlation is within the
-theoretical bounds, the correlation is valid as input to \texttt{rvec}.
-But even if the 2-dimensional bounds are satisfied for each pair of
-margins, this does not guarantee the feasibility of a \(d-\)variate
-distribution \citep{BF17}.
-
-To provide higher dimensional feasibility/admissibility checking, we
-begin by mapping using \texttt{cor\_convert} and check admissibility.
+Once a target correlation matrix is specified, first convert the
+dependency type to Pearson to correctly specify the MVN inputs. Then,
+check that the converted matrix \(R_X\) is a valid correlation matrix
+(PD and 1s on the diagonal). For this bivariate example, \(R_X\) is a
+valid correlation matrix. Typically in HD the resultant MVN Pearson
+correlation matrix is indefinite and requires approximation (see the HD
+examples in subsequent sections).
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -871,6 +835,9 @@ R> (R_X <- bs$cor_convert(R_S, bs$Spearman, bs$Pearson))
 [1,] 1.0000 0.7886
 [2,] 0.7886 1.0000
 \end{CodeOutput}
+\end{CodeChunk}
+
+\begin{CodeChunk}
 \begin{CodeInput}
 R> # Step 2. Check admissibility
 R> bs$iscorrelation(R_X)
@@ -880,9 +847,18 @@ R> bs$iscorrelation(R_X)
 \end{CodeOutput}
 \end{CodeChunk}
 
-The bounds on the Pearson correlation coefficient \(R_P\) between these
-margins are restricted as seen below in our MC estimated correlation
-bounds:
+Despite being a valid correlation matrix under this definition, marginal
+distributions induce Frechet bounds on the possible Pearson correlation
+values. To check that the converted correlation values fall within these
+bounds, use \texttt{bigsimr::cor\_bounds} to estimate the pairwise lower
+and upper correlation bounds. \texttt{cor\_bounds} uses the Generate,
+Sort, and Correlate algorithm of \citet{DH2011}. For the assumed
+marginals, the Pearson correlation coefficient is not free to vary in
+{[}-1,1{]}, as seen below. Our MC estimate of the bounds slightly
+underestimates the theoretic bounds of \((-0.881, 0.881)\). (See an
+analytic derivation presented in the Appendix). Since our single Pearson
+correlation coefficient is within the theoretical bounds, the
+correlation matrix is valid for our simulation strategy.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -894,16 +870,13 @@ Julia Object of type NamedTuple{(:lower, :upper),Tuple{Float64,Float64}}.
 \end{CodeOutput}
 \end{CodeChunk}
 
-Our MC estimate of the bounds slightly overestimates the theoretic
-bounds of \((-0.881, 0.881)\). An analytic derivation is presented as an
-Appendix.
-
 \hypertarget{simulating-random-vectors}{%
 \subsection{Simulating random vectors}\label{simulating-random-vectors}}
 
-Finally, we arrive at the main function of \texttt{bigsimr}:
-\texttt{rvec}. We now simulate \(B=10,000\) random vectors from the
-assumed joint distribution of Ozone levels and Temp.
+A single \texttt{rvec} execution simulates the desired \(10,000\) random
+vectors from the assumed bivariate distribution of \texttt{Ozone} and
+\texttt{Temp}. Note that the target input in specified using the
+pre-computed MVN correlation matrix.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -929,58 +902,46 @@ Figure @ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
 \hypertarget{simulations}{%
 \section{Monte Carlo evaluations}\label{simulations}}
 
-Before applying our methodology to real data simulation, we conduct
-several Monte Carlo studies to investigate method performance. Since
-marginal parameter matching in our scheme is essentially a sequence of
-univariate inverse probability transforms, the challenging aspects are
-the accuracy of dependency matching and computational efficiency at high
-dimensions. To evaluate our methods in those respects, we design the
-following numerical experiments to first assess accuracy of matching
-dependency parameters in bivariate simulations and then time the
-procedure in increasingly large dimension \(d\).
+In this section, we conduct MC studies to investigate method
+performance. Marginal parameter matching is straightforward in our
+scheme as it is a sequence of univariate inverse probability transforms.
+This process is both fast and exact. On the other hand, accurate and
+computationally efficent dependency matching presents a challenge,
+especially in the HD setting. To evaluate our methods in those respects,
+we design the following numerical experiments to first assess accuracy
+of matching dependency parameters in bivariate simulations and then time
+the procedure in increasingly large dimension \(d\).
 
 \hypertarget{bivariate-experiments}{%
 \subsection{Bivariate experiments}\label{bivariate-experiments}}
 
 We select bivariate simulation configurations to ultimately simulate our
-motivating discrete-valued RNA-seq example, and, so we proceed in
-increasing complexity, leading to the model in our motivating
-application in Section @ref(examples). We begin with empirically
-evaluating the dependency matching across all three supported
-correlations --- Pearson's, Spearman's, and Kendall's --- in identical,
-bivariate marginal configurations. For each pair of identical margins,
-we vary the target correlation across \(\Omega\), the set of possible
-admissible values for correlation type, to evaluate the simulation's
-ability to obtain the theoretic bounds. The simulations progress from
-bivariate normal, to bivariate gamma (non-normal yet continuous), and
-bivariate negative binomial (mimicking RNA-seq counts).
+motivating discrete-valued RNA-seq example. Thus, we proceed in
+increasing departure from normality, leading to the multivariate
+negative binomial (MVNB) model for our motivating data. We begin with
+empirically evaluating the dependency matching across all three
+supported correlations --- Pearson, Spearman, and Kendall --- in
+identical, bivariate marginal configurations. For each pair of identical
+margins, we vary the target correlation across \(\Omega\), the set of
+possible admissible values for each correlation type, to evaluate the
+simulation's ability to simulate all possible correlations. The
+simulations progress from bivariate normal, to bivariate gamma
+(non-normal yet continuous), and bivariate negative binomial (non-normal
+and discrete).
 
 Table @ref(tab:sims) lists our identical-marginal, bivariate simulation
-configurations. We increase the simulate replicates \(B\) to check that
-our results converge to the target correlations and gauge statistical
+configurations. We increase the simulate replicates \(B\) to visually
+ensure that our results converge to the target correlations and gauge
 efficiency. We select distributions beginning with a standard
 multivariate normal (MVN) as we expect the performance to be exact (up
 to MC error) for all correlation types. Then, we select a non-symmetric
-continuous distribution: a standard (rate =1) two-component multivariate
-gamma (MVG). Finally, we select distributions and marginal parameter
-values that are motivated by our RNA-seq data, namely values proximal to
-probabilities and sizes estimated from the data (see
-\href{examples}{Example applications} for estimation details). Thus we
-arrive at a multivariate negative binomial (MVNB)
+continuous distribution: a standard (rate =1), two-component
+multivariate gamma (MVG). Finally, we select distributions and marginal
+parameter values that are motivated by our RNA-seq data, namely values
+proximal to probabilities and sizes estimated from the data (see
+\href{examples}{RNA-seq data application} for estimation details).
+Specifically, we assume a MVNB with
 \(p_1 = p_2 = 3\times10^{-4}, r_1 = r_2 = 4, \rho \in \Omega\).
-
-Table: (\#tab:sims) Identical margin, bivariate simulation
-configurations to evaluate correlation matching accuracy and efficiency.
-
-\begin{table}[]
-\begin{tabular}{@{}lcr@{}}
-\toprule
-Simulation Reps $B$ & Correlation Types & Identical-margin 2D distribution \\ \midrule
-$1,000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
-$10,000$ & Spearman ($\rho_S$) & ${\bf Y} \sim MVG( shape = 10, rate = 1, \rho_i ), i=1,\ldots,100$ \\
-$100,000$ & Kendall ($\tau$) & ${\bf Y} \sim MVNB(p = 3\times10^{-4}, r = 4,\rho_i), i=1,\ldots,100$ \\ \bottomrule
-\end{tabular}
-\end{table}
 
 For each of the unique 9 simulation configurations described above, we
 estimate the correlation bounds and vary the correlations along a
@@ -988,7 +949,7 @@ sequence of 100 points evenly placed within the bounds, aiming to
 explore \(\Omega\). Specifically, we set correlations
 \(\{ \rho_1 = ( \hat{l} + \epsilon), \rho_2 = (\hat{l} + \epsilon) + \delta, \ldots, \rho_{100} = (\hat{u} - \epsilon) \}\),
 with \(\hat{l}\) and \(\hat{u}\) being the estimated lower and upper
-bounds, respectively, and increment value \(\delta\). The adjustment
+bounds, respectively, with increment value \(\delta\). The adjustment
 factor, \(\epsilon=0.01\), is introduced to handle numeric issues when
 the bound is specified exactly.
 
@@ -1048,12 +1009,10 @@ No. of random vectors & Correlation type & Distribution & Mean abs. error\\
 \end{CodeChunk}
 
 Overall, the studies show that our methodology is generally accurate
-across the entire range of possible correlation values all three
-dependency measures, at least in these limited simulation settings for
-the rank-based correlations. Our Pearson matching performs nearly as
-well as Spearman or Kendall, except for a slight increase in error for
-negative binomial case. This is due the particularly large counts
-generated with our choice of parameters for \(p\) and \(r\).
+across the entire range of possible correlation for all three dependency
+measures. Our Pearson matching performs nearly as well as Spearman or
+Kendall, except for a slight increase in error for negative binomial
+case.
 
 \begin{CodeChunk}
 \begin{figure}
@@ -1071,15 +1030,15 @@ generated with our choice of parameters for \(p\) and \(r\).
 Dimensions}\label{scale-up-to-high-dimensions}}
 
 With information of our method's accuracy from a low-dimensional
-perspective, we now turn to assessing whether \texttt{bigsimr} can scale
-to larger dimensional problems with practical computation times.
-Specifically, we ultimately generate \(B=1,000\) random vectors for
+perspective, we now assess whether \texttt{bigsimr} can scale to larger
+dimensional problems with practical computation times. We ultimately
+generate \(B=1,000\) random vectors for
 \(d=\{100, 250, 500, 1000, 2500, 5000, 10000\}\) for each correlation
-type, \(\{Pearson, Spearman, Kendall\}\) while timing the algorithm's
-major steps.
+type, \{Pearson, Spearman, Kendall\} while timing the algorithm's major
+steps.
 
-To mimic the workflow, we first produce a synthetic ``data set'' by
-completing the following steps:
+We first produce a synthetic ``data set'' by completing the following
+steps:
 
 \setstretch{1.5}
 
@@ -1097,54 +1056,45 @@ completing the following steps:
   \texttt{cor\_randPD} of size \(d \times d\).
 \item
   Simulate a ``data set'' of \(1,000 \times d\) random vectors via
-  \texttt{rvec} (without matching the Pearson exactly). \setstretch{2.0}
+  \texttt{rvec}. \setstretch{2.0}
 \end{enumerate}
 
 With the synthetic data set in hand, we complete and time the following
-4 steps:
+four steps involved in a typical workflow (including correlation
+estimation).
 
 \setstretch{1.5}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
+\tightlist
 \item
-  \begin{enumerate}
-  \def\labelenumii{\alph{enumii})}
-  \tightlist
-  \item
-    Estimate the correlation matrix from the ``data'' in the
-    \emph{Compute Correlation} step.
-  \end{enumerate}
+  Estimate the correlation matrix from the ``data'' in the \emph{Compute
+  Correlation} step.
 \item
-  \begin{enumerate}
-  \def\labelenumii{\alph{enumii})}
-  \setcounter{enumii}{1}
-  \tightlist
-  \item
-    Map the correlations to initialize the algorithm (Pearson to
-    Pearson, Spearman to Pearson, or Kendall to Pearson) in the
-    \emph{Adjust Correlation} step.
-  \end{enumerate}
+  Map the correlations to initialize the algorithm (Pearson to Pearson,
+  Spearman to Pearson, or Kendall to Pearson) in the \emph{Adjust
+  Correlation} step.
 \item
   Check whether the mapping produces a valid correlation matrix and, if
   not, find the nearest PD correlation matrix in the \emph{Check
   Admissibility} step.
 \item
-  Simulate \(1,000\) vectors via the Inverse Transform method in the
-  \emph{Simulate Data} step. \setstretch{2.0}
+  Simulate \(1,000\) vectors in the \emph{Simulate Data} step.
+  \setstretch{2.0}
 \end{enumerate}
 
 The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core
 Intel Core i9 processor, with all 16 threads employed during
-computation. The results for \(d \leq 500\) are fast with all times
-(except Kendall) under 3 seconds. Table @ref(tab:ch040-moderateDtab)
-displays the total computation time of the algorithms steps 1 through 3,
-including estimation step i.
+computation. Table @ref(tab:ch040-moderateDtab) displays the total
+computation time for moderate dimesions (\(d \leq 500\)). In every
+simullation setting, the 1,000 vectors are generated rapidly, executing
+in under 2 seconds.
 
 \begin{CodeChunk}
 \begin{table}
 
-\caption{\label{tab:tab:ch040-moderateDtab}Total time to produce 10,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.}
+\caption{\label{tab:tab:ch040-moderateDtab}Total time to produce 1,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.}
 \centering
 \begin{tabular}[t]{llr}
 \toprule
@@ -1167,25 +1117,24 @@ Dimension & Correlation type & Total Time (Seconds)\\
 
 \end{CodeChunk}
 
-The results with larger dimensional vectors show scalability to
-ultra-high dimensions for all three correlation types, although the
-total times do become much larger. Figure @ref(fig:ch040-largeDfig)
-displays computation times for \(d=\{1000, 2500, 5000, 10000\}\). For
-\(d\) equal to 1000 and 2500, the total time is under a couple of
-minutes. At \(d\) of 5000 and 10,000, Pearson correlation matching in
-the \emph{Adjust Correlation} step becomes costly. Interestingly,
-Pearson is actually faster than Kendall for \(d=10,000\) due to
-bottlenecks in \emph{Compute Correlation} and \emph{Check
-Admissibility}. Uniformly, matching Spearman correlations is faster,
-with total times under 5 minutes for \(d=10,000\), making Spearman
-correlations the most computationally-friendly dependency type. With
-this in mind, we scaled the simulation to \(d=20,000\) for the Spearman
-type and obtained the 1,000 vectors in under an hour (data not shown).
-In principle, this would enable the simulation of an entire
+The results for \(d > 500\) show scalability to ultra-high dimensions
+for all three correlation types, although the total times do become much
+larger. Figure @ref(fig:ch040-largeDfig) displays computation times for
+\(d=\{1000, 2500, 5000, 10000\}\). For \(d\) equal to 1000 and 2500, the
+total time is under a couple of minutes. At \(d\) of 5000 and 10,000,
+Pearson correlation matching in the \emph{Adjust Correlation} step
+becomes costly. Interestingly, Pearson is actually faster than Kendall
+for \(d=10,000\) due to bottlenecks in \emph{Compute Correlation} and
+\emph{Check Admissibility}. Uniformly, matching Spearman correlations is
+faster, with total times under 5 minutes for \(d=10,000\), making
+Spearman the most computationally-friendly dependency type for our
+package. With this in mind, we scaled the simulation to \(d=20,000\) for
+the Spearman type and obtained the 1,000 vectors in under an hour (data
+not shown). In principle, this would enable the simulation of an entire
 human-derived RNA-seq data set. We note that for a given target
-correlation matrix and margins, steps i, 1, and 2 only need to be
-computed once and the third step, \emph{Simulate Data}, is fast under
-all schemes for all \(d\) under consideration.
+correlation matrix and margins, steps 1, 2, and 3 only need to be
+computed once and the fourth step, \emph{Simulate Data}, is nearly
+instaneous for all settings considered.
 
 \begin{CodeChunk}
 \begin{figure}
@@ -1194,70 +1143,67 @@ all schemes for all \(d\) under consideration.
 
 }
 
-\caption[Computation times as d increases]{Computation times as d increases.}\label{fig:ch040-largeDfig}
+\caption[Computation times for HD multivariate gamma simulation]{Computation times for HD multivariate gamma simulation.}\label{fig:ch040-largeDfig}
 \end{figure}
 \end{CodeChunk}
 
 \emph{Limitations, conclusions, and recommendations}
 
 In the bivariate studies, we chose arbitrary simulation parameters for
-three distributions, moving from the Gaussian to the discrete and
-non-normal, multivariate negative binomial. Under these conditions, the
-simulated random vectors sample the desired bivariate distribution
-across the entire range of pairwise correlations for the three
-dependency measures. The simulation results could differ for other
-choices of simulation settings. Specifying extreme correlations near the
-boundary or Frechet bounds could result in poor simulation performance.
-Fortunately, it is straightforward to evaluate simulation performance by
-using strategies similar to those completed above. We expect our random
-vector generation to perform well for the vast majority of
-NORTA-feasible correlation matrices, but advise to check the performance
-before making inferences/further analyses.
+three distributions, moving from the Gaussian to discrete and non-normal
+MVNB. Under these conditions, the simulated random vectors sample the
+desired bivariate distribution across the entire range of pairwise
+correlations for the three dependency measures. The simulation results
+could differ for other choices of simulation settings. Specifying
+extreme correlations near the boundary or Frechet bounds could result in
+poor simulation performance. Fortunately, it is straightforward to
+evaluate simulation performance by using strategies similar to those
+completed above. We expect our random vector generation to perform well
+for the vast majority of NORTA-feasible correlation matrices, but advise
+to check the performance before making inferences/further analyses.
 
 Somewhat surprising, Kendall estimation and nearest PD computation scale
 poorly compared to Spearman and, even, approximate Pearson matching. In
 our experience, Kendall computation times are sensitive to the number of
 cores, benefiting from multi-core parallelization. This could mitigate
 some of the current algorithmic/implementation shortcomings. Despite
-this, Kendall matching is still feasible for most high-dimensional data
-sets. Finally, we note that one could use our single-pass algorithm
+this, Kendall matching is still feasible for most HD data sets. Finally,
+we note that one could use our single-pass algorithm
 \texttt{cor\_fastPD} to produce a `close' (not nearest PD) to scale to
-even higher dimensions with greater loss of accuracy.
+even higher dimensions with some loss of accuracy.
 
 \hypertarget{examples}{%
 \section{RNA-seq data application}\label{examples}}
 
 This section demonstrates how to simulate multivariate data using
-\texttt{bigsimr}, aiming to replicate the structure of high-dimensional
-dependent count data. In an illustration of our proposed methodology, we
-seek to simulate RNA-sequencing data by producing simulated random
-vectors mimicking the observed data and its generating process. Modeling
-RNA-seq using multivariate probability distributions is natural as
-inter-gene correlation is an inherent part of biological processes
-\citep{Wang2009b}. And yet, many models do not account for this, leading
-to major disruptions to the operating characteristics of statistical
-estimation, testing, and prediction. See \citet{Efron2012} for a
-detailed discussion with related methods and \citet{Wu2012b},
-\citet{Schissler2018}; \citet{Schissler2019} for applied examples. The
-following subsections apply \texttt{bigsimr}'s methods to real RNA-seq
-data, including replicating an estimated parametric structure, MC
-probability estimation, and MC evaluation of correlation estimation
-efficiency.
+\texttt{bigsimr}, aiming to replicate the structure of HD dependent
+count data. In an illustration of our proposed methodology, we seek to
+simulate RNA-sequencing data by producing simulated random vectors
+mimicking the observed data and its generating process. Modeling RNA-seq
+using multivariate probability distributions is natural as inter-gene
+correlation occurs during biological processes \citep{Wang2009b}. And
+yet, many models do not account for this, leading to major disruptions
+to the operating characteristics of statistical estimation, testing, and
+prediction. See \citet{Efron2012} for a detailed discussion with related
+methods and \citet{Wu2012b}, \citet{Schissler2018};
+\citet{Schissler2019} for applied examples. The following subsections
+apply \texttt{bigsimr}'s methods to real RNA-seq data, including
+replicating an estimated parametric structure, probability estimation,
+and evaluation of correlation estimation efficiency.
 
 \hypertarget{simulating-high-dimensional-rna-seq-data}{%
 \subsection{Simulating High-Dimensional RNA-seq
 data}\label{simulating-high-dimensional-rna-seq-data}}
 
-We begin by estimating the structure of the TCGA BRCA RNA-seq data set
-(see \href{background}{Background}). Ultimately, we will simulate
-\(B=10,000\) random vectors \({\bf Y}=(Y_1, \ldots, Y_d)^\top\) with
-\(d=1000\). We assume a multivariate negative binomial (MVNB) model as
-RNA-seq counts are often over-dispersed and correlated. Since all \(d\)
-selected genes exhibit over-dispersion (data not shown), we proceed to
-estimate the NB parameters \((r_i, p_i), i=1,\ldots,d\), to determine
-the target marginal PMFs \(f_i\). To complete specification of the
-simulation algorithm inputs, we estimate the Spearman correlation matrix
-\({ \bf R}_{S}\) to characterize dependency.
+We begin by estimating the structure of the TCGA BRCA RNA-seq data set.
+Ultimately, we will simulate \(B=10,000\) random vectors
+\({\bf Y}=(Y_1, \ldots, Y_d)^\top\) with \(d=1000\). We assume a MVNB
+model as RNA-seq counts are often over-dispersed and correlated. Since
+all \(d\) selected genes exhibit over-dispersion (data not shown), we
+proceed to estimate the NB parameters \((r_i, p_i), i=1,\ldots,d\), to
+determine the target marginal PMFs \(f_i\). To complete specification of
+the simulation algorithm inputs, we estimate the Spearman correlation
+matrix \(R_S\) to characterize dependency.
 
 With this goal in mind, we first estimate the desired correlation matrix
 using the fast implementation provided by \texttt{bigsimr}:
@@ -1269,12 +1215,12 @@ R> R_S <- bs$cor(as.matrix(brca1000), bs$Spearman)
 \end{CodeInput}
 \end{CodeChunk}
 
-Next, we estimate the marginal parameters. We use the method of moments
-(MoM) to estimate the marginal parameters for the multivariate negative
-binomial model. While, marginal distributions are from the same
-probability family (NB), they are heterogeneous in terms of the
-parameters probability and size \((p_i, n_i)\) for \(i,\ldots,d\). The
-functions below support this estimation for later use in \texttt{rvec}.
+Next, we estimate the marginal parameters. We use method of moments to
+estimate the marginal parameters for the multivariate negative binomial
+model. The marginal distributions are from the same probability family
+(NB), yet they are heterogeneous in terms of the parameters probability
+and size \((p_i, n_i)\) for \(i,\ldots,d\). The functions below support
+this estimation for later use in \texttt{rvec}.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -1287,7 +1233,8 @@ R> make_nbinom_margins <- function(sizes, probs) {
 \end{CodeInput}
 \end{CodeChunk}
 
-We apply these estimators to all 1000 genes across the 878 patients:
+We apply these estimators to the highest-expressing 1000 genes across
+the 878 patients:
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -1301,11 +1248,10 @@ R> nb_margins <- make_nbinom_margins(sizes, probs)
 Notably, the estimated marginal NB probabilities \(\{ \hat{p}_i \}\) are
 small --- ranging in the interval
 \([\ensuremath{7.5305\times 10^{-7}} , \ensuremath{5.6592\times 10^{-4}}]\).
-This gives rise to highly variable counts and, typically, less
-restriction on potential pairwise correlation pairs. Once the functions
-are defined/executed to complete marginal estimation, we specify targets
-and generate the desired random vectors using \texttt{rvec}. Now we
-check admissibility of the specified correlation matrix.
+This gives rise to highly variable counts and, thus, less restriction on
+potential pairwise correlation pairs. Given the marginals, we now
+specify targets and check admissibility of the specified correlation
+matrix.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -1334,17 +1280,17 @@ R> summary(abs(targets - approximates))
 \end{CodeOutput}
 \end{CodeChunk}
 
-While the exact \(d \times d\) Spearman correlation matrix is not
-strictly admissible in our scheme (as seen by the non-positive definite
-result above), the approximation is close with a maximum absolute error
-of 0.0069 and average absolute error of
-\ensuremath{5.3366\times 10^{-4}} across the
-\ensuremath{4.995\times 10^{5}} correlations.
+As seen above \(R_X\) is not strictly admissible in our scheme (as seen
+by the non-positive definite result above). However, the approximation
+is close with a maximum absolute error of 0.0069 and average absolute
+error of \ensuremath{5.3366\times 10^{-4}} across the
+\ensuremath{4.995\times 10^{5}} correlations. With the inputs
+configured, \texttt{rvec} is executed to produce a synthetic RNA-seq
+data set:
 
 \begin{CodeChunk}
 \begin{CodeInput}
 R> sim_nbinom <- bs$rvec(10000, R_X, nb_margins) 
-R> colnames(sim_nbinom) <- colnames(brca1000)
 \end{CodeInput}
 \end{CodeChunk}
 
@@ -1353,12 +1299,12 @@ pairwise relationships for our example genes from Table
 @ref(tab:ch010-realDataTab). Simulated counts roughly mimic the observed
 data but with a smoother appearance due to the assumed parametric form
 and with less extreme points then the observed data in Figure
-@ref(fig:ch010-realDataFig). Figure @ref(fig:ch050-figBRCA) displays the
-aggregated results of our simulation by comparing the specified target
-parameter (horizontal axes) with the corresponding quantities estimated
-from the simulated data (vertical axes). The evaluation shows that the
-simulated counts approximately match the target parameters and exhibit
-the full range of estimated correlation from the data.
+@ref(fig:ch010-realDataFig). Figure @ref(fig:ch050-figBRCA) compares the
+specified target parameter (horizontal axis) with the corresponding
+quantities estimated from the simulated data (vertical axis). The
+evaluation shows that the simulated counts approximately match the
+target parameters and exhibit the full range of estimated correlations
+from the data.
 
 \begin{CodeChunk}
 \begin{figure}
@@ -1384,8 +1330,8 @@ the full range of estimated correlation from the data.
 
 \emph{Limitations, conclusions, and recommendations}
 
-The results show overall good simulation performance for our choice of
-parameters settings. Our settings were motivated by modeling
+The results show overall aquedate simulation performance for our choice
+of parameters settings. Our settings were motivated by modeling
 high-expressing genes from the TCGA BRCA data set. In general, the
 ability to match marginal and dependence parameters depends on the
 particular joint probability model. We recommend to evaluate and tune
@@ -1405,13 +1351,12 @@ P( {\bf Y} = {\bf y} ), \: y_i \in \chi_i.
 where \(\chi_i\) is the sample space for the \(i^{th}\) component of the
 random vector \(\bf{Y}\). Compact representations with convenient
 computational forms are rare for high-dimensional constructions,
-especially with heterogeneous, correlated marginal distributions (or
-margins of mixed data types). Given a large number of simulated vectors
-as produced above, estimated probabilities are readily given by counting
-the proportion of simulated vectors meeting the desired condition. In
-our motivating application, one may ask what is the probability that all
-genes expressed greater than a certain threshold value \({\bf y}_0\).
-This can be estimated as
+especially with heterogeneous marginal distributions. Given a large
+number of simulated vectors as produced above, estimated probabilities
+are readily given by counting the proportion of simulated vectors
+meeting the desired condition. In our motivating application, one could
+ask: what is the probability that all genes are expressed greater than a
+certain threshold value \({\bf y}_0\)? This can be estimated as
 
 \[
 \hat{P}( {\bf Y} \ge {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y}^{ (b) } \ge {\bf y_0} ),
@@ -1442,23 +1387,18 @@ R> pHat
 \subsection{Evaluation of correlation estimation
 efficiency}\label{evaluation-of-correlation-estimation-efficiency}}
 
-MC methods are routinely used in many statistical inferential tasks
-including estimation, hypothesis testing, error rates, and empirical
-interval coverage rates. To conclude the example applications, we
-demonstrate how \texttt{bigsimr} can be used to evaluate estimation
+To conclude the example applications, we demonstrate how
+\texttt{bigsimr} can be used to evaluate correlation estimation
 efficiency. In particular, we wish to assess the error in our
 correlation estimation above. We used a conventional method, based on
 classical statistical theory which was not designed for high-dimensional
-data. Indeed, high-dimensional covariance estimation (and precision
-matrices) is an active area of statistical science, .e.g.,
-\citep{Won2013g, VanWieringen2016}.
+data. Indeed, high-dimensional covariance estimation is an active area
+of statistical science; see, for example, \citet{Won2013g} or
+\citet{VanWieringen2016}.
 
 In this small example, we simulate \(m=30\) data sets with the number of
 simulated vectors matching the number of patients in the BRCA data set,
-\(N=878\). Since our simulation is much faster for the Pearson
-correlation type (see Figure @ref(fig:ch040-largeDfig)), we only convert
-the Spearman correlation matrix once (and ensure it is positive
-definite). At each iteration, we estimate the quadratic loss (residual
+\(N=878\). At each iteration, we estimate the quadratic loss (residual
 sum of squared errors) from the specified \({\bf R}_{S}\), producing a
 distribution of loss values.
 
@@ -1471,13 +1411,12 @@ R> simRho <- replicate(n = m, expr = {
 +   tmpSim <- bs$rvec(N , R_X, nb_margins)
 +   bs$cor(tmpSim, bs$Spearman)
 + }, simplify = FALSE)
-R> # Evaluate the residual sum of squared error
-R> sapply(simRho, function(R) sum((R - R_S)^2))
+R> frobenius_loss <- sapply(simRho, function(R) norm( R - R_S, type = "F")  )
 \end{CodeInput}
 \end{CodeChunk}
 
 The \texttt{R} summary function supplies the mean-augmented five-number
-summary of the quadratic loss distribution computed above.
+summary of the Frobenius loss distribution computed above.
 
 \begin{CodeChunk}
 \begin{CodeInput}
@@ -1489,24 +1428,25 @@ R> summary(frobenius_loss)
 \end{CodeOutput}
 \end{CodeChunk}
 
-This distribution could be compared to high-dimensional designed
-covariance estimators for guidance on whether the additional complexity
-and computation time are warranted.
+This distribution could be compared to bespoke HD covariance estimators
+for guidance on whether the additional complexity and computation time
+are warranted.
 
 \hypertarget{discussion}{%
 \section{Conclusion and discussion}\label{discussion}}
 
-We introduced a general-purpose high-dimensional multivariate simulation
+We developed a general-purpose high-dimensional multivariate simulation
 algorithm and provide a user-friendly, high-performance \texttt{R}
-package {[}\texttt{bigsimr}{]}. The random vector generation method is
+package \texttt{bigsimr}, Julia package \texttt{Bigsimr} and Python
+package \texttt{bigsimr}. The random vector generation method is
 inspired by NORTA \citep{Cario1997} and Gaussian copula-based approaches
 \citep[\citet{BF17}, \citet{Xia17}]{MB13}. The major contributions of
 this work are methods and software for flexible, scalable simulation of
-HD multivariate probability distributions with broad potential data
-analytic applications for modern, big-data statistical computing. For
-example, one could simulate high-resolution time series data, such as
-those consistent with an auto-regressive moving average model exhibiting
-a specified Spearman structure. Or our methods could be used to simulate
+HD multivariate probability distributions with broad data analytic
+applications for modern, big-data statistical computing. For example,
+one could simulate high-resolution time series data, such as those
+consistent with an auto-regressive moving average model exhibiting a
+specified Spearman structure. Or our methods could be used to simulate
 sparsely correlated data, as many HD methods assume, via specifying a
 \emph{spiked correlation matrix}.
 
@@ -1787,7 +1727,7 @@ Plugging in the estimates of these quantities from Section
 \end{equation}
 
 Thus, the possible range of correlation becomes \((-0.881, 0.881)\).
-This approximately agrees with the MC results provided.
+This agrees with the MC results provided.
 
 \setstretch{1.0}
 

@@ -1,25 +1,25 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.5.25)  25 MAY 2021 14:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.6.1)  1 JUN 2021 11:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
 **article_bigsimr.tex
 (./article_bigsimr.tex
 LaTeX2e <2020-10-01> patch level 4
-L3 programming layer <2021-05-11> (./jss.cls
+L3 programming layer <2021-05-27> (./jss.cls
 Document Class: jss 2020/12/09 3.2 jss class by Achim Zeileis
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/base/size11.clo
 File: size11.clo 2020/04/10 v1.4m Standard LaTeX file (size option)
 )
-\c@part=\count179
-\c@section=\count180
-\c@subsection=\count181
-\c@subsubsection=\count182
-\c@paragraph=\count183
-\c@subparagraph=\count184
-\c@figure=\count185
-\c@table=\count186
+\c@part=\count181
+\c@section=\count182
+\c@subsection=\count183
+\c@subsubsection=\count184
+\c@paragraph=\count185
+\c@subparagraph=\count186
+\c@figure=\count187
+\c@table=\count188
 \abovecaptionskip=\skip47
 \belowcaptionskip=\skip48
 \bibindent=\dimen138
@@ -53,11 +53,11 @@ Package: ae 2001/02/12 1.3 Almost European Computer Modern
 Package: fontenc 2020/08/10 v2.0s Standard LaTeX package
 )) (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/fancyvrb/fancyvrb.sty
 Package: fancyvrb 2021/01/20 v3.7 verbatim text (tvz,hv)
-\FV@CodeLineNo=\count187
+\FV@CodeLineNo=\count189
 \FV@InFile=\read2
 \FV@TabBox=\box47
-\c@FancyVerbLine=\count188
-\FV@StepNumber=\count189
+\c@FancyVerbLine=\count190
+\FV@StepNumber=\count191
 \FV@OutFile=\write3
 ) (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/base/fontenc.sty
 Package: fontenc 2020/08/10 v2.0s Standard LaTeX package
@@ -104,7 +104,7 @@ Package: natbib 2010/09/13 8.31b (PWD, AO)
 \bibhang=\skip49
 \bibsep=\skip50
 LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count190
+\c@NAT@ctr=\count192
 )
 \footerskip=\skip51
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hyperref.sty
@@ -142,8 +142,8 @@ Package: auxhook 2019-12-17 v1.6 Hooks for auxiliary files (HO)
 Package: kvoptions 2020-10-07 v3.14 Key value format for package options (HO)
 )
 \@linkdim=\dimen141
-\Hy@linkcounter=\count191
-\Hy@pagecounter=\count192
+\Hy@linkcounter=\count193
+\Hy@pagecounter=\count194
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2021-02-27 v7.00k Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
@@ -158,7 +158,7 @@ Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 ) (/Users/alfred/Library/TinyTeX/texmf-dist/tex/generic/etexcmds/etexcmds.sty
 Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
 )
-\Hy@SavedSpaceFactor=\count193
+\Hy@SavedSpaceFactor=\count195
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/hyperref/puenc.def
 File: puenc.def 2021-02-27 v7.00k Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
@@ -171,7 +171,7 @@ Package hyperref Info: Plain pages OFF on input line 4207.
 Package hyperref Info: Backreferencing OFF on input line 4212.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4445.
-\c@Hy@tempcnt=\count194
+\c@Hy@tempcnt=\count196
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip16
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
@@ -185,7 +185,7 @@ Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count195
+\Fld@menulength=\count197
 \Field@Width=\dimen143
 \Fld@charsize=\dimen144
 Package hyperref Info: Hyper figures OFF on input line 6075.
@@ -202,9 +202,9 @@ Package: atbegshi-ltx 2020/08/17 v1.0a Emulation of the original atbegshi packa
 ge
 with kernel methods
 )
-\Hy@abspage=\count196
-\c@Item=\count197
-\c@Hfootnote=\count198
+\Hy@abspage=\count198
+\c@Item=\count199
+\c@Hfootnote=\count266
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hpdftex.def
@@ -214,8 +214,8 @@ Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atvery packag
 e
 with kernel methods
 )
-\Fld@listcount=\count199
-\c@bookmark@seq@number=\count266
+\Fld@listcount=\count267
+\c@bookmark@seq@number=\count268
 
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/rerunfilecheck/rerunfileche
 ck.sty
@@ -263,13 +263,13 @@ Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 ) (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2016/03/08 v2.02 operator names
 )
-\inf@bad=\count267
+\inf@bad=\count269
 LaTeX Info: Redefining \frac on input line 234.
-\uproot@=\count268
-\leftroot@=\count269
+\uproot@=\count270
+\leftroot@=\count271
 LaTeX Info: Redefining \overline on input line 399.
-\classnum@=\count270
-\DOTSCASE@=\count271
+\classnum@=\count272
+\DOTSCASE@=\count273
 LaTeX Info: Redefining \ldots on input line 496.
 LaTeX Info: Redefining \dots on input line 499.
 LaTeX Info: Redefining \cdots on input line 620.
@@ -278,15 +278,15 @@ LaTeX Info: Redefining \cdots on input line 620.
 \big@size=\dimen147
 LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
-\macc@depth=\count272
-\c@MaxMatrixCols=\count273
+\macc@depth=\count274
+\c@MaxMatrixCols=\count275
 \dotsspace@=\muskip17
-\c@parentequation=\count274
-\dspbrk@lvl=\count275
+\c@parentequation=\count276
+\dspbrk@lvl=\count277
 \tag@help=\toks19
-\row@=\count276
-\column@=\count277
-\maxfields@=\count278
+\row@=\count278
+\column@=\count279
+\maxfields@=\count280
 \andhelp@=\toks20
 \eqnshift@=\dimen148
 \alignsep@=\dimen149
@@ -321,7 +321,7 @@ Package: amsthm 2020/05/29 v2.20.6
 \thm@headsep=\skip64
 \dth@everypar=\toks28
 )
-\c@theorem=\count279
+\c@theorem=\count281
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/booktabs/booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \heavyrulewidth=\dimen154
@@ -334,12 +334,12 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \cmidrulesep=\dimen161
 \cmidrulekern=\dimen162
 \defaultaddspace=\dimen163
-\@cmidla=\count280
-\@cmidlb=\count281
+\@cmidla=\count282
+\@cmidlb=\count283
 \@aboverulesep=\dimen164
 \@belowrulesep=\dimen165
-\@thisruleclass=\count282
-\@lastruleclass=\count283
+\@thisruleclass=\count284
+\@lastruleclass=\count285
 \@thisrulewidth=\dimen166
 ) (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/tools/longtable.sty
 Package: longtable 2020/01/07 v4.13 Multi-page Table package (DPC)
@@ -347,16 +347,16 @@ Package: longtable 2020/01/07 v4.13 Multi-page Table package (DPC)
 \LTright=\skip66
 \LTpre=\skip67
 \LTpost=\skip68
-\LTchunksize=\count284
+\LTchunksize=\count286
 \LTcapwidth=\dimen167
 \LT@head=\box50
 \LT@firsthead=\box51
 \LT@foot=\box52
 \LT@lastfoot=\box53
-\LT@cols=\count285
-\LT@rows=\count286
-\c@LT@tables=\count287
-\c@LT@chunks=\count288
+\LT@cols=\count287
+\LT@rows=\count288
+\c@LT@tables=\count289
+\c@LT@chunks=\count290
 \LT@p@ftn=\toks29
 ) (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/tools/array.sty
 Package: array 2020/10/01 v2.5c Tabular extension package (FMi)
@@ -399,7 +399,7 @@ File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 (/Users/alfred/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.
 def
 File: l3backend-pdftex.def 2021-05-07 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count289
+\l__color_backend_stack_int=\count291
 \l__pdf_internal_box=\box56
 ) (./article_bigsimr.aux)
 \openout1 = `article_bigsimr.aux'.
@@ -444,7 +444,7 @@ Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 ring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
-\c@section@level=\count290
+\c@section@level=\count292
 )
 LaTeX Info: Redefining \ref on input line 75.
 LaTeX Info: Redefining \pageref on input line 75.
@@ -626,25 +626,18 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [14]
-Overfull \hbox (13.74979pt too wide) in paragraph at lines 661--674
-\T1/lmtt/m/n/10.95 bigsimr R \T1/lmr/m/n/10.95 pack-age ([][]$\T1/lmtt/m/n/10.9
-5 https : / / github . com / SchisslerGroup / r-[]bigsimr$[][]\T1/lmr/m/n/10.95
- ). The pack-age \T1/lmtt/m/n/10.95 bigsimr
- []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 15
  []
 
 [15]
-<article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf, id=368, 578.16pt
+<article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf, id=364, 578.16pt
  x 356.33125pt>
 File: article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf Graphic file
  (type pdf)
 <use article_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf>
 Package pdftex.def Info: article_bigsimr_files/figure-latex/ch030-aq-joint-dist
--1.pdf  used on input line 735.
+-1.pdf  used on input line 729.
 (pdftex.def)             Requested size: 376.25838pt x 231.8953pt.
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -662,33 +655,55 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [18]
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 19
- []
-
-[19]
-<article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf, id=410, 469.755pt x 2
+<article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf, id=394, 469.755pt x 2
 90.08376pt>
 File: article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf Graphic file (typ
 e pdf)
 <use article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf>
 Package pdftex.def Info: article_bigsimr_files/figure-latex/ch030-plot-sim-1.pd
-f  used on input line 921.
+f  used on input line 894.
 (pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
+
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 19
+ []
+
+[19]
+Underfull \vbox (badness 1946) has occurred while \output is active []
+
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 20 []
  []
 
 [20 <./article_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf>]
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 975.
-
-
-Overfull \hbox (6.10406pt too wide) in paragraph at lines 976--983
-[][] 
+Overfull \hbox (45.00706pt too wide) in paragraph at lines 956--960
+[]\T1/lmr/m/n/10.95 Figure @ref(fig:ch040-bPlot) dis-plays the ag-gre-gated bi-
+vari-ate sim-u-la-tion re-sults. Ta-ble @ref(tab:ch040-
  []
+
+<article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf, id=420, 469.755pt x 610.
+28pt>
+File: article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf Graphic file (type p
+df)
+<use article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf>
+Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf  
+used on input line 1020.
+(pdftex.def)             Requested size: 376.25838pt x 488.81133pt.
+
+Overfull \hbox (14.94987pt too wide) in paragraph at lines 1032--1039
+\T1/lmr/m/n/10.95 We ul-ti-mately gen-er-ate $\OML/lmm/m/it/10.95 B \OT1/lmr/m/
+n/10.95 = 1\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 000$ \T1/lmr/m/n/10.95 ran-
+dom vec-tors for $\OML/lmm/m/it/10.95 d \OT1/lmr/m/n/10.95 = \OMS/lmsy/m/n/10.9
+5 f\OT1/lmr/m/n/10.95 100\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 250\OML/lmm/m
+/it/10.95 ; \OT1/lmr/m/n/10.95 500\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 1000
+\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 2500\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n
+/10.95 5000\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 10000\OMS/lmsy/m/n/10.95 g$
+
+ []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
@@ -696,30 +711,6 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [21]
-Overfull \hbox (45.00706pt too wide) in paragraph at lines 995--999
-[]\T1/lmr/m/n/10.95 Figure @ref(fig:ch040-bPlot) dis-plays the ag-gre-gated bi-
-vari-ate sim-u-la-tion re-sults. Ta-ble @ref(tab:ch040-
- []
-
-<article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf, id=435, 469.755pt x 610.
-28pt>
-File: article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf Graphic file (type p
-df)
-<use article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf>
-Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf  
-used on input line 1061.
-(pdftex.def)             Requested size: 376.25838pt x 488.81133pt.
-
-Overfull \hbox (15.08934pt too wide) in paragraph at lines 1073--1080
-\OMS/lmsy/m/n/10.95 f\OT1/lmr/m/n/10.95 100\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/1
-0.95 250\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 500\OML/lmm/m/it/10.95 ; \OT1/
-lmr/m/n/10.95 1000\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 2500\OML/lmm/m/it/10
-.95 ; \OT1/lmr/m/n/10.95 5000\OML/lmm/m/it/10.95 ; \OT1/lmr/m/n/10.95 10000\OMS
-/lmsy/m/n/10.95 g$ \T1/lmr/m/n/10.95 for each cor-re-la-tion type, $\OMS/lmsy/m
-/n/10.95 f\OML/lmm/m/it/10.95 Pearson; Spearman; Kendall\OMS/lmsy/m/n/10.95 g$
- []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 22 []
  []
@@ -729,43 +720,37 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 23
  []
 
-[23]
+[23 <./article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf>]
+Overfull \hbox (5.40298pt too wide) in paragraph at lines 1087--1093
+\T1/lmr/m/n/10.95 ces-sor, with all 16 threads em-ployed dur-ing com-pu-ta-tion
+. Ta-ble @ref(tab:ch040-moderateDtab)
+ []
+
+
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 24 []
  []
 
-[24 <./article_bigsimr_files/figure-latex/ch040-bPlot-1.pdf>]
-Overfull \hbox (2.66646pt too wide) in paragraph at lines 1170--1189
-\T1/lmr/m/n/10.95 three cor-re-la-tion types, al-though the to-tal times do be-
-come much larger. Fig-ure @ref(fig:ch040-
- []
-
+[24]
+<article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf, id=454, 469.755pt x 
+290.08376pt>
+File: article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf Graphic file (ty
+pe pdf)
+<use article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>
+Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-largeDfig-1.p
+df  used on input line 1142.
+(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 25
  []
 
 [25]
-<article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf, id=472, 469.755pt x 
-290.08376pt>
-File: article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf Graphic file (ty
-pe pdf)
-<use article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>
-Package pdftex.def Info: article_bigsimr_files/figure-latex/ch040-largeDfig-1.p
-df  used on input line 1193.
-(pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 26 []
  []
 
 [26 <./article_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf>]
-Underfull \vbox (badness 1454) has occurred while \output is active []
-
-
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 27
  []
@@ -776,71 +761,66 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
  []
 
 [28]
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 29
- []
-
-[29]
-<article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf, id=514, 469.755pt x
+<article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf, id=495, 469.755pt x
  290.08376pt>
 File: article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf Graphic file (t
 ype pdf)
 <use article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf>
 Package pdftex.def Info: article_bigsimr_files/figure-latex/ch050-simDataFig-1.
-pdf  used on input line 1366.
+pdf  used on input line 1312.
 (pdftex.def)             Requested size: 376.25838pt x 232.34616pt.
-<fig/ch050-figBRCA.png, id=515, 578.16pt x 289.08pt>
+<fig/ch050-figBRCA.png, id=496, 578.16pt x 289.08pt>
 File: fig/ch050-figBRCA.png Graphic file (type png)
 <use fig/ch050-figBRCA.png>
-Package pdftex.def Info: fig/ch050-figBRCA.png  used on input line 1377.
+Package pdftex.def Info: fig/ch050-figBRCA.png  used on input line 1323.
 (pdftex.def)             Requested size: 354.12434pt x 177.06194pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 29
+ []
+
+[29 <./article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf>]
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 30 []
  []
 
-[30 <./article_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf>]
+[30 <./fig/ch050-figBRCA.png (PNG copy)>]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 31
  []
 
-[31 <./fig/ch050-figBRCA.png (PNG copy)>]
+[31]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 32 []
  []
 
 [32]
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 33
- []
-
-[33]
-Overfull \hbox (19.46587pt too wide) in paragraph at lines 1531--1540
+Overfull \hbox (19.46587pt too wide) in paragraph at lines 1471--1480
 \T1/lmr/m/n/10.95 vide R and Python in-ter-faces to \T1/lmtt/m/n/10.95 Bigsimr\
 T1/lmr/m/n/10.95 , re-spec-tively at [][]$\T1/lmtt/m/n/10.95 https : / / github
  . com / SchisslerGroup /
  []
 
-<images/hex-bigsimr.png, id=565, 120.45pt x 120.45pt>
+<images/hex-bigsimr.png, id=547, 120.45pt x 120.45pt>
 File: images/hex-bigsimr.png Graphic file (type png)
 <use images/hex-bigsimr.png>
-Package pdftex.def Info: images/hex-bigsimr.png  used on input line 1544.
+Package pdftex.def Info: images/hex-bigsimr.png  used on input line 1484.
 (pdftex.def)             Requested size: 22.13403pt x 22.13402pt.
 
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 33
+ []
+
+[33 <./images/hex-bigsimr.png>]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 34 []
  []
 
-[34 <./images/hex-bigsimr.png>]
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 35
- []
-
-[35]
-Overfull \hbox (2.6103pt too wide) in paragraph at lines 1657--1658
+[34]
+Overfull \hbox (2.6103pt too wide) in paragraph at lines 1597--1598
 [][]\T1/lmr/bx/n/10.95 Lemma 1. []\T1/lmr/m/it/10.95 Let $\OT1/lmr/bx/n/10.95 Y
  \OT1/lmr/m/n/10.95 = (\OML/lmm/m/it/10.95 Y[]; Y[]\OT1/lmr/m/n/10.95 )[]$ \T1/
 lmr/m/it/10.95 ad-mit the stochas-tic rep-re-sen-ta-tion ([][]9[][]), where $\O
@@ -850,15 +830,20 @@ m/n/10.95 )[] \OMS/lmsy/m/n/10.95 ^^X
 
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
+[] \T1/lmr/m/n/10.95 35
+ []
+
+[35]
+Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 36 []
  []
 
-[36]
+[36] (./article_bigsimr.bbl
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 37
  []
 
-[37] (./article_bigsimr.bbl
+[37]
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 \T1/lmr/m/n/10.95 38 []
  []
@@ -868,35 +853,30 @@ Overfull \hbox (10.94998pt too wide) has occurred while \output is active
 [] \T1/lmr/m/n/10.95 39
  []
 
-[39]
-Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-\T1/lmr/m/n/10.95 40 []
- []
-
-[40])
-Underfull \hbox (badness 10000) in paragraph at lines 1797--1797
+[39])
+Underfull \hbox (badness 10000) in paragraph at lines 1737--1737
 
  []
 
 LaTeX Font Info:    Font shape `T1/pzc/m/n' in size <13> not available
-(Font)              Font shape `T1/pzc/m/it' tried instead on input line 1797.
+(Font)              Font shape `T1/pzc/m/it' tried instead on input line 1737.
 
 Overfull \hbox (10.94998pt too wide) has occurred while \output is active
-[] \T1/lmr/m/n/10.95 41
+\T1/lmr/m/n/10.95 40 []
  []
 
-[41] (./article_bigsimr.aux)
+[40] (./article_bigsimr.aux)
 Package rerunfilecheck Info: File `article_bigsimr.out' has not changed.
-(rerunfilecheck)             Checksum: 943DF2944EE602464F98449FBCE352F1;6099.
+(rerunfilecheck)             Checksum: 85AE34385437DC993E36DC4E1472E60B;6024.
  ) 
 Here is how much of TeX's memory you used:
- 11023 strings out of 480796
- 165688 string characters out of 5904036
- 462515 words of memory out of 5000000
- 27967 multiletter control sequences out of 15000+600000
+ 11020 strings out of 480714
+ 165616 string characters out of 5902636
+ 461840 words of memory out of 5000000
+ 28049 multiletter control sequences out of 15000+600000
  499845 words of font info for 94 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,10n,77p,681b,503s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 75i,9n,80p,681b,507s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/Users/alfred/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/
 Users/alfred/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/User
 s/alfred/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/Users/alfred
@@ -925,10 +905,10 @@ ts/type1/public/lm/lmtt10.pfb></Users/alfred/Library/TinyTeX/texmf-dist/fonts/t
 ype1/public/lm/lmtto10.pfb></Users/alfred/Library/TinyTeX/texmf-dist/fonts/type
 1/public/amsfonts/symbols/msbm10.pfb></Users/alfred/Library/TinyTeX/texmf-dist/
 fonts/type1/urw/zapfchan/uzcmi8a.pfb>
-Output written on article_bigsimr.pdf (41 pages, 2732065 bytes).
+Output written on article_bigsimr.pdf (40 pages, 2728928 bytes).
 PDF statistics:
- 817 PDF objects out of 1000 (max. 8388607)
- 728 compressed objects within 8 object streams
- 209 named destinations out of 1000 (max. 500000)
+ 799 PDF objects out of 1000 (max. 8388607)
+ 711 compressed objects within 8 object streams
+ 206 named destinations out of 1000 (max. 500000)
  270 words of extra memory for PDF output out of 10000 (max. 10000000)
 

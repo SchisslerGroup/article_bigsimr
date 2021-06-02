@@ -46,7 +46,9 @@ preamble: >
   \usepackage{array}
   \usepackage{ragged2e}
   \usepackage{setspace}
-output: rticles::jss_article
+output:
+  bookdown::pdf_book:
+    base_format: rticles::joss_article
 ---
 
 ```{r, setup, include=FALSE}

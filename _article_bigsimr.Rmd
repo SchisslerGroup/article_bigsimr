@@ -1,0 +1,134 @@
+---
+documentclass: jss
+author:
+  - name: Alfred G. Schissler
+    affiliation: University of Nevada
+    address: |
+      | 1664 N Virginia St.
+      | Reno, NV 89557
+    email: \email{aschissler@unr.edu}
+  - name: Edward J. Bedrick
+    affiliation: University of Arizona
+  - name: Alexander D. Knudson
+    affiliation: University of Nevada \AND
+  - name: Tomasz J. Kozubowski
+    affiliation: University of Nevada
+  - name: Tin Nguyen
+    affiliation: University of Nevada
+  - name: Anna K. Panorska
+    affiliation: University of Nevada \AND
+  - name: Juli Petereit
+    affiliation: University of Nevada
+  - name: Walter W. Piegorsch
+    affiliation: University of Arizona
+  - name: Duc Tran
+    affiliation: University of Nevada
+title:
+  formatted: "Simulating High-Dimensional Multivariate Data using the \\pkg{bigsimr} Package"
+  plain:     "Simulating High-Dimensional Multivariate Data using the bigsimr Package"
+  short:     "\\pkg{bigsimr}: Simulate High-Dimensional Data"
+abstract: >
+  It is critical to accurately simulate data when employing Monte Carlo techniques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained through high-throughput biomedical experiments. Due to computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. To meet this gap, we developed the bigsimr R package for high-dimensional random vector simulation with arbitrary marginal distributions and known Pearson, Spearman, or Kendall correlation matrix. bigsimr contains additional high-performance features, including multi-core algorithms to estimate correlation and compute the nearest correlation matrix. Monte Carlo studies quantify the accuracy and scalability of our approach, up to $d=10,000$. Finally, we describe example workflows and apply to a motivating high-dimensional data set --- RNA-sequencing data obtained from breast cancer tumor samples.
+keywords:
+  formatted: [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]
+  plain:     [multivariate simulation, high-dimensional data, nonparametric correlation, Gaussian copula, RNA-sequencing data, breast cancer]
+bibliography: [bigsimr.bib, packages.bib, alex.bib]
+biblio-style: jss
+preamble: >
+  \usepackage{amsmath}
+  \usepackage{amssymb}
+  \usepackage{amsfonts}
+  \usepackage{amsthm}
+  \newtheorem{theorem}{Theorem}
+  \newtheorem{lemma}[theorem]{Lemma}
+  \usepackage{booktabs}
+  \usepackage{longtable}
+  \usepackage{array}
+  \usepackage{ragged2e}
+  \usepackage{setspace}
+output: rticles::jss_article
+---
+
+```{r, setup, include=FALSE}
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+
+options(prompt = 'R> ', 
+        continue = '+ ',
+        digits = 4)
+
+get_rmd <- function(str_no = "") list.files(path = ".", pattern = str_no)
+
+knitr::opts_chunk$set(
+  # Text Results
+  eval = TRUE,
+  echo = FALSE,
+  results = 'markup',
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE,
+  # Code Decoration
+  comment = NA,
+  background = '#F7F7F7',
+  # Cache
+  cache = TRUE,
+  # Plots
+  fig.show = "hold",
+  fig.width = 6.5,
+  fig.asp = 0.618,  # 1 / phi
+  out.width = "85%",
+  fig.align = 'center'
+)
+
+# options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+seed_number <- 2021-03-23
+set.seed(seed = seed_number)
+```
+
+<!-- New page after title and abstract -->
+\newpage
+
+
+<!-- Set double spaces -->
+\setstretch{2.0}
+
+<!-- Main content -->
+
+```{r, child=get_rmd("000")}
+```
+
+```{r, child=get_rmd("010")}
+```
+
+```{r, child=get_rmd("020")}
+```
+
+```{r, child=get_rmd("030")}
+```
+
+```{r, child=get_rmd("040")}
+```
+
+```{r, child=get_rmd("050")}
+```
+
+```{r, child=get_rmd("060")}
+```
+
+<!-- Supplementary materials -->
+\newpage
+
+```{r, child=get_rmd("070")}
+```
+
+<!-- Appendix -->
+\newpage
+
+```{r, child=get_rmd("080")}
+```
+
+<!-- Turn off double spaces -->
+\setstretch{1.0}

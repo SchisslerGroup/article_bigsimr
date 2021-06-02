@@ -33,17 +33,20 @@ We select bivariate simulation configurations to ultimately simulate our motivat
 
 Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations. We increase the simulate replicates $B$ to visually ensure that our results converge to the target correlations and gauge efficiency. We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types. Then, we select a non-symmetric continuous distribution: a standard (rate =1), two-component multivariate gamma (MVG). Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [RNA-seq data application](examples) for estimation details). Specifically, we assume a MVNB with $p_1 = p_2 = 3\times10^{-4}, r_1 = r_2 = 4, \rho \in \Omega$.
 
-<!-- 
-Table: (\#tab:sims) Identical margin, bivariate simulation configurations to evaluate matching accuracy.
 \begin{table}[]
-\toprule
-Simulation Reps $B$ & Correlation Types & Identical-margin 2D distribution \\ \midrule
-$1,000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
-$10,000$ & Spearman ($\rho_S$) & ${\bf Y} \sim MVG( shape = 10, rate = 1, \rho_i ), i=1,\ldots,100$ \\
-$100,000$ & Kendall ($\tau$) & ${\bf Y} \sim MVNB(p = 3\times10^{-4}, r = 4,\rho_i), i=1,\ldots,100$ \\ \bottomrule
+\centering
+\caption{Selected feature comparison of `bigsimr` to other existing `R` multivariate simulation packages.}
+\label{compare-table}
+\begin{tabular}{llll}
+R Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \hline
+MASS      & No           & No                    & No                  \\
+mvnfast   & Yes          & No                    & No                  \\
+GenOrd    & No           & Discrete margins      & Yes                 \\
+copula    & No           & Yes                   & No                  \\
+nortaRA   & No           & Yes                   & No                  \\
+bigsimr   & Yes          & Yes                   & Yes                
 \end{tabular}
 \end{table}
--->
 
 For each of the unique 9 simulation configurations described above, we estimate the correlation bounds and vary the correlations along a sequence of 100 points evenly placed within the bounds, aiming to explore $\Omega$. Specifically, we set correlations $\{ \rho_1 = ( \hat{l} + \epsilon), \rho_2 = (\hat{l} + \epsilon) + \delta, \ldots, \rho_{100} = (\hat{u} - \epsilon) \}$, with $\hat{l}$ and $\hat{u}$ being the estimated lower and upper bounds, respectively, with increment value $\delta$. The adjustment factor, $\epsilon=0.01$, is introduced to handle numeric issues when the bound is specified exactly.
 

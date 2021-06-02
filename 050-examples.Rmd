@@ -149,7 +149,6 @@ where ${\bf Y}^{(b)}$ is the $b^{th}$ simulated vector from a total of $B$ simul
 
 
 ```{r ch050-densityEvaluationECHO, echo=TRUE}
-<<ch050-densityEvaluation>>
 pHat
 ```
 
@@ -169,14 +168,13 @@ simRho <- replicate(n = m, expr = {
   tmpSim <- bs$rvec(N , R_X, nb_margins)
   bs$cor(tmpSim, bs$Spearman)
 }, simplify = FALSE)
-frobenius_loss <- sapply(simRho, function(R) norm( R - R_S, type = "F")  )
 ```
 
-The `R` summary function supplies the mean-augmented five-number summary of the Frobenius loss distribution computed above.
+The `R` summary function supplies the mean-augmented five-number summary of the Frobenius loss from the target. This distribution could be compared to bespoke HD covariance estimators for guidance on whether the additional complexity and computation time are warranted.
 
 ```{r ch050-loss-summary, echo=TRUE}
+frobenius_loss <- sapply(simRho, function(R) norm( R - R_S, type = "F")  )
 summary(frobenius_loss)
 ```
 
 
-This distribution could be compared to bespoke HD covariance estimators for guidance on whether the additional complexity and computation time are warranted.

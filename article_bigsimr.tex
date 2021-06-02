@@ -239,7 +239,7 @@ estimated Spearman's correlations.
 \begin{CodeChunk}
 \begin{table}
 
-\caption{\label{tab:tab:ch010-realDataTab}mRNA expression for three selected high-expressing genes, STAU1, FKBP1A, NME2, for the first five patients in the TCGA BRCA data set.}
+\caption{\label{tab:ch010-realDataTab}mRNA expression for three selected high-expressing genes, STAU1, FKBP1A, NME2, for the first five patients in the TCGA BRCA data set.}
 \centering
 \begin{tabular}[t]{lrrr}
 \toprule
@@ -866,7 +866,7 @@ R> bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 \end{CodeInput}
 \begin{CodeOutput}
 Julia Object of type NamedTuple{(:lower, :upper),Tuple{Float64,Float64}}.
-(lower = -0.8818561157816974, upper = 0.8818503162627974)
+(lower = -0.8807818345178882, upper = 0.8817164736117079)
 \end{CodeOutput}
 \end{CodeChunk}
 
@@ -1370,12 +1370,6 @@ vectors that the probability of all genes expressing (i.e.,
 
 \begin{CodeChunk}
 \begin{CodeInput}
-R> d <- ncol(sim_nbinom)
-R> B <- nrow(sim_nbinom)
-R> y0 <- 1
-R> pHat <- mean(apply(sim_nbinom, 1, function(Y) {
-+   all(Y >= y0)
-+ }))
 R> pHat
 \end{CodeInput}
 \begin{CodeOutput}
@@ -1411,26 +1405,24 @@ R> simRho <- replicate(n = m, expr = {
 +   tmpSim <- bs$rvec(N , R_X, nb_margins)
 +   bs$cor(tmpSim, bs$Spearman)
 + }, simplify = FALSE)
-R> frobenius_loss <- sapply(simRho, function(R) norm( R - R_S, type = "F")  )
 \end{CodeInput}
 \end{CodeChunk}
 
 The \texttt{R} summary function supplies the mean-augmented five-number
-summary of the Frobenius loss distribution computed above.
+summary of the Frobenius loss from the target. This distribution could
+be compared to bespoke HD covariance estimators for guidance on whether
+the additional complexity and computation time are warranted.
 
 \begin{CodeChunk}
 \begin{CodeInput}
+R> frobenius_loss <- sapply(simRho, function(R) norm( R - R_S, type = "F")  )
 R> summary(frobenius_loss)
 \end{CodeInput}
 \begin{CodeOutput}
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    675     813     974     998    1080    1851 
+   26.0    28.5    31.2    31.4    32.9    43.0 
 \end{CodeOutput}
 \end{CodeChunk}
-
-This distribution could be compared to bespoke HD covariance estimators
-for guidance on whether the additional complexity and computation time
-are warranted.
 
 \hypertarget{discussion}{%
 \section{Conclusion and discussion}\label{discussion}}

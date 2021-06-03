@@ -29,22 +29,19 @@ In this section, we conduct MC studies to investigate method performance. Margin
 
 ## Bivariate experiments
 
-We select bivariate simulation configurations to ultimately simulate our motivating discrete-valued RNA-seq example. Thus, we proceed in increasing departure from normality, leading to the multivariate negative binomial (MVNB) model for our motivating data. We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson, Spearman, and Kendall --- in identical, bivariate marginal configurations. For each pair of identical margins, we vary the target correlation across $\Omega$, the set of possible admissible values for each correlation type, to evaluate the simulation's ability to simulate all possible correlations. The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (non-normal and discrete).
+We select bivariate simulation configurations to ultimately simulate our motivating discrete-valued RNA-seq example. Thus, we proceed in increasing departure from normality, leading to a multivariate negative binomial (MVNB) model for our motivating data. We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson, Spearman, and Kendall --- in identical, bivariate marginal configurations. For each pair of identical margins, we vary the target correlation across $\Omega$, the set of possible admissible values for each correlation type, to evaluate the simulation's ability to simulate all possible correlations. The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (non-normal and discrete).
 
 Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations. We increase the simulate replicates $B$ to visually ensure that our results converge to the target correlations and gauge efficiency. We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types. Then, we select a non-symmetric continuous distribution: a standard (rate =1), two-component multivariate gamma (MVG). Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [RNA-seq data application](examples) for estimation details). Specifically, we assume a MVNB with $p_1 = p_2 = 3\times10^{-4}, r_1 = r_2 = 4, \rho \in \Omega$.
 
 \begin{table}[]
 \centering
-\caption{Selected feature comparison of `bigsimr` to other existing `R` multivariate simulation packages.}
-\label{compare-table}
-\begin{tabular}{llll}
-R Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \hline
-MASS      & No           & No                    & No                  \\
-mvnfast   & Yes          & No                    & No                  \\
-GenOrd    & No           & Discrete margins      & Yes                 \\
-copula    & No           & Yes                   & No                  \\
-nortaRA   & No           & Yes                   & No                  \\
-bigsimr   & Yes          & Yes                   & Yes                
+\caption{ \label{tab:sims} Identical margin, bivariate simulation configurations to evaluate matching accuracy.}
+\begin{tabular}{@{}lcr@{}}
+\toprule
+Simulation Reps $B$ & Correlation Types & Identical-margin 2D distribution \\ \midrule
+$1,000$ & Pearson ($\rho_P$) & ${\bf Y} \sim MVN( \mu= 0 , \sigma = 1, \rho_i ), i=1,\ldots,100$ \\
+$10,000$ & Spearman ($\rho_S$) & ${\bf Y} \sim MVG( shape = 10, rate = 1, \rho_i ), i=1,\ldots,100$ \\
+$100,000$ & Kendall ($\tau$) & ${\bf Y} \sim MVNB(p = 3\times10^{-4}, r = 4,\rho_i), i=1,\ldots,100$ \\ \bottomrule
 \end{tabular}
 \end{table}
 
@@ -93,7 +90,8 @@ allDat <- bind_rows(
 ```
 
 
-Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results. Table \@ref(tab:ch040-BiError) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios.
+Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results. Table \@ref(tab:ch040-BiError) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios. Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation for all three dependency measures. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for negative binomial case.
+
 
 
 ```{r ch040-BiError}
@@ -110,9 +108,6 @@ kable(tabMAE, booktabs = TRUE, format = "latex",
                     "Mean abs. error"),
       caption = "Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.")
 ```
-
-
-Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation for all three dependency measures. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for negative binomial case.
 
 ```{r ch040-bPlot, cache=FALSE, fig.asp=1.30, fig.weight=4, fig.cap="Bivariate simulations match target correlations across the entire range of feasible correlations. The horizontal axis plots the specified target correlations for each bivariate margin. Normal margins are plotted in dark dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations."}
 # https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
@@ -143,9 +138,7 @@ allDat %>%
 ## Scale up to High Dimensions
 
 
-With information of our method's accuracy from a low-dimensional perspective, we now assess whether `bigsimr` can scale to larger dimensional problems with practical computation times. We ultimately generate $B=1,000$ random vectors for $d=\{100, 250, 500, 1000, 2500, 5000, 10000\}$ for each correlation type, {Pearson, Spearman, Kendall} while timing the algorithm's major steps.
-
-We first produce a synthetic "data set" by completing the following steps:
+With information of our method's accuracy from a low-dimensional perspective, we now assess whether `bigsimr` can scale to larger dimensional problems with practical computation times. We ultimately generate $B=1,000$ random vectors for $d=\{100, 250, 500, 1000, 2500, 5000, 10000\}$ for each correlation type, {Pearson, Spearman, Kendall} while timing the algorithm's major steps. We begin by producing a synthetic "data set" by completing the following steps:
 
 \setstretch{1.5}
 1. Produce heterogeneous gamma marginals by randomly selecting the $j^{th}$ gamma shape parameter from $U_j \sim uniform(1,10), j=1,\ldots,d$ and the $j^{th}$ rate parameter from $V_j \sim exp(1/5), j=1,\ldots,d$, with the constant parameters determined arbitrarily.
@@ -165,7 +158,7 @@ With the synthetic data set in hand, we complete and time the following four ste
 
 The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. Table \@ref(tab:ch040-moderateDtab) displays the total computation time for moderate dimesions ($d \leq 500$). In every simullation setting, the 1,000 vectors are generated rapidly, executing in under 2 seconds.
 
-```{r tab:ch040-moderateDtab}
+```{r ch040-moderateDtab}
 dat_long <- benchmark_dependences %>%
   select(-total_time, -n_sim, -needed_near_pd) %>%
   pivot_longer(cols = c(corr_time:sim_time), names_to = "Step", values_to = "Time") %>%

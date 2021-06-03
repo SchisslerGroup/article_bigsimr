@@ -15,15 +15,15 @@ d <- 1000
 ```
 
 
-The `bigsimr` `R` package presented here provides multiple algorithms that operate with HD multivariate data; however, all these algorithms were originally designed to support a single task: to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics. Specifically, our goal is to efficiently simulate a large number, $B$, of HD random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i, i=1,\ldots,d$.
+The `Bigsimr` package presented here provides multiple high-performance algorithms that operate with HD multivariate data. All these algorithms were originally designed to support a single task: to generate random vectors drawn from multivariate probability distributions with given marginal distributions and dependency metrics. Specifically, our goal is to efficiently simulate a large number, $B$, of HD random vectors ${\bf Y}=(Y_1, \ldots, Y_d)^\top$ with *correlated* components and heterogeneous marginal distributions, described via cumulative distribution functions (CDFs) $F_i, i=1,\ldots,d$.
 
-When designing this methodology, we developed the following properties to guide our effort. We divide the properties into two categories: (1) basic properties (BP) and "scalability" properties (SP). The BPs are adapted from an existing criteria due to @Nik13a. A suitable simulation strategy should possess the following properties:
+When designing this methodology, we developed the following properties to guide our effort. We divide the properties into two categories: (1) basic properties (BP) and 'scalability' properties (SP). The BPs are adapted from an existing criteria due to @Nik13a. A suitable simulation strategy should possess the following properties:
 
 \setstretch{1.5}
 
 * BP1: A wide range of dependences, allowing both positive and negative values, and, ideally, admitting the full range of possible values.
-* BP2: Flexible dependence, meaning that the number of bivariate marginals can be equal to the number of dependence parameters.
-* BP3: Flexible marginal modeling, generating heterogeneous data --- including mixed continuous and discrete margins.
+* BP2: Flexible dependence, meaning that the number of dependence parameters can be equal to the number of bivariate pairs in the vector.
+* BP3: Flexible marginal modeling, generating heterogeneous data --- including mixed continuous and discrete marginal distributions.
 
 \setstretch{2.0}
 
@@ -90,10 +90,7 @@ In multivariate analysis, an analyst must select a metric to quantify dependency
 
 As @MB13 and @MK01 discuss, for a bivariate normal $(X,Y)$ random vector, the Pearson correlation completely describes the dependency between the components. For non-normal marginals with monotone correlation patterns, however, $\rho_P$ suffers some drawbacks and may mislead or fail to capture important relationships [@MK01]. Alternatively, analysts often prefer rank-based correlation measures to describe the degree of monotonic association.
 
-Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. Spearman's $\rho_S$ has an appealing correspondence as the Pearson correlation coefficient on *ranks* of the values, thereby capturing nonlinear yet monotone relationships. Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations, $(X_i, Y_i)$ and $(X_j, Y_j)$ (concordance meaning that orderings have the same direction, e.g., if $X_i < X_j$, then $Y_i < Y_j$). Note that concordance is determined by the ranks of the values, not the values themselves.
-
-
-Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property enables matching rank-based correlations with speed (SP1) and accuracy (SP2).
+Two nonparametric, rank-based measures common in practice are Spearman's correlation (denoted $\rho_S$) and Kendall's $\tau$. Spearman's $\rho_S$ has an appealing correspondence as the Pearson correlation coefficient on *ranks* of the values, thereby capturing nonlinear yet monotone relationships. Kendall's $\tau$, on the other hand, is the difference in probabilities of concordant and discordant pairs of observations, $(X_i, Y_i)$ and $(X_j, Y_j)$ (concordance meaning that orderings have the same direction, e.g., if $X_i < X_j$, then $Y_i < Y_j$). Note that concordance is determined by the ranks of the values, not the values themselves. Both $\tau$ and $\rho_S$ are *invariant under monotone transformations* of the underlying random variates. As we will describe more fully in the [Algorithms](#algorithms) section, this property enables matching rank-based correlations with speed (SP1) and accuracy (SP2).
 
 
 *Correspondence among Pearson, Spearman, and Kendall correlations*
@@ -134,45 +131,34 @@ F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
 
 ## Gaussian copulas
 
-There is a connection of our simulation strategy to Gaussian *copulas* [@Nelsen2007]. A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals. This provides a powerful, natural way to characterize joint probability. Consequently, the study of copulas is an important and active area of statistical theory and practice.
-
-
-For any random vector ${\bf X}=(X_1, \ldots, X_d)^\top$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function $C(u_1, \ldots, u_d)$ satisfying
-
+There is a connection of our simulation strategy to Gaussian *copulas* [@Nelsen2007]. A copula is a distribution function on $[0,1]^d$ that describes a multivariate probability distribution with standard uniform marginals. This provides a powerful, natural way to characterize joint probability. Consequently, the study of copulas is an important and active area of statistical theory and practice. For any random vector ${\bf X}=(X_1, \ldots, X_d)^\top$ with CDF $F$ and marginal CDFs $F_i$ there is a copula function $C(u_1, \ldots, u_d)$ satisfying
 
 \begin{equation}
-F(x_1, \ldots, x_d) = {\mathbb P}(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), 
+F(x_1, \ldots, x_d) = {\mathbb P}(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1), \ldots, F_d(x_d)), \quad x_i \in {\mathbb R}, i=1,\ldots,d.
 \label{eq:copula}
 \end{equation}
 
-
-$x_i \in {\mathbb R}, i=1,\ldots,d.$
-
-
-A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \forall \, i$, where $\Phi(\cdot)$ is the standard normal CDF. This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix ${\bf R_P}$. Since the marginals are standardized to have unit variance, however, ${\bf R_P}$ is a Pearson correlation matrix. If $F_{{\bf R}}$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_{{\bf R}}$ is defined through
+A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \forall \, i$, where $\Phi(\cdot)$ is the standard normal CDF. This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix $R_P$. Since the marginals are standardized to have unit variance, however, $R_P$ is a Pearson correlation matrix. If $F_R$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_R$ is defined through
 
 
 \begin{equation}
 \label{eq:gauss}
-F_{{\bf R}}(x_1, \ldots, x_d) = C_{{\bf R}}(\Phi(x_1), \ldots, \Phi(x_d)),
+F_R(x_1, \ldots, x_d) = C_R(\Phi(x_1), \ldots, \Phi(x_d)),
 \end{equation}
 
+Here the copula function $C_R$ is the familiar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_P)$. 
 
-Here the copula function $C_{{\bf R}}$ is the familiar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$. 
+Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_P)$.
 
+## Other Multivariate Simulation Packages
 
-Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, {\bf R_P})$.
+To place `Bigsimr`'s implementation and algorithms in context with existing approaches, here we qualitatively compare to other multivariate simulation packages.  In `R`, the `MASS` packages `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures, as well as fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released that provides HD multivariate normal generation, but this lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vectors via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence modeling. Table \@ref(tab:compare-table) summarizes the above discussion.
 
-## Other Multivariate Simulation R Packages
-
-To place `bigsimr`'s implementation and algorithms in context with existing approaches, here we qualitatively compare to other `R` multivariate simulation packages.  The `MASS` packages `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This familiar procedure cannot simulate from arbitrary margins and dependency measures, as well as fails to readily scale to high dimensions. Recently, the high-performance package `mvnfast` [@Fasiolo2016] has been released that provides HD multivariate normal generation, but this lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD packages exist, such as `GenOrd`. For copula computation, the full-featured package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vectors via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence modeling. Table \@ref(tab:compare-table) summarizes the above discussion.
-
-\begin{table}[]
+\begin{table}[h]
 \centering
-\caption{Selected feature comparison of bigsimr to existing R packages for multivariate simulation.}
-\label{compare-table}
+\caption{\label{tab:compare-table}Comparison of selected features of \pkg{Bigsimr} to existing packages for multivariate simulation.}
 \begin{tabular}{@{}llll@{}}
-R Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \midrule
+Package & Scales to HD & Hetereogenous Margins & Flexible Dependence \\ \midrule
 MASS      & No           & No                    & No                  \\
 mvnfast   & Yes          & No                    & No                  \\
 GenOrd    & No           & Discrete margins      & Yes                 \\
@@ -183,4 +169,5 @@ bigsimr   & Yes          & Yes                   & Yes
 \end{table}
 
 
+\clearpage
 

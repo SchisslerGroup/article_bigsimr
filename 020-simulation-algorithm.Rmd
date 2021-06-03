@@ -1,8 +1,6 @@
 # Algorithms {#algorithms}
 
-
 This section describes our methods involved in simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,\ldots,d$. Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$. To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$. The method can be described as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a HD NORTA-inspired algorithm.
-
 
 ## NORmal To Anything (NORTA)
 
@@ -31,21 +29,17 @@ Matching specified Pearson correlation coefficients exactly (step 2 above), howe
 \end{equation}
 
 
-where $\phi(\cdot)$ is the joint probability distribution function of two correlated standard normal variables. For HD simulation, exact evaluation may become too costly to enable practical simulation studies. Our remedy to enable HD Pearson matching in `bigsimr` is Hermite polynomial approximation of these $\choose{d}{2}$ double integrals, as suggested by @XZ19.
+where $\phi(\cdot)$ is the joint probability distribution function of two correlated standard normal variables. For HD simulation, exact evaluation may become too costly to enable practical simulation studies. Our remedy to enable HD Pearson matching in `bigsimr` is Hermite polynomial approximation of these $\binom{d}{2}$ double integrals, as suggested by @XZ19.
 
 *NORTA in higher dimensions*
 
-Sklar's theorem provides a useful characterization of multivariate distributions through copulas. Yet the choice of copula-based simulation algorithm affects which joint distributions may be simulated. Even in LD spaces (e.g., $d=3$), there exist valid multivariate distributions with *feasible* Pearson correlation matrices that NORTA cannot match exactly [@LH75]. This occurs when the bivariate transformations are applied to find the input correlation matrix, yet when combined the resultant matrix is indefinite. These situations do occur, even using exact analytic calculations. Such problematic target correlation matrices are termed *NORTA defective*.
+Sklar's theorem provides a useful characterization of multivariate distributions through copulas. In practice, however, the particulars of the simulation algorithm affect which joint distributions may be simulated. Even in LD spaces (e.g., $d=3$), there exist valid multivariate distributions with *feasible* Pearson correlation matrices that NORTA cannot match exactly [@LH75]. This occurs when the bivariate transformations are applied to find the input correlation matrix, yet when combined the resultant matrix is indefinite. These situations do occur, even using exact analytic calculations. Such problematic target correlation matrices are termed *NORTA defective*.
 
+@GH02 conducted a study to estimate the probability of encountering NORTA defective matrices while increasing the dimension $d$. They found that for what is now considered low-to-moderate dimensions ($d \approx 20$), almost *all* feasible matrices are NORTA defective. This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
 
-@GH02 conducted a Monte Carlo study to estimate the probability of encountering NORTA defective matrices while increasing the dimension $d$. They found that for what is now considered low-to-moderate dimensions ($d \approx 20$), almost *all* feasible matrices are NORTA defective. This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
+There is hope, however, as @GH02 also showed that replacing an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$. This provides insight that our nearest positive definite (PD) augmented approach has promise to provide adequate accuracy if our input matching scheme returns an indefinite Pearson correlation matrix.
 
-
-There is hope, however, as @GH02 also showed that replacing an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$. This provides guidance that our nearest positive definite (PD) augmented approach has promise provide adequate accuracy if our input matching scheme returns an indefinite matrix.
-
-
-## bigsimr rvec: Random vector generator {#rand-vec-gen}
-
+## Random vector generator {#rand-vec-gen}
 
 We now describe our algorithm to generate random vectors, which extends NORTA to HD via nearest correlation matrix replacement and provides rank-based dependency matching:
 
@@ -72,6 +66,6 @@ For the computationally expensive process to match Pearson correlations, we appr
 
 For nonparametric correlation measures, our algorithm allows the generation of HD multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN. In particular, if we let $X$ be MVN with $d$ components and denote $\Omega_P = \{ R_P : R_P \textrm{ is a correlation matrix for } X \}, \quad \Omega_K = \{ R_K : R_K \textrm{ is a correlation matrix for } X \}, \quad \Omega_S = \{ R_S : R_S \textrm{ is a correlation matrix for } X \}$. There are 1-1 mappings between these sets. We conjecture that the sets of admissible $R_S$ and $R_K$ are not highly restrictive. In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PD matrix with 1's along the diagonal. We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$.
 
-There is an increasing probability of encountering a inadmissible correlation matrix as dimension increases. In our experience, the mapping step for large $d$ almost always produces a $R_X$ that is not a correlation matrix. In Section \@ref(package) we provide a basic description of how to quantify and control the approximation error. Further, the RNA-seq example in Section \@ref(examples) provides an illustration of this in practice.
+There is an increasing probability of encountering an inadmissible correlation matrix as dimension increases. In our experience, the mapping step for large $d$ almost always produces a $R_X$ that is not a correlation matrix. In Section \@ref(package) we provide a basic description of how to quantify and control the approximation error. Further, the RNA-seq example in Section \@ref(examples) provides an illustration of this in practice.
 
-*Step 3: Gaussian copula.* The final step implements a NORTA-inspired, Gaussian copula approach to produce the desired margins. Steps 1 and 2 determine the MVN Pearson correlation values that will eventually match the target correlation. Step 3 requires a fast MVN simulator, a standard normal CDF, and well-defined quantile functions for marginals. The MVN is transformed to a copula (distribution with standard uniform margins) by applying the normal CDF $\Phi(\cdot)$. Finally, the quantile functions $F^{-1}$ are applied across the margins to return the desired random vector ${\bf Y}$.
+*Step 3: Gaussian copula.* The final step implements a NORTA-inspired, Gaussian copula approach to produce the desired margins. Steps 1 and 2 determine the MVN Pearson correlation values that will eventually match the target correlation. Step 3 requires a fast MVN simulator, a standard normal CDF, and well-defined quantile functions for marginals. The MVN is transformed to a copula (distribution with standard uniform margins) by applying the normal CDF $\Phi(\cdot)$. Finally, the quantile functions $F_i^{-1}$ are applied across the margins to return the desired random vector ${\bf Y}$.

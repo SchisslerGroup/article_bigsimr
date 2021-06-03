@@ -1,4 +1,4 @@
-# The \pkg{bigsimr} R package {short-title="bigsimr-pkg" #package}
+# The \pkg{Bigsimr} package {short-title="Bigsimr-pkg" #package}
 
 
 ```{r ch030-basic-example-setup, cache=FALSE}
@@ -16,17 +16,13 @@ bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 ```
 
+This section describes a bivariate random vector simulation workflow via the `bigsimr` `R` package. This `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package). In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a Python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 
-This section describes a LD random vector simulation workflow via the `bigsimr` `R` package. Our `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package. In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
-
-
-The subsections below describe the basic use of `bigsimr` by stepping through an example workflow using the data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from setting up the computing environment, to data wrangling, estimation, simulation configuration, random vector generation, and, finally, result visualization.
-
+The subsections below describe the basic use of `bigsimr` R package by stepping through an example workflow using the data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from setting up the computing environment, to data wrangling, estimation, simulation configuration, random vector generation, and, finally, result visualization.
 
 ## Bivariate example
 
 We illustrate the use of `bigsimr` using the New York air quality data set (`airquality`) included in the R `datasets` package. First, we load the `bigsimr` library and a few other convenient data science packages, including the syntactically-elegant `tidyverse` suite of `R` packages. The code chunk below prepares the computing environment:
-
 
 ```{r ch030-computeEnvironmentSetup, eval=FALSE, echo=TRUE}
 library("tidyverse")
@@ -38,19 +34,12 @@ bs <- bigsimr_setup()
 dist <- distributions_setup()
 ```
 
-
-Below, we describe a minimal working example --- a bivariate simulation of two airquality variables: `Temperature`, in degrees Fahrenheit, and `Ozone` level, in parts per billion.
-
+Here, we describe a minimal working example --- a bivariate simulation of two airquality variables: `Temperature`, in degrees Fahrenheit, and `Ozone` level, in parts per billion.
 
 ```{r ch030-air-quality-data, echo=TRUE}
 df <- airquality %>% select(Temp, Ozone) %>% drop_na()
-```
-
-
-```{r ch030-aq-glimpse}
 glimpse(df)
 ```
-
 
 Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between `Ozone` and `Temperature`. We aim to simulate random two-component vectors mimicking this structure. The margins are not normally distributed; `Ozone` level exhibits a strong positive skew.
 
@@ -115,17 +104,15 @@ margins <- c(dist$Normal(mean(df$Temp), sd(df$Temp)),
 
 ## Specifying correlation
 
-As mentioned, the user must decide how to describe correlation based on the particulars of the problem. For non-normal data and for improved simulation accuracy/scalability in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ and Kendall's $\tau$ correlation matrix $R_K$. We also support Pearson correlation coefficient matching, while cautioning the user to check the performance for the distribution at hand (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance). Note that hese estimation methods are classical approaches, not specifically designed for high-dimensional correlation estimation.
-
+The user must decide how to describe correlation based on the particulars of the problem. For non-normal data in our scheme, we advocate the use of Spearman's $\rho$ correlation matrix $R_S$ or Kendall's $\tau$ correlation matrix $R_K$. We also support Pearson correlation coefficient matching, while cautioning the user to check the performance for the distribution at hand (see [Monte Carlo evaluations](#simulations) below for evaluation strategies and guidance). Note that these estimation methods are classical approaches, not specifically designed for high-dimensional correlation estimation.
 
 ```{r ch030-aq-cor, echo=TRUE}
 (R_S <- bs$cor(as.matrix(df), bs$Spearman))
 ```
 
-
 ## Checking target correlation matrix admissibility
 
-Once a target correlation matrix is specified, first convert the dependency type to Pearson to correctly specify the MVN inputs. Then, check that the converted matrix $R_X$ is a valid correlation matrix (PD and 1s on the diagonal). For this bivariate example, $R_X$ is a valid correlation matrix. Typically in HD the resultant MVN Pearson correlation matrix is indefinite and requires approximation (see the HD examples in subsequent sections). 
+Once a target correlation matrix is specified, first convert the dependency type to Pearson to correctly specify the MVN inputs. Then, check that the converted matrix $R_X$ is a valid correlation matrix (PD and 1s on the diagonal). For this bivariate example, $R_X$ is a valid correlation matrix. Note that typically in HD the resultant MVN Pearson correlation matrix is indefinite and requires approximation (see the HD examples in subsequent sections).
 
 ```{r ch030-cor-convert, echo=TRUE}
 # Step 1. Mapping
@@ -145,17 +132,13 @@ bs$cor_bounds(margins[1], margins[2], bs$Pearson, n_samples = 1e6)
 
 ## Simulating random vectors
 
-A single `rvec` execution simulates the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input in specified using the pre-computed MVN correlation matrix.
+Finally, we execute `rvec` to simulate the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input in specified using the pre-computed MVN correlation matrix. Figure \@ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
 
 ```{r ch030-sim-margins, echo=TRUE}
 x <- bs$rvec(10000, R_X, margins)
 df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```
-
-
-Figure \@ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
-
 
 ```{r ch030-plot-sim, fig.cap="Contour plot and marginal densities for the simulated bivariate distribution of Air Quality Temperatures and Ozone levels. The simulated points mimic the observed data with respect to both the marginal characteristics and bivariate association."}
 p1 <- df_sim %>%
@@ -184,3 +167,5 @@ p1Ozone <- ggplot(df_sim, aes(Ozone)) +
 p1Temp + plot_spacer() + p1 + p1Ozone + 
   plot_layout(widths = c(3,1), heights = c(1, 3))
 ```
+
+\clearpage

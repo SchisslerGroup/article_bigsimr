@@ -87,7 +87,7 @@ if (!is_valid_corr) {
 summary(abs(targets - approximates))
 ```
 
-As seen above $R_X$ is not strictly admissible in our scheme (as seen by the non-positive definite result above). However, the approximation is close with a maximum absolute error of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))` across the `r choose(d,2)` correlations. With the inputs configured, `rvec` is executed to produce a synthetic RNA-seq data set:
+As seen above $R_X$ is not strictly admissible in our scheme. This can be seen from the negative result from `bs$iscorrelation(R_X)`, which checks 1) positive-definiteness, 2) symmetry, and 3) 1s along the diagonal. However, the approximation is close with a maximum absolute error of `r max( abs(targets - approximates))` and average absolute error of `r mean(abs(targets - approximates))` across the `r choose(d,2)` correlations. With the inputs configured, `rvec` is executed to produce a synthetic RNA-seq data set:
 
 ```{r ch050-runBRCA-echo, echo=TRUE, eval=FALSE}
 sim_nbinom <- bs$rvec(10000, R_X, nb_margins) 
@@ -114,7 +114,7 @@ include_graphics('fig/ch050-figBRCA.png')
 
 The results show overall aquedate simulation performance for our choice of parameters settings. Our settings were motivated by modeling high-expressing genes from the TCGA BRCA data set. In general, the ability to match marginal and dependence parameters depends on the particular joint probability model. We recommend to evaluate and tune your simulation until you can be assured of the accuracy.
 
-
+<!-- 
 ## Simulation-based joint probability calculations
 
 
@@ -130,7 +130,7 @@ $$
 \hat{P}( {\bf Y} \ge {\bf y_0 } ) = \frac{1}{B} \sum_{b=1}^B I( {\bf Y}^{ (b) } \ge {\bf y_0} ),
 $$
 
-```{r ch050-densityEvaluation, include=FALSE}
+```{r ch050-densityEvaluation, echo=T}
 d <- ncol(sim_nbinom)
 B <- nrow(sim_nbinom)
 y0 <- 1
@@ -173,3 +173,4 @@ summary(frobenius_loss)
 ```
 
 
+ -->

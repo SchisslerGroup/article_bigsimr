@@ -5,7 +5,7 @@ This section describes our methods involved in simulating a random vector $\bf Y
 ## NORmal To Anything (NORTA)
 
 
-The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceeds as:
+The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ with variance-covariance matrix $\Sigma_{\bf Y}$. Specifically, NORTA algorithm proceeds as follows:
 
 \setstretch{1.5}
 
@@ -13,7 +13,7 @@ The well-known NORTA algorithm [@Cario1997] simulates a random vector $\bf Y$ wi
 2. Determine the input matrix $\Sigma_{\bf Z}$ that corresponds with the specified output $\Sigma_{\bf Y}$.
 3. Produce a Cholesky factor $M$ of $\Sigma_{\bf Z}$ such that $M M^{\prime}=\Sigma_{\bf Z}$.
 4. Set $X$ by $X \gets MZ$.
-5. $\text{Return} \; Y \; \text{where} \; Y_i \gets F_i^{-1}[\Phi(X_i)], \; i=1,...,d$.
+5. $\text{Return} \; {\bf Y} \; \text{where} \; Y_i \gets F_i^{-1}[\Phi(X_i)], \; i=1,...,d$.
 
 \setstretch{2.0}
 
@@ -29,15 +29,15 @@ Matching specified Pearson correlation coefficients exactly (step 2 above), howe
 \end{equation}
 
 
-where $\phi(\cdot)$ is the joint probability distribution function of two correlated standard normal variables. For HD simulation, exact evaluation may become too costly to enable practical simulation studies. Our remedy to enable HD Pearson matching in `bigsimr` is Hermite polynomial approximation of these $\binom{d}{2}$ double integrals, as suggested by @XZ19.
+where $\phi(\cdot)$ is the joint probability density function of two correlated standard normal variables. For HD simulation, exact evaluation may become too costly to enable practical simulation studies. Our remedy to enable HD Pearson matching in `bigsimr` is Hermite polynomial approximation of these $\binom{d}{2}$ double integrals, as suggested by @XZ19.
 
 *NORTA in higher dimensions*
 
-Sklar's theorem provides a useful characterization of multivariate distributions through copulas. In practice, however, the particulars of the simulation algorithm affect which joint distributions may be simulated. Even in LD spaces (e.g., $d=3$), there exist valid multivariate distributions with *feasible* Pearson correlation matrices that NORTA cannot match exactly [@LH75]. This occurs when the bivariate transformations are applied to find the input correlation matrix, yet when combined the resultant matrix is indefinite. These situations do occur, even using exact analytic calculations. Such problematic target correlation matrices are termed *NORTA defective*.
+Sklar's theorem provides a useful characterization of multivariate distributions through copulas. In practice, however, the particulars of the simulation algorithm affect which joint distributions may be simulated. Even in LD spaces (e.g., $d=3$), there exist valid multivariate distributions with *feasible* Pearson correlation matrices that NORTA cannot match exactly [@LH75]. This occurs when the bivariate transformations are applied to find the input correlation matrix, yet when combined the resultant matrix becomes non-positive definiteness. These situations do occur, even using exact analytic calculations. Such problematic target correlation matrices are termed *NORTA defective*.
 
 @GH02 conducted a study to estimate the probability of encountering NORTA defective matrices while increasing the dimension $d$. They found that for what is now considered low-to-moderate dimensions ($d \approx 20$), almost *all* feasible matrices are NORTA defective. This stems from the concentration of measure near the boundary of the space of all possible correlation matrices as dimension increases. Unfortunately, it is precisely near this boundary that NORTA defective matrices reside.
 
-There is hope, however, as @GH02 also showed that replacing an indefinite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$. This provides insight that our nearest positive definite (PD) augmented approach has promise to provide adequate accuracy if our input matching scheme returns an indefinite Pearson correlation matrix.
+There is hope, however, as @GH02 also showed that replacing an non-positive definite input correlation matrix with a close proxy will give approximate matching to the target --- with adequate performance for moderate $d$. This provides insight that our nearest positive definite (PD) augmented approach has promise to provide adequate accuracy if our input matching scheme returns an indefinite Pearson correlation matrix.
 
 ## Random vector generator {#rand-vec-gen}
 
@@ -60,9 +60,9 @@ We now describe our algorithm to generate random vectors, which extends NORTA to
 
 *Step 1: Mapping step.* We first employ the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) and \@ref(eq:convertSpearman), respectively (implemented as `cor_covert()`). Initializing our algorithm to match the nonparametric correlations by computing these equations for all pairs is computationally trivial. 
 
-For the computationally expensive process to match Pearson correlations, we approximate Equation \@ref(eq:pearsonIntegralRelation) for all pairs of margins. To this end, we implement the approximation scheme introduced by @XZ19. Briefly, the many double integrals of the form in \@ref(eq:pearsonIntegralRelation) are approximated by weighted sums of Hermite polynomials. Matching coefficients for pairs of continuous distributions is made tractable by this method, but for discrete distributions (especially discrete distributions with large support sets or infinite support), the approximation is computationally expensive. To remedy this, we further approximate discrete distributions by a continuous distribution using Generalized S-Distributions [@muino2006gs].
+For the computationally expensive process to match Pearson correlations, we approximate Equation \@ref(eq:pearsonIntegralRelation) for all pairs of margins. To this end, we implement the approximation scheme introduced by [@XZ19]. Briefly, the many double integrals of the form in \@ref(eq:pearsonIntegralRelation) are approximated by weighted sums of Hermite polynomials. Matching coefficients for pairs of continuous distributions is made tractable by this method, but for discrete distributions (especially discrete distributions with large support sets or infinite support), the approximation is computationally expensive. To remedy this, we further approximate discrete distributions by a continuous distribution using Generalized S-Distributions [@muino2006gs].
 
-*Step 2: Admissibility check and nearest correlation matrix computation.* Once $R_X$ has been determined, we check admissibility of the adjusted correlation via the steps described above. If $R_X$ is not a valid correlation matrix, then we compute the nearest correlation matrix. Finding the nearest correlation matrix is a common statistical computing problem. The defacto function in `R` is `Matrix::nearPD`, an alternating projection algorithm due to @higham2002computing. As implemented the function fails to scale to HD. Instead, we provide the quadratically-convergent algorithm based on the theory of strongly semi-smooth matrix functions (@qi2006quadratically). The nearest correlation matrix problem can be written down as the following convex optimization problem:  $\mathrm{min} \quad \frac{1}{2} \Vert R_X - X \Vert^2, \quad \mathrm{s.t.} \quad X_{ii} = 1, \quad i = 1, \ldots , n, \quad X \in S_{+}^{n}$.
+*Step 2: Admissibility check and nearest correlation matrix computation.* Once $R_X$ has been determined, we check admissibility of the adjusted correlation via the steps described above. If $R_X$ is not a valid correlation matrix, then we compute the nearest correlation matrix. Finding the nearest correlation matrix is a common statistical computing problem. The defacto function in `R` is `Matrix::nearPD`, an alternating projection algorithm due to @higham2002computing. As implemented, the function fails to scale to HD. Instead, we provide the quadratically-convergent algorithm based on the theory of strongly semi-smooth matrix functions [@qi2006quadratically]. The nearest correlation matrix problem can be written down as the following convex optimization problem:  $\mathrm{min} \quad \frac{1}{2} \Vert R_X - X \Vert^2, \quad \mathrm{s.t.} \quad X_{ii} = 1, \quad i = 1, \ldots , n, \quad X \in S_{+}^{n}$.
 
 For nonparametric correlation measures, our algorithm allows the generation of HD multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN. In particular, if we let $X$ be MVN with $d$ components and denote $\Omega_P = \{ R_P : R_P \textrm{ is a Pearson correlation matrix for } X \}, \quad \Omega_K = \{ R_K : R_K \textrm{ is a Kendall correlation matrix for } X \}, \quad \Omega_S = \{ R_S : R_S \textrm{ is a Spearman correlation matrix for } X \}$. There are 1-1 mappings between these sets. We conjecture that the sets of admissible $R_S$ and $R_K$ are not highly restrictive. In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PD matrix with 1's along the diagonal. We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$.
 

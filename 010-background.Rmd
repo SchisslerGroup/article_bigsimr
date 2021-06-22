@@ -122,12 +122,14 @@ Given two marginal distributions, $\rho_P$ is not free to vary over the entire r
 \rho_P^{max} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (U) \right), \quad \rho_P^{min} = \rho_P \left( F^{-1}_1 (U), F^{-1}_2 (1 - U) \right)
 \end{equation}
 
-\noindent where $U$ is a uniform random variable on $(0,1)$ and $F^{-1}_1, F^{-1}_2$ are the inverse CDFs of $X_1$ and $X_2$, respectively, defined by \@ref(eq:inverseCDF) when the variables are discrete.
+\noindent where $U$ is a uniform random variable on $(0,1)$ and $F^{-1}_1, F^{-1}_2$ are the inverse CDFs of $X_1$ and $X_2$, respectively, defined as
 
 \begin{equation}
-F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}.
+F_{i}^{-1} = \inf\{y:F_{i}(y) \geq u \}
 \label{eq:inverseCDF}
 \end{equation}
+
+when the variables are discrete.
 
 ## Gaussian copulas
 
@@ -138,21 +140,22 @@ F(x_1, \ldots, x_d) = {\mathbb P}(X_1\leq x_1, \ldots,X_d\leq x_d) = C(F_1(x_1),
 \label{eq:copula}
 \end{equation}
 
-A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \forall \, i$, where $\Phi(\cdot)$ is the standard normal CDF. This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix $R_P$. Since the marginals are standardized to have unit variance, however, $R_P$ is a Pearson correlation matrix. If $F_R$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_R$ is defined through
-
+A Gaussian copula has marginal CDFs that are all standard normal, $F_i = \Phi, \forall \, i$, . This representation corresponds to a multivariate normal (MVN) distribution with standard normal marginal distributions and covariance matrix $R_P$. Since the marginals are standardized to have unit variance, this $R_P$ is also Pearson correlation matrix. If $F_R$ is the CDF of such a multivariate normal distribution, then the corresponding Gaussian copula $C_R$ is defined through
 
 \begin{equation}
 \label{eq:gauss}
 F_R(x_1, \ldots, x_d) = C_R(\Phi(x_1), \ldots, \Phi(x_d)),
 \end{equation}
 
-Here the copula function $C_R$ is the familiar multivariate normal CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_P)$. 
+where $\Phi(\cdot)$ is the standard normal CDF.
 
-Sklar's Theorem [@Sklar1959; @Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_P)$.
+Here, the copula function $C_R$ is the CDF of the random vector $(\Phi(X_1), \ldots, \Phi(X_d))$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_P)$. 
+
+Sklar's Theorem [@Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}$s and a valid correlation matrix (within the Frechet bounds) a random vector can be obtained via transformations involving copula functions. For example, using Gaussian copulas, we can construct a random vector ${\bf Y}  = (Y_1, \ldots,  Y_d)^\top$ with $Y_i \sim F_i$, viz. $Y_i = F_i^{-1}(\Phi(X_i)), i=1, \ldots, d$, where $(X_1, \ldots, X_d) \sim N_d({\bf 0}, R_P)$.
 
 ## Other Multivariate Simulation Packages
 
-To place `Bigsimr`'s implementation and algorithms in context with existing approaches, here we qualitatively compare to other multivariate simulation packages.  In `R`, the `MASS` package's `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures, as well as fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released that provides HD multivariate normal generation, but this lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vectors via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence modeling. Table \@ref(tab:compare-table) summarizes the above discussion.
+To place `Bigsimr`'s implementation and algorithms in context with existing approaches, here we qualitatively compare to other multivariate simulation packages.  In `R`, the `MASS` package's `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures and it fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released, which provides HD multivariate normal generation. However, lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vector generation via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence modeling. Table \@ref(tab:compare-table) summarizes the above discussion.
 
 \begin{table}[h]
 \centering

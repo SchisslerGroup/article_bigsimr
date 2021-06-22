@@ -44,7 +44,7 @@ R_S <- bs$cor(as.matrix(brca1000), bs$Spearman)
 ```
 
 
-Next, we estimate the marginal parameters. We use method of moments to estimate the marginal parameters for the multivariate negative binomial model. The marginal distributions are from the same probability family (NB), yet they are heterogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$. The functions below support this estimation for later use in `rvec`.
+Next, we estimate the marginal parameters. We use the method of moments to estimate the marginal parameters for the multivariate negative binomial model. The marginal distributions are from the same probability family (NB), yet they are heterogeneous in terms of the parameters probability and size $(p_i, n_i)$ for $i,\ldots,d$. The functions below support this estimation for later use in `rvec`.
 
 
 ```{r ch050-nbHelpers, echo=TRUE}
@@ -94,7 +94,7 @@ sim_nbinom <- bs$rvec(10000, R_X, nb_margins)
 ```
 
 Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes from Table \@ref(tab:ch010-realDataTab).
-Simulated counts roughly mimic the observed data but with a smoother appearance due to the assumed parametric form and with less extreme points then the observed data in Figure \@ref(fig:ch010-realDataFig). Figure \@ref(fig:ch050-figBRCA) compares the specified target parameter (horizontal axis) with the corresponding quantities estimated from the simulated data (vertical axis). The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlations from the data.
+Simulated counts roughly mimic the observed data but with a smoother appearance due to the assumed parametric form and with less extreme points than the observed data in Figure \@ref(fig:ch010-realDataFig). Figure \@ref(fig:ch050-figBRCA) compares the specified target parameter (horizontal axis) with the corresponding quantities estimated from the simulated data (vertical axis). The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlations from the data.
 
 ```{r ch050-simDataFig, cache=FALSE, fig.cap="Simulated data for three selected high-expressing genes generally replicates the estimated data structure. The data do not exhibit outlying points, but do possess the desired Spearman correlations, central tendencies, and discrete values."}
 set.seed(2020-02-25)

@@ -90,7 +90,7 @@ allDat <- bind_rows(
 ```
 
 
-Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results. Table \@ref(tab:ch040-BiError) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios. Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation for all three dependency measures. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for negative binomial case.
+Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results. Table \@ref(tab:ch040-BiError) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios. Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation for all three dependency measures. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for the negative binomial case.
 
 
 

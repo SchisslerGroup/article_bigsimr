@@ -18,7 +18,7 @@ dist <- distributions_setup()
 
 This section describes a bivariate random vector simulation workflow via the `bigsimr` `R` package. This `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package). In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a Python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 
-The subsections below describe the basic use of `bigsimr` R package by stepping through an example workflow using the data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from setting up the computing environment, to data wrangling, estimation, simulation configuration, random vector generation, and, finally, result visualization.
+The subsections below describe the basic use of the `bigsimr` R package by stepping through an example workflow using the data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from setting up the computing environment, to data wrangling, estimation, simulation configuration, random vector generation, and, finally, result visualization.
 
 ## Bivariate example
 
@@ -139,7 +139,7 @@ See the [RNA-seq data application] section for an example discussing this, NORTA
 
 ## Simulating random vectors
 
-Finally, we execute `rvec` to simulate the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input in specified using the pre-computed MVN correlation matrix. Figure \@ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
+Finally, we execute `rvec` to simulate the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input is specified using the pre-computed MVN correlation matrix. Figure \@ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
 
 ```{r ch030-sim-margins, echo=TRUE}
 x <- bs$rvec(10000, R_X, margins)

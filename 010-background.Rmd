@@ -31,7 +31,7 @@ Moreover, the simulation method must *scale* to high dimensions:
 
 \setstretch{1.5}
 
-* SP1: Procedure must scale to high dimensions with practical compute times.
+* SP1: Procedure must scale to high dimensions with practical computation times.
 * SP2: Procedure must scale to high dimensions while maintaining accuracy.
 
 \setstretch{2.0}
@@ -155,7 +155,7 @@ Sklar's Theorem [@Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}
 
 ## Other Multivariate Simulation Packages
 
-To place `Bigsimr`'s implementation and algorithms in context with existing approaches, here we qualitatively compare to other multivariate simulation packages.  In `R`, the `MASS` package's `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures and it fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released, which provides HD multivariate normal generation. However, lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vector generation via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence modeling. Table \@ref(tab:compare-table) summarizes the above discussion.
+To place `Bigsimr`'s implementation and algorithms in context of existing approaches, we qualitatively compare `Bbigsimr` to other multivariate simulation packages.  In `R`, the `MASS` package's `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures and it fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released, which provides HD multivariate normal generation. However, lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vector generation via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence structure. Table \@ref(tab:compare-table) summarizes the above discussion.
 
 \begin{table}[h]
 \centering

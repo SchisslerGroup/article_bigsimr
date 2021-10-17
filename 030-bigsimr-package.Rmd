@@ -10,11 +10,16 @@ box::use(
   bigsimr[bigsimr_setup, distributions_setup],
   JuliaCall[julia_call]
 )
-
 Sys.setenv(JULIA_NUM_THREADS = parallel::detectCores())
-bs <- bigsimr_setup(pkg_check = FALSE)
-dist <- distributions_setup()
+## bs <- bigsimr_setup(pkg_check = FALSE)
+## dist <- distributions_setup()
 ```
+
+```{julia bigsimrSetup}
+using Bigsimr
+using Distributions
+```
+
 
 This section describes a bivariate random vector simulation workflow via the `bigsimr` `R` package. This `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package). In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a Python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
 

@@ -17,22 +17,60 @@
 Package}
 
 \author{
-    David S. Hippocampus
-    \thanks{Use footnote for providing further information about author
-(webpage, alternative address)---\emph{not} for acknowledging funding
-agencies. Optional.}
+    A. Grant Schissler
    \\
-    Department of Computer Science \\
-    Cranberry-Lemon University \\
-  Pittsburgh, PA 15213 \\
-  \texttt{\href{mailto:hippo@cs.cranberry-lemon.edu}{\nolinkurl{hippo@cs.cranberry-lemon.edu}}} \\
+    Department of Mathematics \& Statistics \\
+    University of Nevada, Reno \\
+  Reno, NV 89557 \\
+  \texttt{\href{mailto:grant.schissler@gmail.com}{\nolinkurl{grant.schissler@gmail.com}}} \\
    \And
-    Elias D. Striatum
+    Edward J. Bedrick
    \\
-    Department of Electrical Engineering \\
-    Mount-Sheikh University \\
-  Santa Narimana, Levand \\
-  \texttt{\href{mailto:stariate@ee.mount-sheikh.edu}{\nolinkurl{stariate@ee.mount-sheikh.edu}}} \\
+    University of Arizona \\
+   \\
+  \texttt{} \\
+   \And
+    Alexander D. Knudson
+   \\
+    University of Nevada, Reno \AND \\
+   \\
+  \texttt{} \\
+   \And
+    Tomasz J. Kozubowski
+   \\
+    University of Nevada, Reno \\
+   \\
+  \texttt{} \\
+   \And
+    Tin Nguyen
+   \\
+    University of Nevada, Reno \\
+   \\
+  \texttt{} \\
+   \And
+    Anna K. Panorska
+   \\
+    University of Nevada, Reno \AND \\
+   \\
+  \texttt{} \\
+   \And
+    Juli Petereit
+   \\
+    University of Nevada, Reno \\
+   \\
+  \texttt{} \\
+   \And
+    Walter W. Piegorsch
+   \\
+    University of Arizona \\
+   \\
+  \texttt{} \\
+   \And
+    Duc Tran
+   \\
+    University of Nevada, Reno \\
+   \\
+  \texttt{} \\
   }
 
 \usepackage{color}
@@ -157,6 +195,8 @@ RNA-sequencing data obtained from breast cancer tumor samples.
    \and
     breast cancer
   }
+
+\clearpage
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
@@ -308,28 +348,6 @@ selected genes across all patients, Figure @ref(fig:ch010-realDataFig)
 displays the marginal distributions and estimated Spearman's
 correlations.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2020{-}02{-}25}\NormalTok{)}
-\NormalTok{num\_genes    }\OtherTok{\textless{}{-}} \DecValTok{3}
-\NormalTok{num\_patients }\OtherTok{\textless{}{-}} \DecValTok{5}
-\NormalTok{gene\_sample  }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(example\_genes[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{1000}\NormalTok{], num\_genes)}
-
-\NormalTok{cap }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}\StringTok{"mRNA expression for three selected high{-}expressing genes, "}\NormalTok{,}
-              \FunctionTok{paste}\NormalTok{(gene\_sample, }\AttributeTok{collapse =} \StringTok{", "}\NormalTok{), }
-              \StringTok{", for the first five patients in the TCGA BRCA data set."}\NormalTok{)}
-
-\NormalTok{small\_brca }\OtherTok{\textless{}{-}}\NormalTok{ example\_brca }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{select}\NormalTok{(}\FunctionTok{all\_of}\NormalTok{(gene\_sample)) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{head}\NormalTok{(}\AttributeTok{n =}\NormalTok{ num\_patients) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{as\_tibble}\NormalTok{(}\AttributeTok{rownames =} \StringTok{"Patient ID"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{mutate}\NormalTok{(}\StringTok{\textasciigrave{}}\AttributeTok{Patient ID}\StringTok{\textasciigrave{}} \OtherTok{=} \FunctionTok{str\_sub}\NormalTok{(}\StringTok{\textasciigrave{}}\AttributeTok{Patient ID}\StringTok{\textasciigrave{}}\NormalTok{, }\AttributeTok{end =} \DecValTok{12}\NormalTok{))}
-
-\NormalTok{small\_brca }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{kable}\NormalTok{(}\AttributeTok{format =} \StringTok{"latex"}\NormalTok{, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{caption =}\NormalTok{ cap)}
-\end{Highlighting}
-\end{Shaded}
-
 \begin{table}
 
 \caption{\label{tab:ch010-realDataTab}mRNA expression for three selected high-expressing genes, STAU1, FKBP1A, NME2, for the first five patients in the TCGA BRCA data set.}
@@ -346,28 +364,6 @@ TCGA-A1-A0SG & 12486 & 12089 & 10434\\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{ggpairs}\NormalTok{(}
-  \AttributeTok{data =}\NormalTok{ example\_brca[, gene\_sample],}
-  \AttributeTok{upper =} \FunctionTok{list}\NormalTok{(}\AttributeTok{continuous =} \FunctionTok{wrap}\NormalTok{(}\StringTok{\textquotesingle{}cor\textquotesingle{}}\NormalTok{, }\AttributeTok{method =} \StringTok{"spearman"}\NormalTok{))}
-\NormalTok{) }\SpecialCharTok{+} 
-  \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+}
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle =} \SpecialCharTok{{-}}\DecValTok{90}\NormalTok{, }\AttributeTok{vjust =} \FloatTok{0.5}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in cor.test.default(x, y, method = method, use = use): Cannot compute
-## exact p-value with ties
-
-## Warning in cor.test.default(x, y, method = method, use = use): Cannot compute
-## exact p-value with ties
-
-## Warning in cor.test.default(x, y, method = method, use = use): Cannot compute
-## exact p-value with ties
-\end{verbatim}
 
 \begin{figure}
 \centering
@@ -769,18 +765,6 @@ margins to return the desired random vector \({\bf Y}\).
 \hypertarget{the-bigsimr-r-package}{%
 \section{The bigsimr R package}\label{the-bigsimr-r-package}}
 
-\begin{verbatim}
-## Julia version 1.5.3 at location /Applications/Julia-1.5.app/Contents/Resources/julia/bin will be used.
-\end{verbatim}
-
-\begin{verbatim}
-## Loading setup script for JuliaCall...
-\end{verbatim}
-
-\begin{verbatim}
-## Finish loading setup script for JuliaCall.
-\end{verbatim}
-
 This section describes a bivariate random vector simulation workflow via
 the \texttt{bigsimr} \texttt{R} package. This \texttt{R} package
 provides an interface to the native code written in Julia (registered as
@@ -844,33 +828,6 @@ relationship between \texttt{Ozone} and \texttt{Temperature}. We aim to
 simulate random two-component vectors mimicking this structure. The
 margins are not normally distributed; \texttt{Ozone} level exhibits a
 strong positive skew.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{p0 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df, }\FunctionTok{aes}\NormalTok{(Temp, Ozone)) }\SpecialCharTok{+}
-  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{) }\SpecialCharTok{+} 
-  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Temperature"}\NormalTok{)}
-
-\NormalTok{pTemp }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df, }\FunctionTok{aes}\NormalTok{(Temp)) }\SpecialCharTok{+} 
-  \FunctionTok{geom\_density}\NormalTok{() }\SpecialCharTok{+}
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.x =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.title.y =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.text =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.ticks =} \FunctionTok{element\_blank}\NormalTok{())}
-
-\NormalTok{pOzone }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df, }\FunctionTok{aes}\NormalTok{(Ozone)) }\SpecialCharTok{+} 
-    \FunctionTok{geom\_density}\NormalTok{() }\SpecialCharTok{+}
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.y =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.title.x =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.ticks =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.text =} \FunctionTok{element\_blank}\NormalTok{()) }\SpecialCharTok{+}
-  \FunctionTok{coord\_flip}\NormalTok{()}
-
-\NormalTok{pTemp }\SpecialCharTok{+} \FunctionTok{plot\_spacer}\NormalTok{() }\SpecialCharTok{+}\NormalTok{ p0 }\SpecialCharTok{+}\NormalTok{ pOzone }\SpecialCharTok{+} 
-  \FunctionTok{plot\_layout}\NormalTok{(}\AttributeTok{widths =} \FunctionTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{), }\AttributeTok{heights =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{3}\NormalTok{)) }
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}
 \centering
@@ -1019,7 +976,7 @@ correlation matrix is valid for our simulation strategy.
 
 \begin{verbatim}
 ## Julia Object of type NamedTuple{(:lower, :upper),Tuple{Float64,Float64}}.
-## (lower = -0.8806384281235534, upper = 0.880733034303322)
+## (lower = -0.8816136274594583, upper = 0.8815214379668451)
 \end{verbatim}
 
 In this 2D example, it is possible to verify the existence of a
@@ -1051,40 +1008,6 @@ plots the 10,000 simulated points.
 \FunctionTok{colnames}\NormalTok{(df\_sim) }\OtherTok{\textless{}{-}} \FunctionTok{colnames}\NormalTok{(df)}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{p1 }\OtherTok{\textless{}{-}}\NormalTok{ df\_sim }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(Temp, Ozone)) }\SpecialCharTok{+}
-  \FunctionTok{geom\_density\_2d\_filled}\NormalTok{() }\SpecialCharTok{+}
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Simulated Temperature"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Simulated Ozone"}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{scale\_y\_continuous}\NormalTok{(}\AttributeTok{limits =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\FunctionTok{max}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{Ozone))) }\SpecialCharTok{+}
-  \FunctionTok{scale\_x\_continuous}\NormalTok{(}\AttributeTok{limits =} \FunctionTok{range}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{Temp))}
-
-\NormalTok{p1Temp }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df\_sim, }\FunctionTok{aes}\NormalTok{(Temp)) }\SpecialCharTok{+} 
-  \FunctionTok{geom\_density}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{fill =} \StringTok{"lightseagreen"}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.x =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.title.y =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.text =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.ticks =} \FunctionTok{element\_blank}\NormalTok{())}
-
-\NormalTok{p1Ozone }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df\_sim, }\FunctionTok{aes}\NormalTok{(Ozone)) }\SpecialCharTok{+} 
-  \FunctionTok{geom\_density}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{fill =} \StringTok{"lightseagreen"}\NormalTok{) }\SpecialCharTok{+} 
-  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.y =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.title.x =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.ticks =} \FunctionTok{element\_blank}\NormalTok{(),}
-        \AttributeTok{axis.text =} \FunctionTok{element\_blank}\NormalTok{()) }\SpecialCharTok{+}
-  \FunctionTok{coord\_flip}\NormalTok{() }
-
-\NormalTok{p1Temp }\SpecialCharTok{+} \FunctionTok{plot\_spacer}\NormalTok{() }\SpecialCharTok{+}\NormalTok{ p1 }\SpecialCharTok{+}\NormalTok{ p1Ozone }\SpecialCharTok{+} 
-  \FunctionTok{plot\_layout}\NormalTok{(}\AttributeTok{widths =} \FunctionTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{,}\DecValTok{1}\NormalTok{), }\AttributeTok{heights =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{3}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning: Removed 388 rows containing non-finite values (stat_density2d_filled).
-\end{verbatim}
 
 \begin{figure}
 \centering
@@ -1161,17 +1084,6 @@ bounds, respectively, with increment value \(\delta\). The adjustment
 factor, \(\epsilon=0.01\), is introduced to handle numeric issues when
 the bound is specified exactly.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{bivariate\_normal\_sims }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(rho, rho\_hat, }\AttributeTok{color =}\NormalTok{ type)) }\SpecialCharTok{+}
-    \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
-    \FunctionTok{geom\_abline}\NormalTok{(}\AttributeTok{slope =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ type }\SpecialCharTok{+}\NormalTok{ N) }\SpecialCharTok{+} 
-    \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
-
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biNormPlot-1.pdf}
@@ -1179,34 +1091,12 @@ the bound is specified exactly.
 for MVN.}
 \end{figure}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{bivariate\_gamma\_sims }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(rho, rho\_hat, }\AttributeTok{color =}\NormalTok{ type)) }\SpecialCharTok{+}
-    \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
-    \FunctionTok{geom\_abline}\NormalTok{(}\AttributeTok{slope =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ type }\SpecialCharTok{+}\NormalTok{ N) }\SpecialCharTok{+} 
-    \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
-
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biGammaPlot-1.pdf}
 \caption{\texttt{bigsimr} recovers the Pearson specified correlations
 for Bivariate Gamma.}
 \end{figure}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{bivariate\_nbinom\_sims }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(rho, rho\_hat, }\AttributeTok{color =}\NormalTok{ type)) }\SpecialCharTok{+}
-    \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
-    \FunctionTok{geom\_abline}\NormalTok{(}\AttributeTok{slope =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ type }\SpecialCharTok{+}\NormalTok{ N) }\SpecialCharTok{+} 
-    \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}
 \centering
@@ -1216,19 +1106,6 @@ negative binomial only approximately for Pearson but (nearly) exactly
 for the rank-based correlations.}
 \end{figure}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{allDat }\OtherTok{\textless{}{-}} \FunctionTok{bind\_rows}\NormalTok{(}
-    \FunctionTok{select}\NormalTok{(bivariate\_normal\_sims, margins, type, N, rho, rho\_hat),}
-    \FunctionTok{select}\NormalTok{(bivariate\_gamma\_sims, margins, type, N, rho, rho\_hat),}
-    \FunctionTok{select}\NormalTok{(bivariate\_nbinom\_sims, margins, type, N, rho, rho\_hat)}
-\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{margins =} \FunctionTok{factor}\NormalTok{(margins, }\AttributeTok{levels=}\FunctionTok{c}\NormalTok{(}\StringTok{"norm"}\NormalTok{, }\StringTok{"gamma"}\NormalTok{, }\StringTok{"nbinom"}\NormalTok{)),}
-           \AttributeTok{type =} \FunctionTok{factor}\NormalTok{(type, }\AttributeTok{levels=}\FunctionTok{c}\NormalTok{(}\StringTok{"Pearson"}\NormalTok{, }\StringTok{"Spearman"}\NormalTok{, }\StringTok{"Kendall"}\NormalTok{)),}
-           \AttributeTok{N =} \FunctionTok{factor}\NormalTok{(N))}
-\end{Highlighting}
-\end{Shaded}
-
 Figure @ref(fig:ch040-bPlot) displays the aggregated bivariate
 simulation results. Table @ref(tab:ch040-BiError) contains the mean
 absolute error (MAE) in reproducing the desired dependency measures for
@@ -1237,31 +1114,6 @@ methodology is generally accurate across the entire range of possible
 correlation for all three dependency measures. Our Pearson matching
 performs nearly as well as Spearman or Kendall, except for a slight
 increase in error for the negative binomial case.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{tabMAE }\OtherTok{\textless{}{-}}\NormalTok{ allDat }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{group\_by}\NormalTok{(N, type, margins) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{summarize}\NormalTok{(}\AttributeTok{MAE =} \FunctionTok{mean}\NormalTok{(}\FunctionTok{abs}\NormalTok{(rho }\SpecialCharTok{{-}}\NormalTok{ rho\_hat))) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ungroup}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## `summarise()` regrouping output by 'N', 'type' (override with `.groups` argument)
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{kable}\NormalTok{(tabMAE, }\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{format =} \StringTok{"latex"}\NormalTok{,}
-      \AttributeTok{linesep =} \FunctionTok{c}\NormalTok{(}\StringTok{""}\NormalTok{, }\StringTok{""}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{addlinespace"}\NormalTok{),}
-      \AttributeTok{col.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"No. of random vectors"}\NormalTok{,}
-                    \StringTok{"Correlation type"}\NormalTok{,}
-                    \StringTok{"Distribution"}\NormalTok{,}
-                    \StringTok{"Mean abs. error"}\NormalTok{),}
-      \AttributeTok{caption =} \StringTok{"Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal."}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{table}
 
@@ -1309,33 +1161,6 @@ No. of random vectors & Correlation type & Distribution & Mean abs. error\\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# https://www.datanovia.com/en/blog/how{-}to{-}change{-}ggplot{-}facet{-}labels/}
-\CommentTok{\# New facet label names}
-\NormalTok{repsLabs }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}\StringTok{"B="}\NormalTok{, }\FunctionTok{c}\NormalTok{(}\StringTok{"1,000"}\NormalTok{, }\StringTok{"10,000"}\NormalTok{, }\StringTok{"100,000"}\NormalTok{) )}
-\FunctionTok{names}\NormalTok{(repsLabs) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\DecValTok{1000}\NormalTok{, }\DecValTok{10000}\NormalTok{, }\DecValTok{100000}\NormalTok{)}
-\NormalTok{typeLabs }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Pearson"}\NormalTok{, }\StringTok{"Spearman"}\NormalTok{, }\StringTok{"Kendall"}\NormalTok{)}
-\FunctionTok{names}\NormalTok{(typeLabs) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Pearson"}\NormalTok{, }\StringTok{"Spearman"}\NormalTok{, }\StringTok{"Kendall"}\NormalTok{)}
-
-\CommentTok{\# Set colors}
-\DocumentationTok{\#\# RColorBrewer::display.brewer.all()}
-\NormalTok{numColors }\OtherTok{\textless{}{-}} \DecValTok{4}
-\NormalTok{numGroups }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(}\FunctionTok{levels}\NormalTok{(allDat}\SpecialCharTok{$}\NormalTok{margins))}
-\NormalTok{myColors }\OtherTok{\textless{}{-}} \FunctionTok{rev}\NormalTok{(RColorBrewer}\SpecialCharTok{::}\FunctionTok{brewer.pal}\NormalTok{(}\AttributeTok{n =}\NormalTok{ numColors, }\AttributeTok{name =} \StringTok{"Greys"}\NormalTok{)[ ((numColors }\SpecialCharTok{{-}}\NormalTok{ numGroups) }\SpecialCharTok{+} \DecValTok{1}\NormalTok{)}\SpecialCharTok{:}\NormalTok{numColors])}
-
-\NormalTok{allDat }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ rho, }\AttributeTok{y =}\NormalTok{ rho\_hat, }\AttributeTok{color =}\NormalTok{ margins)) }\SpecialCharTok{+}
-    \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size =} \DecValTok{2}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{scale\_color\_manual}\NormalTok{(}\AttributeTok{values =}\NormalTok{ myColors ) }\SpecialCharTok{+}
-    \FunctionTok{geom\_abline}\NormalTok{(}\AttributeTok{slope =} \DecValTok{1}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Specified Correlation"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Estimated Correlation"}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ type }\SpecialCharTok{+}\NormalTok{ N, }\AttributeTok{labeller =} \FunctionTok{labeller}\NormalTok{(}\AttributeTok{N =}\NormalTok{ repsLabs, }\AttributeTok{type =}\NormalTok{ typeLabs)) }\SpecialCharTok{+}
-    \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+}
-    \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"bottom"}\NormalTok{, }\AttributeTok{legend.direction =} \StringTok{"horizontal"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}
 \centering
@@ -1409,44 +1234,6 @@ computation time for moderate dimesions (\(d \leq 500\)). In every
 simullation setting, the 1,000 vectors are generated rapidly, executing
 in under 2 seconds.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{dat\_long }\OtherTok{\textless{}{-}}\NormalTok{ benchmark\_dependences }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{total\_time, }\SpecialCharTok{{-}}\NormalTok{n\_sim, }\SpecialCharTok{{-}}\NormalTok{needed\_near\_pd) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{pivot\_longer}\NormalTok{(}\AttributeTok{cols =} \FunctionTok{c}\NormalTok{(corr\_time}\SpecialCharTok{:}\NormalTok{sim\_time), }\AttributeTok{names\_to =} \StringTok{"Step"}\NormalTok{, }\AttributeTok{values\_to =} \StringTok{"Time"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{dim =} \FunctionTok{factor}\NormalTok{(dim),}
-         \AttributeTok{Step =} \FunctionTok{factor}\NormalTok{(Step,}
-                       \AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\StringTok{"corr\_time"}\NormalTok{, }\StringTok{"adj\_time"}\NormalTok{, }\StringTok{"admiss\_time"}\NormalTok{, }\StringTok{"sim\_time"}\NormalTok{),}
-                       \AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Compute Correlation"}\NormalTok{,}
-                                  \StringTok{"Adjust Correlation"}\NormalTok{,}
-                                  \StringTok{"Check Admissibility"}\NormalTok{,}
-                                  \StringTok{"Simulate Data"}\NormalTok{))) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{rename}\NormalTok{(}\AttributeTok{Correlation =}\NormalTok{ corr\_type, }\AttributeTok{Dimensions =}\NormalTok{ dim)}
-
-\NormalTok{tabTimes  }\OtherTok{\textless{}{-}}\NormalTok{ dat\_long }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{filter}\NormalTok{(Dimensions }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\DecValTok{100}\NormalTok{, }\DecValTok{250}\NormalTok{, }\DecValTok{500}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{group\_by}\NormalTok{(Dimensions, Correlation) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{summarize}\NormalTok{(}\StringTok{\textquotesingle{}Total Time(Seconds)\textquotesingle{}} \OtherTok{=} \FunctionTok{sum}\NormalTok{(Time)) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ungroup}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## `summarise()` regrouping output by 'Dimensions' (override with `.groups` argument)
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{tabTimes }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{kable}\NormalTok{(}\AttributeTok{booktabs =} \ConstantTok{TRUE}\NormalTok{,}
-          \AttributeTok{linesep =} \FunctionTok{c}\NormalTok{(}\StringTok{""}\NormalTok{, }\StringTok{""}\NormalTok{, }\StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{addlinespace"}\NormalTok{), }\AttributeTok{format=}\StringTok{"latex"}\NormalTok{,}
-          \AttributeTok{col.names =} \FunctionTok{c}\NormalTok{(}\StringTok{"Dimension"}\NormalTok{,}
-                        \StringTok{"Correlation type"}\NormalTok{,}
-                        \StringTok{"Total Time (Seconds)"}\NormalTok{),}
-          \AttributeTok{caption =} \StringTok{\textquotesingle{}Total time to produce 1,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.\textquotesingle{}}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
 \begin{table}
 
 \caption{\label{tab:ch040-moderateDtab}Total time to produce 1,000 random vectors with a random correlation matrix and hetereogeneous gamma margins.}
@@ -1488,26 +1275,6 @@ human-derived RNA-seq data set. We note that for a given target
 correlation matrix and margins, steps 1, 2, and 3 only need to be
 computed once and the fourth step, \emph{Simulate Data}, is nearly
 instaneous for all settings considered.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# Set colors}
-\NormalTok{numColors }\OtherTok{\textless{}{-}} \DecValTok{5}
-\NormalTok{numGroups }\OtherTok{\textless{}{-}} \DecValTok{4}
-\NormalTok{myColors }\OtherTok{\textless{}{-}} \FunctionTok{rev}\NormalTok{(}\FunctionTok{brewer.pal}\NormalTok{(}\AttributeTok{n=}\NormalTok{numColors, }\AttributeTok{name=}\StringTok{"Greys"}\NormalTok{)[((numColors}\SpecialCharTok{{-}}\NormalTok{numGroups)}\SpecialCharTok{+}\DecValTok{1}\NormalTok{)}\SpecialCharTok{:}\NormalTok{numColors])}
-
-\NormalTok{dat\_long }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{filter}\NormalTok{(Dimensions }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\DecValTok{1000}\NormalTok{, }\DecValTok{2500}\NormalTok{, }\DecValTok{5000}\NormalTok{, }\DecValTok{10000}\NormalTok{, }\DecValTok{20000}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{mutate}\NormalTok{(}\StringTok{\textasciigrave{}}\AttributeTok{Time (minutes)}\StringTok{\textasciigrave{}} \OtherTok{=}\NormalTok{ Time }\SpecialCharTok{/} \DecValTok{60}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-    \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(Correlation, }\StringTok{\textasciigrave{}}\AttributeTok{Time (minutes)}\StringTok{\textasciigrave{}}\NormalTok{, }\AttributeTok{fill=}\NormalTok{Step)) }\SpecialCharTok{+}
-    \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{position =} \StringTok{"stack"}\NormalTok{, }\AttributeTok{stat =} \StringTok{"identity"}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{scale\_fill\_manual}\NormalTok{(}\AttributeTok{values =}\NormalTok{ myColors ) }\SpecialCharTok{+}
-    \FunctionTok{scale\_y\_continuous}\NormalTok{(}\AttributeTok{breaks =} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{80}\NormalTok{, }\DecValTok{10}\NormalTok{),}
-                     \AttributeTok{minor\_breaks =} \ConstantTok{NULL}\NormalTok{) }\SpecialCharTok{+}
-    \FunctionTok{facet\_grid}\NormalTok{(. }\SpecialCharTok{\textasciitilde{}}\NormalTok{ Dimensions) }\SpecialCharTok{+}
-    \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle =} \SpecialCharTok{{-}}\DecValTok{90}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}
 \centering
@@ -1690,29 +1457,6 @@ evaluation shows that the simulated counts approximately match the
 target parameters and exhibit the full range of estimated correlations
 from the data.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{set.seed}\NormalTok{(}\DecValTok{2020{-}02{-}25}\NormalTok{)}
-\NormalTok{num\_genes }\OtherTok{\textless{}{-}} \DecValTok{3}
-\NormalTok{gene\_sample }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(example\_genes[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{1000}\NormalTok{], num\_genes)}
-
-\FunctionTok{ggpairs}\NormalTok{(}\AttributeTok{data =} \FunctionTok{as.data.frame}\NormalTok{(sim\_nbinom[, gene\_sample]),}
-        \AttributeTok{upper =} \FunctionTok{list}\NormalTok{(}\AttributeTok{continuous =} \FunctionTok{wrap}\NormalTok{(}\StringTok{\textquotesingle{}cor\textquotesingle{}}\NormalTok{, }\AttributeTok{method =} \StringTok{"spearman"}\NormalTok{))) }\SpecialCharTok{+} 
-  \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Warning in cor.test.default(x, y, method = method, use = use): Cannot compute
-## exact p-value with ties
-
-## Warning in cor.test.default(x, y, method = method, use = use): Cannot compute
-## exact p-value with ties
-
-## Warning in cor.test.default(x, y, method = method, use = use): Cannot compute
-## exact p-value with ties
-\end{verbatim}
-
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf}
@@ -1721,12 +1465,6 @@ generally replicates the estimated data structure. The data do not
 exhibit outlying points, but do possess the desired Spearman
 correlations, central tendencies, and discrete values.}
 \end{figure}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{include\_graphics}\NormalTok{(}\StringTok{\textquotesingle{}../fig/ch050{-}figBRCA.png\textquotesingle{}}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}
 \includegraphics[width=0.8\linewidth]{../fig/ch050-figBRCA} \caption{Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).}\label{fig:ch050-figBRCA}

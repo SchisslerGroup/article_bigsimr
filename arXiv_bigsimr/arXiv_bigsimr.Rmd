@@ -83,8 +83,7 @@ Moreover, the simulation method must *scale* to high dimensions:
 
 Simulating HD, non-normal, correlated data motivates this work, in pursuit of modeling RNA-sequencing (RNA-seq) data [@Wang2009b; @Conesa2016b] derived from breast cancer patients. The RNA-seq data-generating process involves counting how often a particular form of messenger RNA (mRNA) is expressed in a biological sample. RNA-seq platforms typically quantify the entire transcriptome in one experimental run, resulting in HD data. For human-derived samples, this results in count data corresponding to over 20,000 genes (protein-coding genomic regions) or even over 77,000 isoforms when alternatively-spliced mRNA are counted [@Schissler2019]. Importantly, due to inherent biological processes, gene expression data exhibit correlation (co-expression) across genes [@BE07; @Schissler2018]. 
 
-We illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments). For ease of modeling and simplicity of exposition, we only consider high expressing genes. In turn, we begin by filtering to retain the top r d of the highest-expressing genes (in terms of median expression) of the over 20,000 gene measurements from $N=r nrow(example_brca)$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $r choose(d,2)$ correlation parameters). Table \@ref(tab:ch010-realDataTab) displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. To help visualize the bivariate relationships for these three selected genes across all patients, Figure \@ref(fig:ch010-realDataFig) displays the marginal distributions and estimated Spearman's correlations.
-
+We illustrate our methodology using the Breast Invasive Carcinoma (BRCA) data set housed in The Cancer Genome Atlas (TCGA; see Acknowledgments). For ease of modeling and simplicity of exposition, we only consider high expressing genes. In turn, we begin by filtering to retain the top r d of the highest-expressing genes (in terms of median expression) of the over 20,000 gene measurements from $N=r nrow(example_brca)$ patients' tumor samples. This gives a great number of pairwise dependencies among the marginals (specifically, $r choose(d,2)$ correlation parameters). Table \ref{tab:ch010-realDataTab} displays RNA-seq counts for three selected high-expressing genes for the first five patients' breast tumor samples. To help visualize the bivariate relationships for these three selected genes across all patients, Figure \ref{fig:ch010-realDataFig} displays the marginal distributions and estimated Spearman's correlations.
 
 ```{r ch010-realDataTab, eval=T, echo=F}
 set.seed(2020-02-25)
@@ -107,7 +106,7 @@ small_brca %>%
 ```
 
 
-```{r ch010-realDataFig, cache=FALSE, fig.width=6, fig.cap="Pairwise scatterplots for three example genes (Table 1), with estimated Spearman's correlations and marginal density estimates displayed. The data possess outliers, heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology.", eval=T, warning=F, echo=F}
+```{r ch010-realDataFig, cache=FALSE, fig.width=6, fig.cap="\\label{fig:ch010-realDataFig}Pairwise scatterplots for three example genes (Table 1), with estimated Spearman's correlations and marginal density estimates displayed. The data possess outliers, heavy-right tails, are discrete, and have non-trivial intergene correlations. Modeling these data motivate our simulation methodology.", eval=T, warning=F, echo=F}
 ggpairs(
   data = example_brca[, gene_sample],
   upper = list(continuous = wrap('cor', method = "spearman"))
@@ -196,7 +195,7 @@ Sklar's Theorem [@Ubeda-Flores2017] guarantees that given inverse CDFs $F_i^{-1}
 
 ## Other Multivariate Simulation Packages
 
-To place `Bigsimr`'s implementation and algorithms in context of existing approaches, we qualitatively compare `Bbigsimr` to other multivariate simulation packages.  In `R`, the `MASS` package's `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures and it fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released, which provides HD multivariate normal generation. However, lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vector generation via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence structure. Table \@ref(tab:compare-table) summarizes the above discussion.
+To place `Bigsimr`'s implementation and algorithms in context of existing approaches, we qualitatively compare `Bbigsimr` to other multivariate simulation packages.  In `R`, the `MASS` package's `mvnorm()` has long been available to produce random vectors from multivariate normal (and $t$) distributions. This procedure cannot simulate from arbitrary margins and dependency measures and it fails to readily scale to high dimensions. SAS PROC SIMNORMAL and Python's NumPy `random.multivariate_normal` both do similar tasks. Recently, the high-performance `R` package `mvnfast` [@Fasiolo2016] has been released, which provides HD multivariate normal generation. However, lacks flexibility in marginal models and dependency modeling. For dependent discrete data, LD `R` packages exist, such as `GenOrd`. For copula computation, the full-featured `R` package `copula` provides many different copulas and a fairly general LD random generator `rCopula()`. High-dimesional random vector generation via `copula` takes an impractical amount of computing time [@Li2019gpu]. The `nortaRA` R package matches Pearson coefficients near exactly and is reasonable for LD settings. Finally, we know of no other `R` package that can produce HD random vectors with flexible margins and dependence structure. Table \ref{tab:compare-table} summarizes the above discussion.
 
 \begin{table}[h]
 \centering
@@ -214,7 +213,7 @@ bigsimr   & Yes          & Yes                   & Yes
 
 # Algorithms {#algorithms}
 
-This section describes our methods for simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,\ldots,d$. Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$. To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$. The method can be described as a *high-performance Gaussian copula* (Equation \@ref(eq:gauss)) providing a HD NORTA-inspired algorithm.
+This section describes our methods for simulating a random vector $\bf Y$ with $Y_i$ components for $i=1,\ldots,d$. Each $Y_i$ has a specified marginal CDF $F_i$ and its inverse $F^{-1}_i$. To characterize dependency, every pair $(Y_i, Y_j)$ has a given Pearson correlation $\rho_P$, Spearman correlation $\rho_S$, and/or Kendall's $\tau$. The method can be described as a *high-performance Gaussian copula* (Equation \ref{eq:gauss}) providing a HD NORTA-inspired algorithm.
 
 ## NORmal To Anything (NORTA)
 
@@ -266,15 +265,15 @@ We now describe our algorithm to generate random vectors, which extends NORTA to
     * Transform ${\bf X}$ to ${\bf U} = (U_1, \ldots,  U_d)$ viz. $U_i=\Phi(X_i)$, $i=1, \ldots, d$.
     * Return ${\bf Y}  = (Y_1, \ldots,  Y_d)$, where $Y_i=F_i^{-1}(U_i)$, $i=1, \ldots, d$.
 
-*Step 1: Mapping step.* We first employ the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \@ref(eq:convertKendall) and \@ref(eq:convertSpearman), respectively (implemented as `cor_covert()`). Initializing our algorithm to match the nonparametric correlations by computing these equations for all pairs is computationally trivial. 
+*Step 1: Mapping step.* We first employ the closed-form relationships between $\rho_S$ and $\tau$ with $\rho_P$ for bivariate normal random variables via Equations \ref{eq:convertKendall} and \ref{eq:convertSpearman}, respectively (implemented as `cor_covert()`). Initializing our algorithm to match the nonparametric correlations by computing these equations for all pairs is computationally trivial. 
 
-For the computationally expensive process to match Pearson correlations, we approximate Equation \@ref(eq:pearsonIntegralRelation) for all pairs of margins. To this end, we implement the approximation scheme introduced by [@XZ19]. Briefly, the many double integrals of the form in \@ref(eq:pearsonIntegralRelation) are approximated by weighted sums of Hermite polynomials. Matching coefficients for pairs of continuous distributions is made tractable by this method, but for discrete distributions (especially discrete distributions with large support sets or infinite support), the approximation is computationally expensive. To remedy this, we further approximate discrete distributions by a continuous distribution using Generalized S-Distributions [@muino2006gs].
+For the computationally expensive process to match Pearson correlations, we approximate Equation \ref{eq:pearsonIntegralRelation} for all pairs of margins. To this end, we implement the approximation scheme introduced by [@XZ19]. Briefly, the many double integrals of the form in \ref{eq:pearsonIntegralRelation} are approximated by weighted sums of Hermite polynomials. Matching coefficients for pairs of continuous distributions is made tractable by this method, but for discrete distributions (especially discrete distributions with large support sets or infinite support), the approximation is computationally expensive. To remedy this, we further approximate discrete distributions by a continuous distribution using Generalized S-Distributions [@muino2006gs].
 
 *Step 2: Admissibility check and nearest correlation matrix computation.* Once $R_X$ has been determined, we check admissibility of the adjusted correlation via the steps described above. If $R_X$ is not a valid correlation matrix, then we compute the nearest correlation matrix. Finding the nearest correlation matrix is a common statistical computing problem. The defacto function in `R` is `Matrix::nearPD`, an alternating projection algorithm due to @higham2002computing. As implemented, the function fails to scale to HD. Instead, we provide the quadratically-convergent algorithm based on the theory of strongly semi-smooth matrix functions [@qi2006quadratically]. The nearest correlation matrix problem can be written down as the following convex optimization problem:  $\mathrm{min} \quad \frac{1}{2} \Vert R_X - X \Vert^2, \quad \mathrm{s.t.} \quad X_{ii} = 1, \quad i = 1, \ldots , n, \quad X \in S_{+}^{n}$.
 
 For nonparametric correlation measures, our algorithm allows the generation of HD multivariate data with arbitrary marginal distributions with a broad class of admissible Spearman correlation matrices and Kendall $\tau$ matrices. The admissible classes consist of the matrices that map to a Pearson correlation matrix for a MVN. In particular, if we let $X$ be MVN with $d$ components and denote $\Omega_P = \{ R_P : R_P \textrm{ is a Pearson correlation matrix for } X \}, \quad \Omega_K = \{ R_K : R_K \textrm{ is a Kendall correlation matrix for } X \}, \quad \Omega_S = \{ R_S : R_S \textrm{ is a Spearman correlation matrix for } X \}$. There are 1-1 mappings between these sets. We conjecture that the sets of admissible $R_S$ and $R_K$ are not highly restrictive. In particular, $R_P$ is approximately $R_S$ for a MVN, suggesting that the admissible set $\Omega_S$ should be flexible as $R_P$ can be any PD matrix with 1's along the diagonal. We provide methods to check whether a target $R_S$ is an element of the *admissible set* $\Omega_S$.
 
-There is an increasing probability of encountering an inadmissible correlation matrix as dimension increases. In our experience, the mapping step for large $d$ almost always produces a $R_X$ that is not a correlation matrix. In Section \@ref(package), we provide a basic method of how to quantify and control the approximation error. Further, the RNA-seq example in Section \@ref(examples) provides an illustration of this in practice.
+There is an increasing probability of encountering an inadmissible correlation matrix as dimension increases. In our experience, the mapping step for large $d$ almost always produces a $R_X$ that is not a correlation matrix. In Section \ref{package}, we provide a basic method of how to quantify and control the approximation error. Further, the RNA-seq example in Section \ref{examples} provides an illustration of this in practice.
 
 *Step 3: Gaussian copula.* The final step implements a NORTA-inspired, Gaussian copula approach to produce the desired margins. Steps 1 and 2 determine the MVN Pearson correlation values that will eventually match the target correlation. Step 3 requires a fast MVN simulator, a standard normal CDF, and well-defined quantile functions for marginals. The MVN is transformed to a copula (distribution with standard uniform margins) by applying the normal CDF $\Phi(\cdot)$. Finally, the quantile functions $F_i^{-1}$ are applied across the margins to return the desired random vector ${\bf Y}$.
 
@@ -289,7 +288,7 @@ bs <- bigsimr_setup(pkg_check = FALSE)
 dist <- distributions_setup()
 ```
 
-This section describes a bivariate random vector simulation workflow via the `bigsimr` `R` package. This `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package). In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a Python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \@ref(algorithms)).
+This section describes a bivariate random vector simulation workflow via the `bigsimr` `R` package. This `R` package provides an interface to the native code written in Julia (registered as the `Bigsimr` Julia package). In addition to the native Julia `Bigsimr` package and `R` interface `bigsimr`, we also provide a Python interface `bigsimr` that interfaces with the Julia `Bigsimr` package. The Julia package provides a high-performance implementation of our proposed random vector generation algorithm and associated functions (see Section \ref{algorithms}).
 
 The subsections below describe the basic use of the `bigsimr` R package by stepping through an example workflow using the data set `airquality` that contains daily air quality measurements in New York, May to September 1973 [@Chambers1983]. This workflow proceeds from setting up the computing environment, to data wrangling, estimation, simulation configuration, random vector generation, and, finally, result visualization.
 
@@ -314,10 +313,10 @@ df <- airquality %>% select(Temp, Ozone) %>% drop_na()
 glimpse(df)
 ```
 
-Figure \@ref(fig:ch030-aq-joint-dist) visualizes the bivariate relationship between `Ozone` and `Temperature`. We aim to simulate random two-component vectors mimicking this structure. The margins are not normally distributed; `Ozone` level exhibits a strong positive skew.
+Figure \ref{fig:ch030-aq-joint-dist} visualizes the bivariate relationship between `Ozone` and `Temperature`. We aim to simulate random two-component vectors mimicking this structure. The margins are not normally distributed; `Ozone` level exhibits a strong positive skew.
 
 
-```{r ch030-aq-joint-dist, cache=FALSE, fig.width=6, fig.cap="Bivariate scatterplot of Ozone versus Temp with estimated marginal densities. The Ozone data are modeled marginally as log-normal and the Temperature data as normal.", eval=T, echo=F}
+```{r ch030-aq-joint-dist, cache=FALSE, fig.width=6, fig.cap="\\label{fig:ch030-aq-joint-dist}Bivariate scatterplot of Ozone versus Temp with estimated marginal densities. The Ozone data are modeled marginally as log-normal and the Temperature data as normal.", eval=T, echo=F}
 p0 <- ggplot(df, aes(Temp, Ozone)) +
   geom_point(size = 1) +
   theme(legend.position = "none") + 
@@ -348,7 +347,7 @@ Next, we specify the marginal distributions and correlation coefficient (both ty
 
 ## Specifying marginal distributions 
 
-Based on the estimated densities in Figure \@ref(fig:ch030-aq-joint-dist), we assume `Temp` is normally distributed and `Ozone` is log-normally distributed, as the latter values are positive and skewed. We use the classical unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the log-normal parameters:
+Based on the estimated densities in Figure \ref{fig:ch030-aq-joint-dist}, we assume `Temp` is normally distributed and `Ozone` is log-normally distributed, as the latter values are positive and skewed. We use the classical unbiased estimators for the normal distribution's parameters and maximum likelihood estimators for the log-normal parameters:
 
 
 ```{r ch030-aq-temp-pars, echo=TRUE, eval=T}
@@ -411,7 +410,7 @@ See the [RNA-seq data application] section for an example discussing this, NORTA
 
 ## Simulating random vectors
 
-Finally, we execute `rvec` to simulate the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input is specified using the pre-computed MVN correlation matrix. Figure \@ref(fig:ch030-plot-sim) plots the 10,000 simulated points.
+Finally, we execute `rvec` to simulate the desired $10,000$ random vectors from the assumed bivariate distribution of `Ozone` and `Temp`. Note that the target input is specified using the pre-computed MVN correlation matrix. Figure \ref{fig:ch030-plot-sim} plots the 10,000 simulated points.
 
 ```{r ch030-sim-margins, echo=TRUE, eval=T}
 x <- bs$rvec(10000, R_X, margins)
@@ -419,7 +418,7 @@ df_sim <- as.data.frame(x)
 colnames(df_sim) <- colnames(df)
 ```
 
-```{r ch030-plot-sim, fig.cap="Contour plot and marginal densities for the simulated bivariate distribution of Air Quality Temperatures and Ozone levels. The simulated points mimic the observed data with respect to both the marginal characteristics and bivariate association.", eval=T, echo=F, warning=F}
+```{r ch030-plot-sim, fig.cap="\\label{fig:ch030-plot-sim}Contour plot and marginal densities for the simulated bivariate distribution of Air Quality Temperatures and Ozone levels. The simulated points mimic the observed data with respect to both the marginal characteristics and bivariate association.", eval=T, echo=F, warning=F}
 p1 <- df_sim %>%
   ggplot(aes(Temp, Ozone)) +
   geom_density_2d_filled() +
@@ -466,7 +465,7 @@ In this section, we conduct MC studies to investigate method performance. Margin
 
 We select bivariate simulation configurations to ultimately simulate our motivating discrete-valued RNA-seq example. Thus, we proceed by increasing departure from normality, leading to a multivariate negative binomial (MVNB) model for our motivating data. We begin with empirically evaluating the dependency matching across all three supported correlations --- Pearson, Spearman, and Kendall --- in identical, bivariate marginal configurations. For each pair of identical margins, we vary the target correlation across $\Omega$, the set of possible admissible values for each correlation type, to evaluate the simulation's ability to generate all possible correlations. The simulations progress from bivariate normal, to bivariate gamma (non-normal yet continuous), and bivariate negative binomial (non-normal and discrete).
 
-Table \@ref(tab:sims) lists our identical-marginal, bivariate simulation configurations. We increase the simulation replicates $B$ to visually ensure that our results converge to the target correlations and gauge efficiency. We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types. Then, we select a non-symmetric continuous distribution: a standard (rate =1), two-component multivariate gamma (MVG). Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [RNA-seq data application](examples) for estimation details). Specifically, we assume a MVNB with $p_1 = p_2 = 3\times10^{-4}, r_1 = r_2 = 4, \rho \in \Omega$.
+Table \ref{tab:sims} lists our identical-marginal, bivariate simulation configurations. We increase the simulation replicates $B$ to visually ensure that our results converge to the target correlations and gauge efficiency. We select distributions beginning with a standard multivariate normal (MVN) as we expect the performance to be exact (up to MC error) for all correlation types. Then, we select a non-symmetric continuous distribution: a standard (rate =1), two-component multivariate gamma (MVG). Finally, we select distributions and marginal parameter values that are motivated by our RNA-seq data, namely values proximal to probabilities and sizes estimated from the data (see [RNA-seq data application](examples) for estimation details). Specifically, we assume a MVNB with $p_1 = p_2 = 3\times10^{-4}, r_1 = r_2 = 4, \rho \in \Omega$.
 
 \begin{table}[]
 \centering
@@ -483,7 +482,7 @@ $100,000$ & Kendall ($\tau$) & ${\bf Y} \sim MVNB(p = 3\times10^{-4}, r = 4,\rho
 For each of the unique 9 simulation configurations described above, we estimate the correlation bounds and vary the correlations along a sequence of 100 points evenly placed within the bounds, aiming to explore $\Omega$. Specifically, we set correlations $\{ \rho_1 = ( \hat{l} + \epsilon), \rho_2 = (\hat{l} + \epsilon) + \delta, \ldots, \rho_{100} = (\hat{u} - \epsilon) \}$, with $\hat{l}$ and $\hat{u}$ being the estimated lower and upper bounds, respectively, with increment value $\delta$. The adjustment factor, $\epsilon=0.01$, is introduced to handle numeric issues when the bound is specified exactly.
 
 
-```{r ch040-biNormPlot, eval=T, fig.height=5, fig.width=6, fig.cap="`bigsimr` recovers the Pearson specified correlations for MVN.", echo=F}
+```{r ch040-biNormPlot, eval=T, fig.height=5, fig.width=6, fig.cap="\\label{fig:ch040-biNormPlot}`bigsimr` recovers the Pearson specified correlations for MVN.", echo=F}
 bivariate_normal_sims %>%
     ggplot(aes(rho, rho_hat, color = type)) +
     geom_point() +
@@ -493,7 +492,7 @@ bivariate_normal_sims %>%
 ```
 
 
-```{r ch040-biGammaPlot, eval=T, fig.height=5, fig.width=6, fig.cap="`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma.", echo=F}
+```{r ch040-biGammaPlot, eval=T, fig.height=5, fig.width=6, fig.cap="\\label{fig:ch040-biGammaPlot}`bigsimr` recovers the Pearson specified correlations for Bivariate Gamma.", echo=F}
 bivariate_gamma_sims %>%
     ggplot(aes(rho, rho_hat, color = type)) +
     geom_point() +
@@ -503,7 +502,7 @@ bivariate_gamma_sims %>%
 ```
 
 
-```{r ch040-biNegBinPlot, eval=T, fig.width=6, fig.height=5, fig.cap="`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations.", echo=F}
+```{r ch040-biNegBinPlot, eval=T, fig.width=6, fig.height=5, fig.cap="\\label{fig:ch040-biNegBinPlot}`bigsimr` recovers the correlations for bivariate negative binomial only approximately for Pearson but (nearly) exactly for the rank-based correlations.", echo=F}
 bivariate_nbinom_sims %>%
     ggplot(aes(rho, rho_hat, color = type)) +
     geom_point() +
@@ -525,7 +524,7 @@ allDat <- bind_rows(
 ```
 
 
-Figure \@ref(fig:ch040-bPlot) displays the aggregated bivariate simulation results. Table \@ref(tab:ch040-BiError) contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios. Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation for all three dependency measures. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for the negative binomial case.
+Figure \ref{fig:ch040-bPlot} displays the aggregated bivariate simulation results. Table \ref{tab:ch040-BiError} contains the mean absolute error (MAE) in reproducing the desired dependency measures for the three bivariate scenarios. Overall, the studies show that our methodology is generally accurate across the entire range of possible correlation for all three dependency measures. Our Pearson matching performs nearly as well as Spearman or Kendall, except for a slight increase in error for the negative binomial case.
 
 
 
@@ -544,7 +543,7 @@ kable(tabMAE, booktabs = TRUE, format = "latex",
       caption = "Average abolute error in matching the target dependency across the entire range of possible correlations for each bivariate marginal.")
 ```
 
-```{r ch040-bPlot, cache=FALSE, echo=F, fig.asp=1.30, fig.weight=4, fig.cap="Bivariate simulations match target correlations across the entire range of feasible correlations. The horizontal axis plots the specified target correlations for each bivariate margin. Normal margins are plotted in dark dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations.", eval=T, echo=F}
+```{r ch040-bPlot, cache=FALSE, echo=F, fig.asp=1.30, fig.weight=4, fig.cap="\\label{fig:ch040-bPlot}Bivariate simulations match target correlations across the entire range of feasible correlations. The horizontal axis plots the specified target correlations for each bivariate margin. Normal margins are plotted in dark dark grey, gamma in medium grey, and negative binomial in light grey. As the number of simulated vectors $B$ increases from left to right, the variation in estimated correlations (vertical axis) decreases. The dashed line indicates equality between the specified and estimated correlations.", eval=T, echo=F}
 # https://www.datanovia.com/en/blog/how-to-change-ggplot-facet-labels/
 # New facet label names
 repsLabs <- paste0("B=", c("1,000", "10,000", "100,000") )
@@ -586,7 +585,7 @@ With the synthetic data set in hand, we complete and time the following four ste
 3. Check whether the mapping produces a valid correlation matrix and, if not, find the nearest PD correlation matrix in the *Check Admissibility* step.
 4. Simulate $1,000$ vectors in the *Simulate Data* step.
 
-The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. Table \@ref(tab:ch040-moderateDtab) displays the total computation time for moderate dimesions ($d \leq 500$). In every simullation setting, the 1,000 vectors are generated rapidly, executing in under 2 seconds.
+The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core Intel Core i9 processor, with all 16 threads employed during computation. Table \ref{tab:ch040-moderateDtab} displays the total computation time for moderate dimesions ($d \leq 500$). In every simullation setting, the 1,000 vectors are generated rapidly, executing in under 2 seconds.
 
 ```{r ch040-moderateDtab, eval=T, echo=F, message=F}
 dat_long <- benchmark_dependences %>%
@@ -618,9 +617,9 @@ tabTimes %>%
 
 
 The results for $d > 500$ show scalability to ultra-high dimensions for all three correlation types, although the total times do become much larger. 
-Figure \@ref(fig:ch040-largeDfig) displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ equal to 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster, with total times under 5 minutes for $d=10,000$, making Spearman the most computationally-friendly dependency type for our package. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtained the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps 1, 2, and 3 only need to be computed once and the fourth step, *Simulate Data*, is nearly instaneous for all settings considered.
+Figure \ref{fig:ch040-largeDfig} displays computation times for $d=\{1000, 2500, 5000, 10000\}$. For $d$ equal to 1000 and 2500, the total time is under a couple of minutes. At $d$ of 5000 and 10,000, Pearson correlation matching in the *Adjust Correlation* step becomes costly. Interestingly, Pearson is actually faster than Kendall for $d=10,000$ due to bottlenecks in *Compute Correlation* and *Check Admissibility*. Uniformly, matching Spearman correlations is faster, with total times under 5 minutes for $d=10,000$, making Spearman the most computationally-friendly dependency type for our package. With this in mind, we scaled the simulation to $d=20,000$ for the Spearman type and obtained the 1,000 vectors in under an hour (data not shown). In principle, this would enable the simulation of an entire human-derived RNA-seq data set. We note that for a given target correlation matrix and margins, steps 1, 2, and 3 only need to be computed once and the fourth step, *Simulate Data*, is nearly instaneous for all settings considered.
 
-```{r ch040-largeDfig, fig.cap="Computation times for HD multivariate gamma simulation.", eval=T, echo=F}
+```{r ch040-largeDfig, fig.cap="\\label{fig:ch040-largeDfig}Computation times for HD multivariate gamma simulation.", eval=T, echo=F}
 # Set colors
 numColors <- 5
 numGroups <- 4
@@ -728,10 +727,10 @@ As seen above, $R_X$ is not strictly admissible in our scheme. This can be seen 
 sim_nbinom <- bs$rvec(10000, R_X, nb_margins) 
 ```
 
-Figure \@ref(fig:ch050-simDataFig) displays the simulated counts and pairwise relationships for our example genes from Table \@ref(tab:ch010-realDataTab).
-Simulated counts roughly mimic the observed data but with a smoother appearance due to the assumed parametric form and with less extreme points than the observed data in Figure \@ref(fig:ch010-realDataFig). Figure \@ref(fig:ch050-figBRCA) compares the specified target parameter (horizontal axis) with the corresponding quantities estimated from the simulated data (vertical axis). The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlations from the data.
+Figure \ref{fig:ch050-simDataFig} displays the simulated counts and pairwise relationships for our example genes from Table \ref{tab:ch010-realDataTab}.
+Simulated counts roughly mimic the observed data but with a smoother appearance due to the assumed parametric form and with less extreme points than the observed data in Figure \ref{fig:ch010-realDataFig}. Figure \ref{fig:ch050-figBRCA} compares the specified target parameter (horizontal axis) with the corresponding quantities estimated from the simulated data (vertical axis). The evaluation shows that the simulated counts approximately match the target parameters and exhibit the full range of estimated correlations from the data.
 
-```{r ch050-simDataFig, cache=FALSE, fig.cap="Simulated data for three selected high-expressing genes generally replicates the estimated data structure. The data do not exhibit outlying points, but do possess the desired Spearman correlations, central tendencies, and discrete values.", eval=T, warning=F, echo=F}
+```{r ch050-simDataFig, cache=FALSE, fig.cap="\\label{fig:ch050-simDataFig}Simulated data for three selected high-expressing genes generally replicates the estimated data structure. The data do not exhibit outlying points, but do possess the desired Spearman correlations, central tendencies, and discrete values.", eval=T, warning=F, echo=F}
 set.seed(2020-02-25)
 num_genes <- 3
 gene_sample <- sample(example_genes[1:1000], num_genes)
@@ -741,7 +740,7 @@ ggpairs(data = as.data.frame(sim_nbinom[, gene_sample]),
   theme_bw()
 ```
 
-```{r ch050-figBRCA, out.width='80%', fig.cap="Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).", eval=T, echo=F}
+```{r ch050-figBRCA, out.width='80%', fig.cap="\\label{fig:ch050-figBRCA}Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).", eval=T, echo=F}
 include_graphics('../fig/ch050-figBRCA.png')
 ```
 

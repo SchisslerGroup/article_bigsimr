@@ -341,10 +341,10 @@ of the highest-expressing genes (in terms of median expression) of the
 over 20,000 gene measurements from \(N=r nrow(example_brca)\) patients'
 tumor samples. This gives a great number of pairwise dependencies among
 the marginals (specifically, \(r choose(d,2)\) correlation parameters).
-Table @ref(tab:ch010-realDataTab) displays RNA-seq counts for three
+Table \ref{tab:ch010-realDataTab} displays RNA-seq counts for three
 selected high-expressing genes for the first five patients' breast tumor
 samples. To help visualize the bivariate relationships for these three
-selected genes across all patients, Figure @ref(fig:ch010-realDataFig)
+selected genes across all patients, Figure \ref{fig:ch010-realDataFig}
 displays the marginal distributions and estimated Spearman's
 correlations.
 
@@ -368,11 +368,11 @@ TCGA-A1-A0SG & 12486 & 12089 & 10434\\
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch010-realDataFig-1.pdf}
-\caption{Pairwise scatterplots for three example genes (Table 1), with
-estimated Spearman's correlations and marginal density estimates
-displayed. The data possess outliers, heavy-right tails, are discrete,
-and have non-trivial intergene correlations. Modeling these data
-motivate our simulation methodology.}
+\caption{\label{fig:ch010-realDataFig}Pairwise scatterplots for three
+example genes (Table 1), with estimated Spearman's correlations and
+marginal density estimates displayed. The data possess outliers,
+heavy-right tails, are discrete, and have non-trivial intergene
+correlations. Modeling these data motivate our simulation methodology.}
 \end{figure}
 
 \hypertarget{measures-of-dependency}{%
@@ -528,7 +528,7 @@ provides many different copulas and a fairly general LD random generator
 al. 2019). The \texttt{nortaRA} R package matches Pearson coefficients
 near exactly and is reasonable for LD settings. Finally, we know of no
 other \texttt{R} package that can produce HD random vectors with
-flexible margins and dependence structure. Table @ref(tab:compare-table)
+flexible margins and dependence structure. Table \ref{tab:compare-table}
 summarizes the above discussion.
 
 \begin{table}[h]
@@ -554,7 +554,7 @@ a specified marginal CDF \(F_i\) and its inverse \(F^{-1}_i\). To
 characterize dependency, every pair \((Y_i, Y_j)\) has a given Pearson
 correlation \(\rho_P\), Spearman correlation \(\rho_S\), and/or
 Kendall's \(\tau\). The method can be described as a
-\emph{high-performance Gaussian copula} (Equation @ref(eq:gauss))
+\emph{high-performance Gaussian copula} (Equation \ref{eq:gauss})
 providing a HD NORTA-inspired algorithm.
 
 \hypertarget{normal-to-anything-norta}{%
@@ -696,17 +696,17 @@ rank-based dependency matching:
 
 \emph{Step 1: Mapping step.} We first employ the closed-form
 relationships between \(\rho_S\) and \(\tau\) with \(\rho_P\) for
-bivariate normal random variables via Equations @ref(eq:convertKendall)
-and @ref(eq:convertSpearman), respectively (implemented as
+bivariate normal random variables via Equations \ref{eq:convertKendall}
+and \ref{eq:convertSpearman}, respectively (implemented as
 \texttt{cor\_covert()}). Initializing our algorithm to match the
 nonparametric correlations by computing these equations for all pairs is
 computationally trivial.
 
 For the computationally expensive process to match Pearson correlations,
-we approximate Equation @ref(eq:pearsonIntegralRelation) for all pairs
+we approximate Equation \ref{eq:pearsonIntegralRelation} for all pairs
 of margins. To this end, we implement the approximation scheme
 introduced by (Xiao and Zhou 2019). Briefly, the many double integrals
-of the form in @ref(eq:pearsonIntegralRelation) are approximated by
+of the form in \ref{eq:pearsonIntegralRelation} are approximated by
 weighted sums of Hermite polynomials. Matching coefficients for pairs of
 continuous distributions is made tractable by this method, but for
 discrete distributions (especially discrete distributions with large
@@ -747,9 +747,9 @@ whether a target \(R_S\) is an element of the \emph{admissible set}
 There is an increasing probability of encountering an inadmissible
 correlation matrix as dimension increases. In our experience, the
 mapping step for large \(d\) almost always produces a \(R_X\) that is
-not a correlation matrix. In Section @ref(package), we provide a basic
+not a correlation matrix. In Section \ref{package}, we provide a basic
 method of how to quantify and control the approximation error. Further,
-the RNA-seq example in Section @ref(examples) provides an illustration
+the RNA-seq example in Section \ref{examples} provides an illustration
 of this in practice.
 
 \emph{Step 3: Gaussian copula.} The final step implements a
@@ -773,7 +773,7 @@ the \texttt{Bigsimr} Julia package). In addition to the native Julia
 also provide a Python interface \texttt{bigsimr} that interfaces with
 the Julia \texttt{Bigsimr} package. The Julia package provides a
 high-performance implementation of our proposed random vector generation
-algorithm and associated functions (see Section @ref(algorithms)).
+algorithm and associated functions (see Section \ref{algorithms}).
 
 The subsections below describe the basic use of the \texttt{bigsimr} R
 package by stepping through an example workflow using the data set
@@ -823,7 +823,7 @@ Fahrenheit, and \texttt{Ozone} level, in parts per billion.
 ## $ Ozone <int> 41, 36, 12, 18, 28, 23, 19, 8, 7, 16, 11, 14, 18, 14, 34, 6, ...
 \end{verbatim}
 
-Figure @ref(fig:ch030-aq-joint-dist) visualizes the bivariate
+Figure \ref{fig:ch030-aq-joint-dist} visualizes the bivariate
 relationship between \texttt{Ozone} and \texttt{Temperature}. We aim to
 simulate random two-component vectors mimicking this structure. The
 margins are not normally distributed; \texttt{Ozone} level exhibits a
@@ -832,9 +832,9 @@ strong positive skew.
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf}
-\caption{Bivariate scatterplot of Ozone versus Temp with estimated
-marginal densities. The Ozone data are modeled marginally as log-normal
-and the Temperature data as normal.}
+\caption{\label{fig:ch030-aq-joint-dist}Bivariate scatterplot of Ozone
+versus Temp with estimated marginal densities. The Ozone data are
+modeled marginally as log-normal and the Temperature data as normal.}
 \end{figure}
 
 Next, we specify the marginal distributions and correlation coefficient
@@ -849,7 +849,7 @@ fast functions designed for this task.
 distributions}\label{specifying-marginal-distributions}}
 
 Based on the estimated densities in Figure
-@ref(fig:ch030-aq-joint-dist), we assume \texttt{Temp} is normally
+\ref{fig:ch030-aq-joint-dist}, we assume \texttt{Temp} is normally
 distributed and \texttt{Ozone} is log-normally distributed, as the
 latter values are positive and skewed. We use the classical unbiased
 estimators for the normal distribution's parameters and maximum
@@ -976,7 +976,7 @@ correlation matrix is valid for our simulation strategy.
 
 \begin{verbatim}
 ## Julia Object of type NamedTuple{(:lower, :upper),Tuple{Float64,Float64}}.
-## (lower = -0.8816136274594583, upper = 0.8815214379668451)
+## (lower = -0.8807315594247829, upper = 0.880286004475508)
 \end{verbatim}
 
 In this 2D example, it is possible to verify the existence of a
@@ -998,7 +998,7 @@ matrix algorithm.
 Finally, we execute \texttt{rvec} to simulate the desired \(10,000\)
 random vectors from the assumed bivariate distribution of \texttt{Ozone}
 and \texttt{Temp}. Note that the target input is specified using the
-pre-computed MVN correlation matrix. Figure @ref(fig:ch030-plot-sim)
+pre-computed MVN correlation matrix. Figure \ref{fig:ch030-plot-sim}
 plots the 10,000 simulated points.
 
 \begin{Shaded}
@@ -1012,10 +1012,10 @@ plots the 10,000 simulated points.
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf}
-\caption{Contour plot and marginal densities for the simulated bivariate
-distribution of Air Quality Temperatures and Ozone levels. The simulated
-points mimic the observed data with respect to both the marginal
-characteristics and bivariate association.}
+\caption{\label{fig:ch030-plot-sim}Contour plot and marginal densities
+for the simulated bivariate distribution of Air Quality Temperatures and
+Ozone levels. The simulated points mimic the observed data with respect
+to both the marginal characteristics and bivariate association.}
 \end{figure}
 
 \hypertarget{simulations}{%
@@ -1048,7 +1048,7 @@ simulations progress from bivariate normal, to bivariate gamma
 (non-normal yet continuous), and bivariate negative binomial (non-normal
 and discrete).
 
-Table @ref(tab:sims) lists our identical-marginal, bivariate simulation
+Table \ref{tab:sims} lists our identical-marginal, bivariate simulation
 configurations. We increase the simulation replicates \(B\) to visually
 ensure that our results converge to the target correlations and gauge
 efficiency. We select distributions beginning with a standard
@@ -1087,27 +1087,27 @@ the bound is specified exactly.
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biNormPlot-1.pdf}
-\caption{\texttt{bigsimr} recovers the Pearson specified correlations
-for MVN.}
+\caption{\label{fig:ch040-biNormPlot}\texttt{bigsimr} recovers the
+Pearson specified correlations for MVN.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biGammaPlot-1.pdf}
-\caption{\texttt{bigsimr} recovers the Pearson specified correlations
-for Bivariate Gamma.}
+\caption{\label{fig:ch040-biGammaPlot}\texttt{bigsimr} recovers the
+Pearson specified correlations for Bivariate Gamma.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biNegBinPlot-1.pdf}
-\caption{\texttt{bigsimr} recovers the correlations for bivariate
-negative binomial only approximately for Pearson but (nearly) exactly
-for the rank-based correlations.}
+\caption{\label{fig:ch040-biNegBinPlot}\texttt{bigsimr} recovers the
+correlations for bivariate negative binomial only approximately for
+Pearson but (nearly) exactly for the rank-based correlations.}
 \end{figure}
 
-Figure @ref(fig:ch040-bPlot) displays the aggregated bivariate
-simulation results. Table @ref(tab:ch040-BiError) contains the mean
+Figure \ref{fig:ch040-bPlot} displays the aggregated bivariate
+simulation results. Table \ref{tab:ch040-BiError} contains the mean
 absolute error (MAE) in reproducing the desired dependency measures for
 the three bivariate scenarios. Overall, the studies show that our
 methodology is generally accurate across the entire range of possible
@@ -1165,14 +1165,14 @@ No. of random vectors & Correlation type & Distribution & Mean abs. error\\
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-bPlot-1.pdf}
-\caption{Bivariate simulations match target correlations across the
-entire range of feasible correlations. The horizontal axis plots the
-specified target correlations for each bivariate margin. Normal margins
-are plotted in dark dark grey, gamma in medium grey, and negative
-binomial in light grey. As the number of simulated vectors \(B\)
-increases from left to right, the variation in estimated correlations
-(vertical axis) decreases. The dashed line indicates equality between
-the specified and estimated correlations.}
+\caption{\label{fig:ch040-bPlot}Bivariate simulations match target
+correlations across the entire range of feasible correlations. The
+horizontal axis plots the specified target correlations for each
+bivariate margin. Normal margins are plotted in dark dark grey, gamma in
+medium grey, and negative binomial in light grey. As the number of
+simulated vectors \(B\) increases from left to right, the variation in
+estimated correlations (vertical axis) decreases. The dashed line
+indicates equality between the specified and estimated correlations.}
 \end{figure}
 
 \hypertarget{scale-up-to-high-dimensions}{%
@@ -1229,7 +1229,7 @@ estimation).
 
 The experiments are conducted on a MacBook Pro carrying a 2.4 GHz 8-Core
 Intel Core i9 processor, with all 16 threads employed during
-computation. Table @ref(tab:ch040-moderateDtab) displays the total
+computation. Table \ref{tab:ch040-moderateDtab} displays the total
 computation time for moderate dimesions (\(d \leq 500\)). In every
 simullation setting, the 1,000 vectors are generated rapidly, executing
 in under 2 seconds.
@@ -1259,7 +1259,7 @@ Dimension & Correlation type & Total Time (Seconds)\\
 
 The results for \(d > 500\) show scalability to ultra-high dimensions
 for all three correlation types, although the total times do become much
-larger. Figure @ref(fig:ch040-largeDfig) displays computation times for
+larger. Figure \ref{fig:ch040-largeDfig} displays computation times for
 \(d=\{1000, 2500, 5000, 10000\}\). For \(d\) equal to 1000 and 2500, the
 total time is under a couple of minutes. At \(d\) of 5000 and 10,000,
 Pearson correlation matching in the \emph{Adjust Correlation} step
@@ -1279,7 +1279,8 @@ instaneous for all settings considered.
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf}
-\caption{Computation times for HD multivariate gamma simulation.}
+\caption{\label{fig:ch040-largeDfig}Computation times for HD
+multivariate gamma simulation.}
 \end{figure}
 
 \emph{Limitations, conclusions, and recommendations}
@@ -1445,12 +1446,12 @@ synthetic RNA-seq data set:
 \end{Highlighting}
 \end{Shaded}
 
-Figure @ref(fig:ch050-simDataFig) displays the simulated counts and
+Figure \ref{fig:ch050-simDataFig} displays the simulated counts and
 pairwise relationships for our example genes from Table
-@ref(tab:ch010-realDataTab). Simulated counts roughly mimic the observed
+\ref{tab:ch010-realDataTab}. Simulated counts roughly mimic the observed
 data but with a smoother appearance due to the assumed parametric form
 and with less extreme points than the observed data in Figure
-@ref(fig:ch010-realDataFig). Figure @ref(fig:ch050-figBRCA) compares the
+\ref{fig:ch010-realDataFig}. Figure \ref{fig:ch050-figBRCA} compares the
 specified target parameter (horizontal axis) with the corresponding
 quantities estimated from the simulated data (vertical axis). The
 evaluation shows that the simulated counts approximately match the
@@ -1460,14 +1461,14 @@ from the data.
 \begin{figure}
 \centering
 \includegraphics{arXiv_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf}
-\caption{Simulated data for three selected high-expressing genes
-generally replicates the estimated data structure. The data do not
-exhibit outlying points, but do possess the desired Spearman
-correlations, central tendencies, and discrete values.}
+\caption{\label{fig:ch050-simDataFig}Simulated data for three selected
+high-expressing genes generally replicates the estimated data structure.
+The data do not exhibit outlying points, but do possess the desired
+Spearman correlations, central tendencies, and discrete values.}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=0.8\linewidth]{../fig/ch050-figBRCA} \caption{Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).}\label{fig:ch050-figBRCA}
+\includegraphics[width=0.8\linewidth]{../fig/ch050-figBRCA} \caption{\label{fig:ch050-figBRCA}Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).}\label{fig:ch050-figBRCA}
 \end{figure}
 
 \emph{Limitations, conclusions, and recommendations}

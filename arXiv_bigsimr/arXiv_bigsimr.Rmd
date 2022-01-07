@@ -4,23 +4,29 @@ authors:
   - name: A. Grant Schissler
     department: Department of Mathematics \& Statistics
     affiliation: University of Nevada, Reno
-    location: Reno, NV 89557
-    email: grant.schissler@gmail.com
   - name: Edward J. Bedrick
+    department: Epidemiology and Biostatistics Department
     affiliation: University of Arizona
   - name: Alexander D. Knudson
-    affiliation: University of Nevada, Reno \AND
+    department: Department of Mathematics \& Statistics
+    affiliation: University of Nevada, Reno
   - name: Tomasz J. Kozubowski
+    department: Department of Mathematics \& Statistics
     affiliation: University of Nevada, Reno
   - name: Tin Nguyen
+    department: Department of Computer Science \& Engineering
     affiliation: University of Nevada, Reno
   - name: Anna K. Panorska
-    affiliation: University of Nevada, Reno \AND
+    department: Department of Mathematics \& Statistics
+    affiliation: University of Nevada, Reno
   - name: Juli Petereit
+    department: Nevada Bioinformatics Center
     affiliation: University of Nevada, Reno
   - name: Walter W. Piegorsch
+    department: Mathematics Department
     affiliation: University of Arizona
   - name: Duc Tran
+    department: Department of Computer Science \& Engineering
     affiliation: University of Nevada, Reno
 abstract: |
   It is critical to accurately simulate data when employing Monte Carlo techniques and evaluating statistical methodology. Measurements are often correlated and high dimensional in this era of big data, such as data obtained in high-throughput biomedical experiments. Due to the computational complexity and a lack of user-friendly software available to simulate these massive multivariate constructions, researchers resort to simulation designs that posit independence or perform arbitrary data transformations. To close this gap, we developed the Bigsimr Julia package with R and Python interfaces. This paper focuses on the R interface. These packages empower high-dimensional random vector simulation with arbitrary marginal distributions and dependency via a Pearson, Spearman, or Kendall correlation matrix. bigsimr contains high-performance features, including multi-core and graphical-processing-unit-accelerated algorithms to estimate correlation and compute the nearest correlation matrix. Monte Carlo studies quantify the accuracy and scalability of our approach, up to $d=10,000$. We describe example workflows and apply to a high-dimensional data set --- RNA-sequencing data obtained from breast cancer tumor samples.

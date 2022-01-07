@@ -168,6 +168,9 @@ Package}
 
 \def\tightlist{}
 
+© A.G. Schissler. This is an Open Access article distributed under the terms of the Creative Commons License Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) (https://creativecommons.org/licenses/by-nc-sa/4.0/), which permits reusers to distribute, remix, adapt, and build upon the material in any medium or format for noncommercial purposes only, and only so long as attribution is given to the creator. If you remix, adapt, or build upon the material, you must license the modified material under identical terms.
+
+\clearpage
 
 \begin{abstract}
 It is critical to accurately simulate data when employing Monte Carlo
@@ -203,8 +206,6 @@ RNA-sequencing data obtained from breast cancer tumor samples.
    \and
     breast cancer
   }
-
-\clearpage
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
@@ -375,7 +376,7 @@ TCGA-A1-A0SG & 12486 & 12089 & 10434\\
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch010-realDataFig-1.pdf}
+\includegraphics{ch010-realDataFig-1.pdf}
 \caption{\label{fig:ch010-realDataFig}Pairwise scatterplots for three
 example genes (Table 1), with estimated Spearman's correlations and
 marginal density estimates displayed. The data possess outliers,
@@ -839,7 +840,7 @@ strong positive skew.
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch030-aq-joint-dist-1.pdf}
+\includegraphics{ch030-aq-joint-dist-1.pdf}
 \caption{\label{fig:ch030-aq-joint-dist}Bivariate scatterplot of Ozone
 versus Temp with estimated marginal densities. The Ozone data are
 modeled marginally as log-normal and the Temperature data as normal.}
@@ -1019,7 +1020,7 @@ plots the 10,000 simulated points.
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch030-plot-sim-1.pdf}
+\includegraphics{ch030-plot-sim-1.pdf}
 \caption{\label{fig:ch030-plot-sim}Contour plot and marginal densities
 for the simulated bivariate distribution of Air Quality Temperatures and
 Ozone levels. The simulated points mimic the observed data with respect
@@ -1094,21 +1095,21 @@ the bound is specified exactly.
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biNormPlot-1.pdf}
+\includegraphics{ch040-biNormPlot-1.pdf}
 \caption{\label{fig:ch040-biNormPlot}\texttt{bigsimr} recovers the
 Pearson specified correlations for MVN.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biGammaPlot-1.pdf}
+\includegraphics{ch040-biGammaPlot-1.pdf}
 \caption{\label{fig:ch040-biGammaPlot}\texttt{bigsimr} recovers the
 Pearson specified correlations for Bivariate Gamma.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch040-biNegBinPlot-1.pdf}
+\includegraphics{ch040-biNegBinPlot-1.pdf}
 \caption{\label{fig:ch040-biNegBinPlot}\texttt{bigsimr} recovers the
 correlations for bivariate negative binomial only approximately for
 Pearson but (nearly) exactly for the rank-based correlations.}
@@ -1172,7 +1173,7 @@ No. of random vectors & Correlation type & Distribution & Mean abs. error\\
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch040-bPlot-1.pdf}
+\includegraphics{ch040-bPlot-1.pdf}
 \caption{\label{fig:ch040-bPlot}Bivariate simulations match target
 correlations across the entire range of feasible correlations. The
 horizontal axis plots the specified target correlations for each
@@ -1286,7 +1287,7 @@ instaneous for all settings considered.
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch040-largeDfig-1.pdf}
+\includegraphics{ch040-largeDfig-1.pdf}
 \caption{\label{fig:ch040-largeDfig}Computation times for HD
 multivariate gamma simulation.}
 \end{figure}
@@ -1468,7 +1469,7 @@ from the data.
 
 \begin{figure}
 \centering
-\includegraphics{arXiv_bigsimr_files/figure-latex/ch050-simDataFig-1.pdf}
+\includegraphics{ch050-simDataFig-1.pdf}
 \caption{\label{fig:ch050-simDataFig}Simulated data for three selected
 high-expressing genes generally replicates the estimated data structure.
 The data do not exhibit outlying points, but do possess the desired
@@ -1476,7 +1477,7 @@ Spearman correlations, central tendencies, and discrete values.}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=0.8\linewidth]{../fig/ch050-figBRCA} \caption{\label{fig:ch050-figBRCA}Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).}\label{fig:ch050-figBRCA}
+\includegraphics[width=0.8\linewidth]{ch050-figBRCA} \caption{\label{fig:ch050-figBRCA}Simulated random vectors from a multivariate negative binomial replicate the estimated structure from an RNA-seq data set. The dashed red lines indicate equality between estimated parameters from simulated data (vertical axes) and the specified target parameters (horizontal axes).}\label{fig:ch050-figBRCA}
 \end{figure}
 
 \emph{Limitations, conclusions, and recommendations}
